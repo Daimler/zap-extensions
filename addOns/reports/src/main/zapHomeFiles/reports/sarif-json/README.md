@@ -1,4 +1,6 @@
 # SARIF report
+## General
+At the moment this is only a DRAFT document. Later this will be a reference/documentation how the DAST content is available inside SARIF (which originally was only for static application testing)
 
 ## Sarif 2.1.0
 https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html
