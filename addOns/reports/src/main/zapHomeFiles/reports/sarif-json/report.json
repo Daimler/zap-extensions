@@ -1,154 +1,161 @@
-{
-  "version": "2.1.0",
-  "$schema": "http://json.schemastore.org/sarif-2.1.0-rtm.4",
-  "runs": [
-    {
-      "tool": {
-        "driver": {
-          "name": "OWASP Zap",
-          "fullName" : "OWASP Zed Attack Proxy",
-          "informationUri": "https://www.zaproxy.org",
-          "semanticVersion" : [[${zapVersion}]],
-          "taxa" : [
-          	
-          ],
-          "supportedTaxonomies": [
-	          {
-		          "name": "CWE",
-		          "index": 1,
-		          "guid": "33333333-0000-1111-8888-000000000000"
-	          }
-          ]
-        }
-      },
-      
-      "webRequst" : [ ],
-      
-      "webResponses" : [ ],
-      
-      "results": [
-      	    {
-			    "ruleId": "ABC0003",
-			    "kind": "fail",
-			    "level": "note",
-			    "message": {
-			      "text": "Consider using 'nameof(start)' instead of hard-coding
-			               the parameter name 'start'."
-			    },
-			    "locations": [
-			      {
-			
-			        "physicalLocation": {
-			          "uri": "https://test.example.org/api/vulnerable",
-			          "region": {
-			            "startLine": 6
-			          }
-			        }
-			      }
-			    ]
-			  }
-      		[#th:block th:each="site, siteState: ${reportData.sites}"][#th:block th:if="${! siteState.first}"],[/th:block]
-      		
-      		[#th:block th:if="${! alertState.last}"],[/th:block][/th:block]
-      ]
-    }
-  ],
-   "taxonomies": [
-    {
-      "name": "CWE",
-      "version": "3.2",
-      "releaseDateUtc": "2019-01-03",
-      "guid": "33333333-0000-1111-8888-000000000000",
-      "informationUri": "https://cwe.mitre.org/data/published/cwe_v3.2.pdf/",
-      "downloadUri": "https://cwe.mitre.org/data/xml/cwec_v3.2.xml.zip",
-      "organization": "MITRE",
-      "shortDescription": {
-        "text": "The MITRE Common Weakness Enumeration"
-      },
-
-      "contents": [
-
-        "localizedData",
-
-        "nonLocalizedData"
-
-      ],
-
-      "isComprehensive": true,
-      "minimumRequiredLocalizedDataSemanticVersion": "3.2",
-      "taxa": [
-
-        {
-
-          "id": "327",
-          "guid": "33333333-0000-1111-8888-111111111111",
-          "name": "BrokenOrRiskyCryptographicAlgorithm",
-          "shortDescription": {
-            "text": "Use of a Broken or Risky Cryptographic Algorithm."
-          },
-
-          "defaultConfiguration": {
-            "level": "warning"
-          }
-        },
-
-        {
-          "id": "924",
-          "guid": "33333333-0000-1111-8888-222222222222",
-          "name": "TransmittedMessageIntegrity",
-          "shortDescription": {
-            "text": "Improper Enforcement of Message Integrity ..."
-          },
-          "defaultConfiguration": {
-            "level": "warning"
-          }
-        }
-
-      ]
-
-    }
-
-  ],
-}
-,
-
-{
-	"@version": [[${zapVersion}]],
-	"@generated": [[${generatedString}]],
-	"site":[ [#th:block th:each="site, siteState: ${reportData.sites}"][#th:block th:if="${! siteState.first}"],[/th:block]
+{[#th:block with="sarifSupport = ${helper.createSupport('sarif',reportData)}"]
+	"runs": [
 		{
-			"@name": "[(${helper.legacyEscapeText(site, true)})]",
-			"@host": "[(${helper.legacyEscapeText(helper.getHostForSite(site), true)})]",
-			"@port": "[(${helper.getPortForSite(site)})]",
-			"@ssl": "[(${helper.isSslSite(site)})]",
-			"alerts": [ [#th:block th:each="alert, alertState: ${helper.getAlertsForSite(alertTree, site)}" th:with="instances=${helper.getAlertInstancesForSite(alertTree, site, alert.name, alert.risk)}"]
+			"results": [
+			
+			
+				[#th:block th:each="site: ${reportData.sites}"]
+				[#th:block th:each="alert, alertState: ${helper.getAlertsForSite(alertTree, site)}" 
+				           th:with="instances=${helper.getAlertInstancesForSite(alertTree, site, alert.name, alert.risk)}"]
+						  "pluginid": "[(${alert.pluginId})]",
+				[/th:block]
+				[/th:block]
+			
 				{
-					"pluginid": "[(${alert.pluginId})]",
-					"alertRef": "[(${alert.alertRef})]",
-					"alert": "[(${helper.legacyEscapeText(alert.name, true)})]",
-					"name": "[(${helper.legacyEscapeText(alert.name, true)})]",
-					"riskcode": "[(${alert.risk})]",
-					"confidence": "[(${alert.confidence})]",
-					"riskdesc": "[(${helper.legacyEscapeText(helper.getRiskString(alert.risk) + ' (' + helper.getConfidenceString(alert.confidence) + ')', true)})]",
-					"desc": "[(${helper.legacyEscapeParagraph(alert.description, true)})]",
-					"instances":[ [#th:block th:each="instance, instState: ${instances}"][#th:block th:if="${! instState.first}"],[/th:block]
+					"level": "error",
+					"locations": [
 						{
-							"uri": "[(${helper.legacyEscapeText(instance.uri, true)})]",
-							"method": "[(${helper.legacyEscapeText(instance.method, true)})]",
-							"param": "[(${helper.legacyEscapeText(instance.param, true)})]",
-							"attack": "[(${helper.legacyEscapeText(instance.attack, true)})]",
-							"evidence": "[(${helper.legacyEscapeText(instance.evidence, true)})]"
-						}[/th:block]
+							"physicalLocation": {
+								"artifactLocation": {
+									"uri": "https://localhost:8081/greeting?name=%3C%2Fp%3E%3Cscript%3Ealert%281%29%3B%3C%2Fscript%3E%3Cp%3E"
+								}
+							},
+                            "properties": {
+                                "attack": "</p><script>alert(1);</script><p>",
+                                "evidence": "</p><script>alert(1);</script><p>"
+                            }
+						}
 					],
-					"count": "[(${instances.size})]",
-					"solution": "[(${helper.legacyEscapeParagraph(alert.solution, true)})]",
-					"otherinfo": "[(${helper.legacyEscapeParagraph(alert.otherinfo, true)})]",
-					"reference": "[(${helper.legacyEscapeParagraph(alert.reference, true)})]",
-					"cweid": "[(${alert.cweid})]",
-					"wascid": "[(${alert.wascid})]",
-					"sourceid": "[(${alert.sourceHistoryId})]"
-				}[#th:block th:if="${! alertState.last}"],[/th:block][/th:block]
-			]
-		}[/th:block]
-	]
-}
+					"message": {
+						"text": "Cross-site Scripting (XSS) is an attack technique that involves echoing attacker-supplied code into a user's browser instance. A browser instance can be a standard web browser client, or a browser object embedded in a software product such as the browser within WinAmp, an RSS reader, or an email client. The code itself is usually written in HTML/JavaScript, but may also extend to VBScript, ActiveX, Java, Flash, or any other browser-supported technology."
+					},
+					"ruleId": "40012",
+                    "webRequest": {
+                        "protocol": "HTTP",
+                        "version": "1.1",
+                        "target": "https://localhost:8081/greeting?name=%3C%2Fp%3E%3Cscript%3Ealert%281%29%3B%3C%2Fscript%3E%3Cp%3E",
+                        "method": "GET",
+                        "headers": {
+                            "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:93.0) Gecko/20100101 Firefox/93.0",
+                            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+                            "Accept-Language": "en-US,en;q=0.5",
+                            "Authorization": "Basic dGVzdHVzZXI6cGFzc3dvcmQtMTIzNDU=",
+                            "Connection": "keep-alive",
+                            "Referer": "https://localhost:8081/hello",
+                            "Cookie": "locale=de; JSESSIONID=2327E9EBE8342769A6DB1322562DD850",
+                            "Upgrade-Insecure-Requests": "1",
+                            "Sec-Fetch-Dest": "document",
+                            "Sec-Fetch-Mode": "navigate",
+                            "Sec-Fetch-Site": "same-origin",
+                            "Sec-Fetch-User": "?1",
+                            "Content-Length": "0"
+                        },
+                        "body": {
+                            "text": "",
+                            "binary": ""
+                        }
+                    },
+                    "webResponse": {
+                        "protocol": "HTTP",
+                        "version": "1.1",
+                        "statusCode": 200,
+                        "reasonPhrase": "OK",
+                        "headers": {
+                            "Set-Cookie": "locale=de; HttpOnly; SameSite=strict",
+                            "X-Content-Type-Options": "nosniff",
+                            "X-XSS-Protection": "1; mode=block",
+                            "Cache-Control": "no-cache, no-store, max-age=0, must-revalidate",
+                            "Pragma": "no-cache",
+                            "Expires": "0",
+                            "Strict-Transport-Security": "max-age=31536000 ; includeSubDomains",
+                            "X-Frame-Options": "DENY",
+                            "Content-Security-Policy": "script-src 'self'",
+                            "Referrer-Policy": "no-referrer",
+                            "Content-Type": "text/html;charset=UTF-8",
+                            "Content-Language": "en-US",
+                            "Date": "Mon, 18 Oct 2021 07:25:32 GMT"
+                        },
+                        "body": {
+                            "text": "<!DOCTYPE HTML><html>…</html>",
+                            "binary": ""
+
+                        },
+                        "noResponseReceived": false
+                    }
+				}
+			],
+			"taxonomies": [
+				{
+					"downloadUri": "https://cwe.mitre.org/data/xml/cwec_v4.4.xml.zip",
+					"guid": "f2856fc0-85b7-373f-83e7-6f8582243547",
+					"informationUri": "https://cwe.mitre.org/data/published/cwe_v4.4.pdf/",
+					"isComprehensive": true,
+					"language": "en",
+					"minimumRequiredLocalizedDataSemanticVersion": "4.4",
+					"name": "CWE",
+					"organization": "MITRE",
+					"releaseDateUtc": "2021-03-15",
+					"shortDescription": {
+						"text": "The MITRE Common Weakness Enumeration"
+					},
+					"taxa": [
+						{
+							"guid": "1a37bf66-7c5a-3aa0-94bb-ffae58a9e01c",
+							"id": "79"
+						}
+					],
+					"version": "4.4"
+				}
+			],
+			"tool": {
+				"driver": {
+					"guid": "4d841334-0141-4e13-bdd0-53087266ebcd",
+					"informationUri": "https://www.zaproxy.org/",
+					"name": "OWASP ZAP",
+					"rules": [ [#th:block th:each="sarifRule, sarifRuleState: ${reportData.sites}"][#th:block th:each="sarifRule, sarifRuleState: ${sarifSupport.getRules()}"][#th:block th:if="${! sarifRuleState.first}"],[/th:block]
+						{
+							"id": "[(${sarifRule.id})]",
+							"defaultConfiguration": {
+								"level": "error"
+							},
+							"fullDescription": {
+								"text": "[(${sarifRule.fullDescription})]"
+							},
+							"name": "[(${sarifRule.name})]",
+							"relationships": [
+								{
+									"kinds": [
+										"superset"
+									],
+									"target": {
+										"guid": "6bd55435-166c-3594-bc06-5e0dea916067",
+										"id": "[(${alert.cweId})]",
+										"toolComponent": {
+											"guid": "f2856fc0-85b7-373f-83e7-6f8582243547",
+											"name": "CWE"
+										}
+									}
+								}
+							],
+							"shortDescription": {
+								"text": "[(${sarifRule.shortDescription})]"
+							}
+						}
+						[/th:block]
+						[/th:block]
+					],
+					"semanticVersion": "[[${zapVersion}]]",
+					"supportedTaxonomies": [
+						{
+							"guid": "f2856fc0-85b7-373f-83e7-6f8582243547",
+							"name": "CWE"
+						}
+					],
+					"version": "[[${zapVersion}]]"
+				}
+			}
+		}
+	],
+	"$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+	"version": "2.1.0"
+}[/th:block]
