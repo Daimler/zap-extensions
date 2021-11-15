@@ -20,20 +20,17 @@ import org.zaproxy.addon.reports.ReportHelper;
  */
 public class SarifReportDataSupport {
 
-	public static final String SUPPORT_ID = "support.sarif";
-
 	private ReportData reportData;
 	private List<SarifResult> results = new ArrayList<>();
 	
 	// we use a sorted map here, so values set will always be sorted available - so
 	// same report will produce same
 	// ordering etc.
-	private SortedMap<Integer, SarifRule> rules;
+	private SortedMap<Integer, SarifRule> rulesMap;
 
 	public SarifReportDataSupport(ReportData reportData) {
 		this.reportData = reportData;
 	}
-	
 
 	/* FIXME de-jcup: implement!*/
 	public List<SarifResult> getResults(){
@@ -45,10 +42,10 @@ public class SarifReportDataSupport {
 	 * @return a sorted collection of SARIF rules
 	 */
 	public Collection<SarifRule> getRules() {
-		if (rules == null) {
-			rules = createRules();
+		if (rulesMap == null) {
+			rulesMap = createRules();
 		}
-		return rules.values();
+		return rulesMap.values();
 	}
 
 	private SortedMap<Integer, SarifRule> createRules() {

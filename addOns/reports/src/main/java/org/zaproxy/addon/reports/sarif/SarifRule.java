@@ -63,6 +63,7 @@ public class SarifRule implements Comparable<SarifRule> {
 			cweRelation.target.sarifGuid=new SarifGuid(alert);
 			cweRelation.target.id=""+alert.getCweId();
 			cweRelation.target.toolComponent=DefaultSarifToolComponents.CWE;
+			list.add(cweRelation);
 		}
 		return list;
 	}

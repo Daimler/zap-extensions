@@ -1,4 +1,4 @@
-{[#th:block with="sarifSupport = ${helper.createSupport('sarif',reportData)}"]
+[#th:block th:with="sarifSupport=${helper.createSupport('sarif',reportData)}"]{
 	"runs": [
 		{
 			"results": [
@@ -112,7 +112,7 @@
 					"guid": "4d841334-0141-4e13-bdd0-53087266ebcd",
 					"informationUri": "https://www.zaproxy.org/",
 					"name": "OWASP ZAP",
-					"rules": [ [#th:block th:each="sarifRule, sarifRuleState: ${reportData.sites}"][#th:block th:each="sarifRule, sarifRuleState: ${sarifSupport.getRules()}"][#th:block th:if="${! sarifRuleState.first}"],[/th:block]
+					"rules": [ [#th:block th:each="sarifRule, sarifRuleState: ${sarifSupport.rules}"][#th:block th:if="${! sarifRuleState.first}"],[/th:block]
 						{
 							"id": "[(${sarifRule.id})]",
 							"defaultConfiguration": {
@@ -122,26 +122,26 @@
 								"text": "[(${sarifRule.fullDescription})]"
 							},
 							"name": "[(${sarifRule.name})]",
-							"relationships": [
+							"relationships": [ [#th:block th:each="relationShip, relationShipState: ${sarifRule.relationShips}"][#th:block th:if="${! relationShipState.first}"],[/th:block]
 								{
 									"kinds": [
 										"superset"
 									],
 									"target": {
 										"guid": "6bd55435-166c-3594-bc06-5e0dea916067",
-										"id": "[(${alert.cweId})]",
+										"id": "[(${relationShip.target.id})]",
 										"toolComponent": {
 											"guid": "f2856fc0-85b7-373f-83e7-6f8582243547",
 											"name": "CWE"
 										}
 									}
 								}
+								[/th:block]
 							],
 							"shortDescription": {
 								"text": "[(${sarifRule.shortDescription})]"
 							}
 						}
-						[/th:block]
 						[/th:block]
 					],
 					"semanticVersion": "[[${zapVersion}]]",
