@@ -1,161 +1,129 @@
 [#th:block th:with="sarifSupport=${helper.createSupport('sarif',reportData)}"]{
-	"runs": [
-		{
-			"results": [
-			
-			
-				[#th:block th:each="site: ${reportData.sites}"]
-				[#th:block th:each="alert, alertState: ${helper.getAlertsForSite(alertTree, site)}" 
-				           th:with="instances=${helper.getAlertInstancesForSite(alertTree, site, alert.name, alert.risk)}"]
-						  "pluginid": "[(${alert.pluginId})]",
-				[/th:block]
-				[/th:block]
-			
-				{
-					"level": "error",
-					"locations": [
-						{
-							"physicalLocation": {
-								"artifactLocation": {
-									"uri": "https://localhost:8081/greeting?name=%3C%2Fp%3E%3Cscript%3Ealert%281%29%3B%3C%2Fscript%3E%3Cp%3E"
-								}
-							},
-                            "properties": {
-                                "attack": "</p><script>alert(1);</script><p>",
-                                "evidence": "</p><script>alert(1);</script><p>"
-                            }
-						}
-					],
-					"message": {
-						"text": "Cross-site Scripting (XSS) is an attack technique that involves echoing attacker-supplied code into a user's browser instance. A browser instance can be a standard web browser client, or a browser object embedded in a software product such as the browser within WinAmp, an RSS reader, or an email client. The code itself is usually written in HTML/JavaScript, but may also extend to VBScript, ActiveX, Java, Flash, or any other browser-supported technology."
-					},
-					"ruleId": "40012",
-                    "webRequest": {
-                        "protocol": "HTTP",
-                        "version": "1.1",
-                        "target": "https://localhost:8081/greeting?name=%3C%2Fp%3E%3Cscript%3Ealert%281%29%3B%3C%2Fscript%3E%3Cp%3E",
-                        "method": "GET",
-                        "headers": {
-                            "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:93.0) Gecko/20100101 Firefox/93.0",
-                            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-                            "Accept-Language": "en-US,en;q=0.5",
-                            "Authorization": "Basic dGVzdHVzZXI6cGFzc3dvcmQtMTIzNDU=",
-                            "Connection": "keep-alive",
-                            "Referer": "https://localhost:8081/hello",
-                            "Cookie": "locale=de; JSESSIONID=2327E9EBE8342769A6DB1322562DD850",
-                            "Upgrade-Insecure-Requests": "1",
-                            "Sec-Fetch-Dest": "document",
-                            "Sec-Fetch-Mode": "navigate",
-                            "Sec-Fetch-Site": "same-origin",
-                            "Sec-Fetch-User": "?1",
-                            "Content-Length": "0"
-                        },
-                        "body": {
-                            "text": "",
-                            "binary": ""
+   "runs": [
+      {
+         "results": [ [[#th:block th:each="sarifResult, sarifResultState: ${sarifSupport.results}"][#th:block th:if="${! sarifResultState.first}"],[/th:block]
+            {
+               "level": [[${sarifResult.level.value}]],
+               "locations": [[#th:block th:each="sarifLocation, sarifLocationState: ${sarifResult.locations}"][#th:block th:if="${! sarifLocationState.first}"],[/th:block]
+                  {
+                     "physicalLocation": {
+                        "artifactLocation": {
+                           "uri": [[${sarifLocation.physicalLocation.artifactLocation.uri}]]
                         }
-                    },
-                    "webResponse": {
-                        "protocol": "HTTP",
-                        "version": "1.1",
-                        "statusCode": 200,
-                        "reasonPhrase": "OK",
-                        "headers": {
-                            "Set-Cookie": "locale=de; HttpOnly; SameSite=strict",
-                            "X-Content-Type-Options": "nosniff",
-                            "X-XSS-Protection": "1; mode=block",
-                            "Cache-Control": "no-cache, no-store, max-age=0, must-revalidate",
-                            "Pragma": "no-cache",
-                            "Expires": "0",
-                            "Strict-Transport-Security": "max-age=31536000 ; includeSubDomains",
-                            "X-Frame-Options": "DENY",
-                            "Content-Security-Policy": "script-src 'self'",
-                            "Referrer-Policy": "no-referrer",
-                            "Content-Type": "text/html;charset=UTF-8",
-                            "Content-Language": "en-US",
-                            "Date": "Mon, 18 Oct 2021 07:25:32 GMT"
-                        },
+                     },
+                     "properties": {
+                         "attack": [[${sarifLocation.properties.attack}]],
+                         "evidence": [[${sarifLocation.properties.evidence}]]
+                     }
+                  }
+               ][/th:block]],
+               "message": {
+                  "text": [[${sarifResult.message.text}]]
+               },
+               "ruleId": [[${sarifResult.ruleId}]],
+                    "webRequest": {[#th:block th:with="webRequest=${sarifResult.webRequest}"]
+                        "protocol": [[${webRequest.protocol}]],
+                        "version": [[${webRequest.version}]],
+                        "target": [[${webRequest.target}]],
+                        "method": [[${webRequest.method}]],
+                        "headers": {[#th:block th:each="header, headerState: ${webRequest.headers}"]
+                            [[${header.key}]] : [[${header.value}]][#th:block th:if="${! headerState.first}"],[/th:block]
+                        [/th:block]},
                         "body": {
-                            "text": "<!DOCTYPE HTML><html>…</html>",
-                            "binary": ""
-
+                            "text": [[${webRequest.body.text}]],
+                            "binary": [[${webRequest.body.binary}]]
+                        }
+                    }[/th:block],
+                    "webResponse": {[#th:block th:with="webResponse=${sarifResult.webResponse}"]
+                        "statusCode": [[${webResponse.statusCode}]],
+                        "reasonPhrase": [[${webResponse.reasonPhrase}]],
+                        "protocol": [[${webResponse.protocol}]],
+                        "version": [[${webResponse.version}]],
+                        "target": [[${webResponse.target}]],
+                        "method": [[${webResponse.method}]],
+                        "headers": {[#th:block th:each="header, headerState: ${webResponse.headers}"]
+                            [[${header.key}]] : [[${header.value}]][#th:block th:if="${! headerState.first}"],[/th:block]
+                        [/th:block]},
+                        "body": {
+                            "text": [[${webResponse.body.text}]],
+                            "binary": [[${webResponse.body.binary}]]
                         },
-                        "noResponseReceived": false
-                    }
-				}
-			],
-			"taxonomies": [
-				{
-					"downloadUri": "https://cwe.mitre.org/data/xml/cwec_v4.4.xml.zip",
-					"guid": "f2856fc0-85b7-373f-83e7-6f8582243547",
-					"informationUri": "https://cwe.mitre.org/data/published/cwe_v4.4.pdf/",
-					"isComprehensive": true,
-					"language": "en",
-					"minimumRequiredLocalizedDataSemanticVersion": "4.4",
-					"name": "CWE",
-					"organization": "MITRE",
-					"releaseDateUtc": "2021-03-15",
-					"shortDescription": {
-						"text": "The MITRE Common Weakness Enumeration"
-					},
-					"taxa": [
-						{
-							"guid": "1a37bf66-7c5a-3aa0-94bb-ffae58a9e01c",
-							"id": "79"
-						}
-					],
-					"version": "4.4"
-				}
-			],
-			"tool": {
-				"driver": {
-					"guid": "4d841334-0141-4e13-bdd0-53087266ebcd",
-					"informationUri": "https://www.zaproxy.org/",
-					"name": "OWASP ZAP",
-					"rules": [ [#th:block th:each="sarifRule, sarifRuleState: ${sarifSupport.rules}"][#th:block th:if="${! sarifRuleState.first}"],[/th:block]
-						{
-							"id": "[(${sarifRule.id})]",
-							"defaultConfiguration": {
-								"level": "error"
-							},
-							"fullDescription": {
-								"text": "[(${sarifRule.fullDescription})]"
-							},
-							"name": "[(${sarifRule.name})]",
-							"relationships": [ [#th:block th:each="relationShip, relationShipState: ${sarifRule.relationShips}"][#th:block th:if="${! relationShipState.first}"],[/th:block]
-								{
-									"kinds": [
-										"superset"
-									],
-									"target": {
-										"guid": "6bd55435-166c-3594-bc06-5e0dea916067",
-										"id": "[(${relationShip.target.id})]",
-										"toolComponent": {
-											"guid": "f2856fc0-85b7-373f-83e7-6f8582243547",
-											"name": "CWE"
-										}
-									}
-								}
-								[/th:block]
-							],
-							"shortDescription": {
-								"text": "[(${sarifRule.shortDescription})]"
-							}
-						}
-						[/th:block]
-					],
-					"semanticVersion": "[[${zapVersion}]]",
-					"supportedTaxonomies": [
-						{
-							"guid": "f2856fc0-85b7-373f-83e7-6f8582243547",
-							"name": "CWE"
-						}
-					],
-					"version": "[[${zapVersion}]]"
-				}
-			}
-		}
-	],
-	"$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
-	"version": "2.1.0"
+                        "noResponseReceived": [[${webResponse.noResponseReceived}]]
+                    }[/th:block]
+            }
+         [/th:block]],
+         "taxonomies": [
+            {
+               "downloadUri": "https://cwe.mitre.org/data/xml/cwec_v4.4.xml.zip",
+               "guid": "f2856fc0-85b7-373f-83e7-6f8582243547",
+               "informationUri": "https://cwe.mitre.org/data/published/cwe_v4.4.pdf/",
+               "isComprehensive": true,
+               "language": "en",
+               "minimumRequiredLocalizedDataSemanticVersion": "4.4",
+               "name": "CWE",
+               "organization": "MITRE",
+               "releaseDateUtc": "2021-03-15",
+               "shortDescription": {
+                  "text": "The MITRE Common Weakness Enumeration"
+               },
+               "taxa": [
+                  {
+                     "guid": "1a37bf66-7c5a-3aa0-94bb-ffae58a9e01c",
+                     "id": "79"
+                  }
+               ],
+               "version": "4.4"
+            }
+         ],
+         "tool": {
+            "driver": {
+               "guid": "4d841334-0141-4e13-bdd0-53087266ebcd",
+               "informationUri": "https://www.zaproxy.org/",
+               "name": "OWASP ZAP",
+               "rules": [ [#th:block th:each="sarifRule, sarifRuleState: ${sarifSupport.rules}"][#th:block th:if="${! sarifRuleState.first}"],[/th:block]
+                  {
+                     "id": "[(${sarifRule.id})]",
+                     "defaultConfiguration": {
+                        "level": "error"
+                     },
+                     "fullDescription": {
+                        "text": "[(${sarifRule.fullDescription})]"
+                     },
+                     "name": "[(${sarifRule.name})]",
+                     "relationships": [ [#th:block th:each="relationShip, relationShipState: ${sarifRule.relationShips}"][#th:block th:if="${! relationShipState.first}"],[/th:block]
+                        {
+                           "kinds": [
+                              "superset"
+                           ],
+                           "target": {
+                              "guid": "6bd55435-166c-3594-bc06-5e0dea916067",
+                              "id": "[(${relationShip.target.id})]",
+                              "toolComponent": {
+                                 "guid": "f2856fc0-85b7-373f-83e7-6f8582243547",
+                                 "name": "CWE"
+                              }
+                           }
+                        }
+                        [/th:block]
+                     ],
+                     "shortDescription": {
+                        "text": "[(${sarifRule.shortDescription})]"
+                     }
+                  }
+                  [/th:block]
+               ],
+               "semanticVersion": [[${zapVersion}]],
+               "supportedTaxonomies": [
+                  {
+                     "guid": "f2856fc0-85b7-373f-83e7-6f8582243547",
+                     "name": "CWE"
+                  }
+               ],
+               "version": [[${zapVersion}]]
+            }
+         }
+      }
+   ],
+   "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+   "version": "2.1.0"
 }[/th:block]

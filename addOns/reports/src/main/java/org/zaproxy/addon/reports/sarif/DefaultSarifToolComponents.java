@@ -1,30 +1,45 @@
+/*
+ * Zed Attack Proxy (ZAP) and its related class files.
+ *
+ * ZAP is an HTTP/HTTPS proxy for assessing web application security.
+ *
+ * Copyright 2021 The ZAP Development Team
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.zaproxy.addon.reports.sarif;
 
-public enum DefaultSarifToolComponents implements SarifToolComponent{
-	
-	OWASP_ZAP("OWASP ZAP",new SarifGuid("4d841334-0141-4e13-bdd0-53087266ebcd")),
-	
-	CWE("CWE",new SarifGuid("f2856fc0-85b7-373f-83e7-6f8582243547")),
-	
-	;
+public enum DefaultSarifToolComponents implements SarifToolComponent {
+    OWASP_ZAP("OWASP ZAP", new SarifGuid("4d841334-0141-4e13-bdd0-53087266ebcd")),
 
-	private String name;
-	private SarifGuid sarifGuid;
+    CWE("CWE", new SarifGuid("f2856fc0-85b7-373f-83e7-6f8582243547")),
+    ;
 
-	DefaultSarifToolComponents(String name, SarifGuid sarifGuid) {
-		this.name=name;
-		this.sarifGuid=sarifGuid;
-	}
+    private String name;
+    private SarifGuid sarifGuid;
 
+    DefaultSarifToolComponents(String name, SarifGuid sarifGuid) {
+        this.name = name;
+        this.sarifGuid = sarifGuid;
+    }
 
-	@Override
-	public String getGuid() {
-		return sarifGuid.getGuid();
-	}
+    @Override
+    public String getGuid() {
+        return sarifGuid.getGuid();
+    }
 
-	@Override
-	public String getName() {
-		return name;
-	}
-
+    @Override
+    public String getName() {
+        return name;
+    }
 }

@@ -21,6 +21,7 @@ package org.zaproxy.addon.reports;
 
 import org.apache.commons.httpclient.URI;
 import org.parosproxy.paros.core.scanner.Alert;
+import org.parosproxy.paros.network.HttpMalformedHeaderException;
 import org.parosproxy.paros.network.HttpMessage;
 
 /**
@@ -49,6 +50,8 @@ public class TestAlertBuilder {
     private String reference = "Test Reference";
     private String evidence = "Test <p>Evidence</p>";
     private String uriString;
+    private String requestHeader;
+    private String responseHeader;
 
     private TestAlertBuilder() {}
 
@@ -101,6 +104,11 @@ public class TestAlertBuilder {
         return this;
     }
 
+    public TestAlertBuilder setRequestHeader(String requestHeader) {
+        this.requestHeader = requestHeader;
+        return this;
+    }
+
     public TestAlertBuilder setRequestBody(String requestBody) {
         this.requestBody = requestBody;
         return this;
@@ -108,6 +116,11 @@ public class TestAlertBuilder {
 
     public TestAlertBuilder setResponseBody(String responseBody) {
         this.responseBody = responseBody;
+        return this;
+    }
+
+    public TestAlertBuilder setResponseHeader(String responseHeader) {
+        this.responseHeader = responseHeader;
         return this;
     }
 
@@ -157,7 +170,23 @@ public class TestAlertBuilder {
             throw new IllegalStateException("Should not happen - testcase corrupt?", e);
         }
         httpMessage.setRequestBody(requestBody);
+        if (requestHeader != null) {
+            try {
+                httpMessage.setRequestHeader(requestHeader);
+            } catch (HttpMalformedHeaderException e) {
+                throw new IllegalArgumentException(
+                        "requestHeader header not valid:\n" + requestHeader + "\n", e);
+            }
+        }
         httpMessage.setResponseBody(responseBody);
+        if (responseHeader != null) {
+            try {
+                httpMessage.setResponseHeader(responseHeader);
+            } catch (HttpMalformedHeaderException e) {
+                throw new IllegalArgumentException(
+                        "responseHeader header not valid:\n" + responseHeader + "\n", e);
+            }
+        }
 
         alert.setDetail(
                 description,

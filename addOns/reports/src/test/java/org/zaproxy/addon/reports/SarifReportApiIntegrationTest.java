@@ -79,26 +79,27 @@ class SarifReportApiIntegrationTest {
         templateEngine.setMessageResolver(new ReportMessageResolver(template));
     }
 
+    //    @Test
+    //    void traditional_json() throws Exception {
+    //        /* prepare */
+    //        configureTemplateEngine("traditional-json");
+    //
+    //        ReportData reportData = createTestReportDataWithAlerts(template);
+    //        Context context = createTestContext(reportData);
+    //        StringWriter writer = new StringWriter();
+    //
+    //        /* execute */
+    //        templateEngine.process(template.getReportTemplateFile().getAbsolutePath(), context,
+    // writer);
+    //
+    //        /* test */
+    //        String sarifReportJSON = writer.getBuffer().toString();
+    //        assertNotNull(sarifReportJSON);
+    //        System.out.println(sarifReportJSON);
+    //    }
+
     @Test
-    void traditional_json() throws Exception {
-        /* prepare */
-        configureTemplateEngine("traditional-json");
-
-        ReportData reportData = createTestReportDataWithAlerts(template);
-        Context context = createTestContext(reportData);
-        StringWriter writer = new StringWriter();
-
-        /* execute */
-        templateEngine.process(template.getReportTemplateFile().getAbsolutePath(), context, writer);
-
-        /* test */
-        String sarifReportJSON = writer.getBuffer().toString();
-        assertNotNull(sarifReportJSON);
-        System.out.println(sarifReportJSON);
-    }
-
-    @Test
-    void sarifOutput2() throws Exception {
+    void templateEngineCanProcessSarifJsonReportAndOutputIsAsExpected() throws Exception {
         /* prepare */
         configureTemplateEngine("sarif-json");
 
@@ -151,14 +152,23 @@ class SarifReportApiIntegrationTest {
         /** @formatter:off */
         Alert cssAlert =
                 newAlertBuilder()
-                        .setName("CSS")
+                        .setName("Cross Site Scripting")
                         .setPluginId(40012)
                         .setDescription("CSS Description\nMultiple lines\n\nEnd")
                         .setUriString(
                                 "https://127.0.0.1:8080/greeting?name=%3C%2Fp%3E%3Cscript%3Ealert%281%29%3B%3C%2Fscript%3E%3Cp%3")
                         .setAttack("</p><script>alert(1);</script><p>")
                         .setEvidence("</p><script>alert(1);</script><p>")
-                        .setRequestBody(
+                        .setRequestHeader(
+                                "GET https://127.0.0.1:8080/greeting?name=%3C%2Fp%3E%3Cscript%3Ealert%281%29%3B%3C%2Fscript%3E%3Cp%3E HTTP/1.1\n"
+                                        + "Host: 127.0.0.1:8080\n"
+                                        + "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:92.0) Gecko/20100101 Firefox/92.0\n"
+                                        + "Pragma: no-cache\n"
+                                        + "Cache-Control: no-cache\n"
+                                        + "Referer: https://127.0.0.1:8080/hello\n"
+                                        + "Cookie: JSESSIONID=38AA1F7A61982DF1073D7F43A3707798; locale=de\n"
+                                        + "Content-Length: 0\n")
+                        .setResponseHeader(
                                 "HTTP/1.1 200\n"
                                         + "Set-Cookie: locale=de; HttpOnly; SameSite=strict\n"
                                         + "X-Content-Type-Options: nosniff\n"
@@ -207,8 +217,7 @@ class SarifReportApiIntegrationTest {
         Alert cspAlert =
                 newAlertBuilder()
                         .setName("CSP")
-                        .setUriString(
-                                "https://127.0.0.1:8080")
+                        .setUriString("https://127.0.0.1:8080")
                         .setDescription("CSP Description")
                         .setRisk(Alert.RISK_MEDIUM)
                         .build();
