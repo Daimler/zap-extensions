@@ -33,64 +33,63 @@ public class SarifGuid {
     private String guid;
 
     private SarifGuid() {
-    	// force to use factory methods
+        // force to use factory methods
     }
-    
+
     public static SarifGuid createByAlert(Alert alert) {
         StringBuilder sb = new StringBuilder();
         sb.append("owasp-zap.sarif-guuid:");
         sb.append(alert.getPluginId());
         sb.append(":");
         sb.append(alert.getCweId());
-        
+
         String string = sb.toString();
 
         SarifGuid sarifGuid = createByIdentifier(string);
-        
+
         return sarifGuid;
     }
 
     /**
      * Creates a SARFI guid - by using only the given id
+     *
      * @param identifier
      * @return guid
      */
-	public static SarifGuid createByIdentifier(String identifier) {
-		SarifGuid sarifGuid = new SarifGuid();
-		UUID nameBasedUUID = UUID.nameUUIDFromBytes(identifier.getBytes());
+    public static SarifGuid createByIdentifier(String identifier) {
+        SarifGuid sarifGuid = new SarifGuid();
+        UUID nameBasedUUID = UUID.nameUUIDFromBytes(identifier.getBytes());
         sarifGuid.guid = nameBasedUUID.toString();
-		return sarifGuid;
-	}
+        return sarifGuid;
+    }
 
-	/**
-	 * Creates a SARFI guid - by using data from provider (name, version) and the given id
-	 * @param id
-	 * @param provider
-	 * @return guid
-	 */
-	public static SarifGuid createByProvider(String id, SarifToolDataProvider provider) {
-		String identifier = "name:"+provider.getName()+":"+provider.getVersion()+":"+id;
-		return createByIdentifier(identifier);
-	}
-	
+    /**
+     * Creates a SARFI guid - by using data from provider (name, version) and the given id
+     *
+     * @param id
+     * @param provider
+     * @return guid
+     */
+    public static SarifGuid createByProvider(String id, SarifToolDataProvider provider) {
+        String identifier = "name:" + provider.getName() + ":" + provider.getVersion() + ":" + id;
+        return createByIdentifier(identifier);
+    }
+
     public String getGuid() {
         return guid;
     }
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(guid);
-	}
+    @Override
+    public int hashCode() {
+        return Objects.hash(guid);
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		SarifGuid other = (SarifGuid) obj;
-		return Objects.equals(guid, other.guid);
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        SarifGuid other = (SarifGuid) obj;
+        return Objects.equals(guid, other.guid);
+    }
 }

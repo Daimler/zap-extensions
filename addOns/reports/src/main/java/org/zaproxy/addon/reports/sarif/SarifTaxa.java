@@ -21,19 +21,19 @@ package org.zaproxy.addon.reports.sarif;
 
 public class SarifTaxa {
 
-	private SarifGuid sarifGUID;
-	private String id;
+    private SarifGuid sarifGUID;
+    private String id;
 
-	public SarifTaxa(SarifGuid sarifGUID, String identifier) {
-		this.sarifGUID = sarifGUID;
-		this.id = identifier;
-	}
+    public SarifTaxa(SarifGuid sarifGUID, String identifier) {
+        this.sarifGUID = sarifGUID;
+        this.id = identifier;
+    }
 
-	public String getGUID() {
-		return sarifGUID.getGuid();
-	}
+    public String getGUID() {
+        return sarifGUID.getGuid();
+    }
 
-	public String getId() {
-		return id;
-	}
+    public String getId() {
+        return id;
+    }
 }

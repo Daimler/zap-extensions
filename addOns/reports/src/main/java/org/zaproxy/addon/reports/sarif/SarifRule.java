@@ -29,119 +29,119 @@ import org.parosproxy.paros.core.scanner.Alert;
 
 public class SarifRule implements Comparable<SarifRule> {
 
-	private Alert alert;
-	private SarifRuleProperties ruleProperties;
-	private List<SarifRuleRelationShip> relationShips;
+    private Alert alert;
+    private SarifRuleProperties ruleProperties;
+    private List<SarifRuleRelationShip> relationShips;
 
-	public SarifRule(Alert alert) {
-		requireNonNull(alert, "alert parameter may not be null!");
-		this.alert = alert;
-		this.ruleProperties = new SarifRuleProperties();
-	}
+    public SarifRule(Alert alert) {
+        requireNonNull(alert, "alert parameter may not be null!");
+        this.alert = alert;
+        this.ruleProperties = new SarifRuleProperties();
+    }
 
-	public SarifLevel getDefaultLevel() {
-		return SarifLevel.fromAlertRisk(alert.getRisk());
-	}
+    public SarifLevel getDefaultLevel() {
+        return SarifLevel.fromAlertRisk(alert.getRisk());
+    }
 
-	public String getId() {
-		return "" + alert.getPluginId();
-	}
+    public String getId() {
+        return "" + alert.getPluginId();
+    }
 
-	public String getName() {
-		return alert.getName();
-	}
+    public String getName() {
+        return alert.getName();
+    }
 
-	public String getFullDescription() {
-		return alert.getDescription();
-	}
+    public String getFullDescription() {
+        return alert.getDescription();
+    }
 
-	public String getShortDescription() {
-		return alert.getName();
-	}
+    public String getShortDescription() {
+        return alert.getName();
+    }
 
-	public SarifRuleProperties getProperties() {
-		return ruleProperties;
-	}
+    public SarifRuleProperties getProperties() {
+        return ruleProperties;
+    }
 
-	@Override
-	public int compareTo(SarifRule o) {
-		return alert.getPluginId() - o.alert.getPluginId();
-	}
+    @Override
+    public int compareTo(SarifRule o) {
+        return alert.getPluginId() - o.alert.getPluginId();
+    }
 
-	public List<SarifRuleRelationShip> getRelationShips() {
-		if (relationShips == null) {
-			relationShips = createRelationShips();
-		}
-		return relationShips;
-	}
+    public List<SarifRuleRelationShip> getRelationShips() {
+        if (relationShips == null) {
+            relationShips = createRelationShips();
+        }
+        return relationShips;
+    }
 
-	private List<SarifRuleRelationShip> createRelationShips() {
-		List<SarifRuleRelationShip> list = new ArrayList<>();
-		/* CWE relationship */
-		if (alert.getCweId() > 0) {
+    private List<SarifRuleRelationShip> createRelationShips() {
+        List<SarifRuleRelationShip> list = new ArrayList<>();
+        /* CWE relationship */
+        if (alert.getCweId() > 0) {
 
-			SarifRuleRelationShip cweRelation = new SarifRuleRelationShip();
-			cweRelation.kinds.add("superset");
-			cweRelation.target.sarifGuid = SarifGuid.createByAlert(alert);
-			cweRelation.target.id = "" + alert.getCweId();
-			cweRelation.target.toolComponent = SarifToolData.INSTANCE.getCwe();
+            SarifRuleRelationShip cweRelation = new SarifRuleRelationShip();
+            cweRelation.kinds.add("superset");
+            cweRelation.target.sarifGuid = SarifGuid.createByAlert(alert);
+            cweRelation.target.id = "" + alert.getCweId();
+            cweRelation.target.toolComponent = SarifToolData.INSTANCE.getCwe();
 
-			list.add(cweRelation);
-		}
-		return list;
-	}
+            list.add(cweRelation);
+        }
+        return list;
+    }
 
-	public class SarifRuleRelationShip {
-		List<String> kinds = new ArrayList<>();
-		SarifRuleRelationShipTarget target = new SarifRuleRelationShipTarget();
+    public class SarifRuleRelationShip {
+        List<String> kinds = new ArrayList<>();
+        SarifRuleRelationShipTarget target = new SarifRuleRelationShipTarget();
 
-		public SarifRuleRelationShipTarget getTarget() {
-			return target;
-		}
+        public SarifRuleRelationShipTarget getTarget() {
+            return target;
+        }
 
-		public List<String> getKinds() {
-			return kinds;
-		}
-	}
+        public List<String> getKinds() {
+            return kinds;
+        }
+    }
 
-	public class SarifRuleRelationShipTarget {
-		SarifToolComponent toolComponent;
-		SarifGuid sarifGuid;
-		String id;
+    public class SarifRuleRelationShipTarget {
+        SarifToolComponent toolComponent;
+        SarifGuid sarifGuid;
+        String id;
 
-		public SarifToolComponent getToolComponent() {
-			return toolComponent;
-		}
+        public SarifToolComponent getToolComponent() {
+            return toolComponent;
+        }
 
-		public String getGuid() {
-			return sarifGuid.getGuid();
-		}
+        public String getGuid() {
+            return sarifGuid.getGuid();
+        }
 
-		public String getId() {
-			return id;
-		}
-	}
+        public String getId() {
+            return id;
+        }
+    }
 
-	public class SarifRuleProperties {
-		public Collection<String> getReferences() {
-			return Arrays.asList(alert.getReference());
-		}
+    public class SarifRuleProperties {
+        public Collection<String> getReferences() {
+            return Arrays.asList(alert.getReference());
+        }
 
-		public String getConfidence() {
-			switch (alert.getConfidence()) {
-			case Alert.CONFIDENCE_FALSE_POSITIVE:
-				return "false-positive";
-			case Alert.CONFIDENCE_MEDIUM:
-				return "medium";
-			case Alert.CONFIDENCE_HIGH:
-				return "high";
-			case Alert.CONFIDENCE_LOW:
-				return "low";
-			case Alert.CONFIDENCE_USER_CONFIRMED:
-				return "confirmed";
-			default:
-				return "unknown";
-			}
-		}
-	}
+        public String getConfidence() {
+            switch (alert.getConfidence()) {
+                case Alert.CONFIDENCE_FALSE_POSITIVE:
+                    return "false-positive";
+                case Alert.CONFIDENCE_MEDIUM:
+                    return "medium";
+                case Alert.CONFIDENCE_HIGH:
+                    return "high";
+                case Alert.CONFIDENCE_LOW:
+                    return "low";
+                case Alert.CONFIDENCE_USER_CONFIRMED:
+                    return "confirmed";
+                default:
+                    return "unknown";
+            }
+        }
+    }
 }
