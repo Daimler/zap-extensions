@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
 import org.parosproxy.paros.core.scanner.Alert;
 import org.parosproxy.paros.network.HttpHeaderField;
 import org.parosproxy.paros.network.HttpMessage;
@@ -31,235 +32,226 @@ import org.parosproxy.paros.network.HttpResponseHeader;
 
 public class SarifResult {
 
-    private SarifLevel level = SarifLevel.NONE;
-    private SarifMessage message = new SarifMessage();
-    private List<SarifResultLocation> locations = new ArrayList<>();
-    private String ruleId = "0";
-    private SarifWebRequest webRequest = new SarifWebRequest();
-    private SarifWebResponse webResponse = new SarifWebResponse();
+	private SarifLevel level = SarifLevel.NONE;
+	private SarifMessage message = new SarifMessage();
+	private List<SarifResultLocation> locations = new ArrayList<>();
+	private String ruleId = "0";
+	private SarifWebRequest webRequest = new SarifWebRequest();
+	private SarifWebResponse webResponse = new SarifWebResponse();
 
-    public SarifWebRequest getWebRequest() {
-        return webRequest;
-    }
+	public SarifWebRequest getWebRequest() {
+		return webRequest;
+	}
 
-    public SarifWebResponse getWebResponse() {
-        return webResponse;
-    }
+	public SarifWebResponse getWebResponse() {
+		return webResponse;
+	}
 
-    public SarifResult(Alert alert) {
-        /* base parts */
-        level = SarifLevel.fromAlertRisk(alert.getRisk());
-        ruleId = "" + alert.getPluginId();
-        message.text = alert.getName();
+	public SarifResult(Alert alert) {
+		/* base parts */
+		level = SarifLevel.fromAlertRisk(alert.getRisk());
+		ruleId = "" + alert.getPluginId();
+		message.text = alert.getName();
 
-        /* location */
-        SarifResultLocation resultLocation = new SarifResultLocation();
+		/* location */
+		SarifResultLocation resultLocation = new SarifResultLocation();
 
-        resultLocation.physicalLocation.artifactLocation.uri = alert.getUri();
-        resultLocation.properties.attack = alert.getAttack();
-        resultLocation.properties.evidence = alert.getEvidence();
+		resultLocation.physicalLocation.artifactLocation.uri = alert.getUri();
+		resultLocation.properties.attack = alert.getAttack();
+		resultLocation.properties.evidence = alert.getEvidence();
 
-        locations.add(resultLocation);
+		locations.add(resultLocation);
 
-        HttpMessage httpMessage = alert.getMessage();
+		HttpMessage httpMessage = alert.getMessage();
 
-        /* ----------- */
-        /* Web request */
-        /* ----------- */
-        /*
-         * FIXME de-jcup: sarif supports two nodes: text +binary. we should have some
-         * logic here to only set ONE...
-         */
-        webRequest.body.text = httpMessage.getRequestBody().toString();
+		/* ----------- */
+		/* Web request */
+		/* ----------- */
+		/*
+		 * FIXME de-jcup: sarif supports two nodes: text +binary. we should have some
+		 * logic here to only set ONE...
+		 */
+		webRequest.body.text = httpMessage.getRequestBody().toString();
 
-        HttpRequestHeader requestHeader = httpMessage.getRequestHeader();
-        List<HttpHeaderField> requestHeaders = requestHeader.getHeaders();
-        for (HttpHeaderField headerField : requestHeaders) {
-            webRequest.headers.put(headerField.getName(), headerField.getValue());
-        }
-        webRequest.protocol = requestHeader.getURI().getScheme().toUpperCase();
-        webRequest.version = requestHeader.getVersion();
+		HttpRequestHeader requestHeader = httpMessage.getRequestHeader();
+		List<HttpHeaderField> requestHeaders = requestHeader.getHeaders();
+		for (HttpHeaderField headerField : requestHeaders) {
+			webRequest.headers.put(headerField.getName(), headerField.getValue());
+		}
+		ProtocolData requestProtocolData = ProtocolData.parseProtocolAndVersion(requestHeader.getVersion());
+		webRequest.protocol = requestProtocolData.getProtocol();
+		webRequest.version = requestProtocolData.getVersion();
+		webRequest.target= requestHeader.getURI().toString();
+		webRequest.method = requestHeader.getMethod();
+		/* ------------ */
+		/* Web response */
+		/* ------------ */
+		/*
+		 * FIXME de-jcup: sarif supports two nodes: text +binary. we should have some
+		 * logic here to only set ONE...
+		 */
+		webResponse.body.text = httpMessage.getResponseBody().toString();
 
-        /* ------------ */
-        /* Web response */
-        /* ------------ */
-        /*
-         * FIXME de-jcup: sarif supports two nodes: text +binary. we should have some
-         * logic here to only set ONE...
-         */
-        webResponse.body.text = httpMessage.getResponseBody().toString();
+		HttpResponseHeader responseHeader = httpMessage.getResponseHeader();
+		List<HttpHeaderField> responseHeaders = responseHeader.getHeaders();
+		for (HttpHeaderField headerField : responseHeaders) {
+			webResponse.headers.put(headerField.getName(), headerField.getValue());
+		}
+		webResponse.statusCode = responseHeader.getStatusCode();
+		webResponse.reasonPhrase = responseHeader.getReasonPhrase();
 
-        HttpResponseHeader responseHeader = httpMessage.getResponseHeader();
-        List<HttpHeaderField> responseHeaders = responseHeader.getHeaders();
-        for (HttpHeaderField headerField : responseHeaders) {
-            webResponse.headers.put(headerField.getName(), headerField.getValue());
-        }
-        webResponse.statusCode = responseHeader.getStatusCode();
-        webResponse.reasonPhrase = responseHeader.getReasonPhrase();
+		ProtocolData responseProtocolData = ProtocolData.parseProtocolAndVersion(requestHeader.getVersion());
+		webResponse.protocol = responseProtocolData.getProtocol();
+		webResponse.version = responseProtocolData.getVersion();
+		webResponse.method = requestHeader.getMethod();
+	}
 
-        /* FIXME de-jcup : protocol not set here*/
-        webResponse.version = responseHeader.getVersion();
-    }
+	public String getRuleId() {
+		return ruleId;
+	}
 
-    public String getRuleId() {
-        return ruleId;
-    }
+	public SarifMessage getMessage() {
+		return message;
+	}
 
-    public SarifMessage getMessage() {
-        return message;
-    }
+	public SarifLevel getLevel() {
+		return level;
+	}
 
-    public SarifLevel getLevel() {
-        return level;
-    }
+	public List<SarifResultLocation> getLocations() {
+		return locations;
+	}
 
-    public List<SarifResultLocation> getLocations() {
-        return locations;
-    }
+	public class SarifResultLocation {
+		SarifPhysicalLocation physicalLocation = new SarifPhysicalLocation();
+		SarifResultLocationProperties properties = new SarifResultLocationProperties();
 
-    public class SarifResultLocation {
-        SarifPhysicalLocation physicalLocation = new SarifPhysicalLocation();
-        SarifResultLocationProperties properties = new SarifResultLocationProperties();
+		public SarifPhysicalLocation getPhysicalLocation() {
+			return physicalLocation;
+		}
 
-        public SarifPhysicalLocation getPhysicalLocation() {
-            return physicalLocation;
-        }
+		public SarifResultLocationProperties getProperties() {
+			return properties;
+		}
+	}
 
-        public SarifResultLocationProperties getProperties() {
-            return properties;
-        }
-    }
+	public class SarifResultLocationProperties {
+		private String attack;
+		private String evidence;
 
-    public class SarifResultLocationProperties {
-        private String attack;
-        private String evidence;
+		public String getAttack() {
+			return attack;
+		}
 
-        public String getAttack() {
-            return attack;
-        }
+		public String getEvidence() {
+			return evidence;
+		}
+	}
 
-        public String getEvidence() {
-            return evidence;
-        }
-    }
+	public class SarifPhysicalLocation {
+		SarifArtifactLocation artifactLocation = new SarifArtifactLocation();
 
-    public class SarifPhysicalLocation {
-        SarifArtifactLocation artifactLocation = new SarifArtifactLocation();
+		public SarifArtifactLocation getArtifactLocation() {
+			return artifactLocation;
+		}
+	}
 
-        public SarifArtifactLocation getArtifactLocation() {
-            return artifactLocation;
-        }
-    }
+	public class SarifArtifactLocation {
+		private String uri;
 
-    public class SarifArtifactLocation {
-        private String uri;
+		public String getUri() {
+			return uri;
+		}
+	}
 
-        public String getUri() {
-            return uri;
-        }
-    }
+	public class SarifBody {
 
-    public class SarifMessage {
-        private String text;
+		private String text;
+		private String binary;
 
-        public String getText() {
-            return text;
-        }
-    }
+		public String getText() {
+			return text;
+		}
 
-    public class SarifBody {
+		public String getBinary() {
+			return binary;
+		}
+	}
 
-        private String text;
-        private String binary;
+	public class SarifWebRequest {
+		private String protocol;
+		private String version;
+		private String target;
+		private String method;
+		private Map<String, String> headers = new TreeMap<>();
+		private SarifBody body = new SarifBody();
 
-        public String getText() {
-            return text;
-        }
+		public String getProtocol() {
+			return protocol;
+		}
 
-        public String getBinary() {
-            return binary;
-        }
-    }
+		public String getVersion() {
+			return version;
+		}
 
-    public class SarifWebRequest {
-        private String protocol;
-        private String version;
-        private String target;
-        private String method;
-        private Map<String, String> headers = new TreeMap<>();
-        private SarifBody body = new SarifBody();
+		public String getTarget() {
+			return target;
+		}
 
-        public String getProtocol() {
-            return protocol;
-        }
+		public String getMethod() {
+			return method;
+		}
 
-        public String getVersion() {
-            return version;
-        }
+		public Map<String, String> getHeaders() {
+			return headers;
+		}
 
-        public String getTarget() {
-            return target;
-        }
+		public SarifBody getBody() {
+			return body;
+		}
+	}
 
-        public String getMethod() {
-            return method;
-        }
+	public class SarifWebResponse {
+		private String protocol;
+		private String version;
+		private String method;
+		private Map<String, String> headers = new TreeMap<>();
+		private SarifBody body = new SarifBody();
 
-        public Map<String, String> getHeaders() {
-            return headers;
-        }
+		private int statusCode;
+		private String reasonPhrase;
+		private boolean noResponseReceived;
 
-        public SarifBody getBody() {
-            return body;
-        }
-    }
+		public String getProtocol() {
+			return protocol;
+		}
 
-    public class SarifWebResponse {
-        private String protocol;
-        private String version;
-        private String target;
-        private String method;
-        private Map<String, String> headers = new TreeMap<>();
-        private SarifBody body = new SarifBody();
+		public String getReasonPhrase() {
+			return reasonPhrase;
+		}
 
-        private int statusCode;
-        private String reasonPhrase;
-        private boolean noResponseReceived;
+		public String getVersion() {
+			return version;
+		}
 
-        public String getProtocol() {
-            return protocol;
-        }
+		public String getMethod() {
+			return method;
+		}
 
-        public String getReasonPhrase() {
-            return reasonPhrase;
-        }
+		public Map<String, String> getHeaders() {
+			return headers;
+		}
 
-        public String getVersion() {
-            return version;
-        }
+		public SarifBody getBody() {
+			return body;
+		}
 
-        public String getTarget() {
-            return target;
-        }
+		public int getStatusCode() {
+			return statusCode;
+		}
 
-        public String getMethod() {
-            return method;
-        }
-
-        public Map<String, String> getHeaders() {
-            return headers;
-        }
-
-        public SarifBody getBody() {
-            return body;
-        }
-
-        public int getStatusCode() {
-            return statusCode;
-        }
-
-        public boolean isNoResponseReceived() {
-            return noResponseReceived;
-        }
-    }
+		public boolean isNoResponseReceived() {
+			return noResponseReceived;
+		}
+	}
 }

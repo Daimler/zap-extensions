@@ -29,113 +29,119 @@ import org.parosproxy.paros.core.scanner.Alert;
 
 public class SarifRule implements Comparable<SarifRule> {
 
-    private Alert alert;
-    private SarifRuleProperties ruleProperties;
-    private List<SarifRuleRelationShip> relationShips;
+	private Alert alert;
+	private SarifRuleProperties ruleProperties;
+	private List<SarifRuleRelationShip> relationShips;
 
-    public SarifRule(Alert alert) {
-        requireNonNull(alert, "alert parameter may not be null!");
-        this.alert = alert;
-        this.ruleProperties = new SarifRuleProperties();
-    }
+	public SarifRule(Alert alert) {
+		requireNonNull(alert, "alert parameter may not be null!");
+		this.alert = alert;
+		this.ruleProperties = new SarifRuleProperties();
+	}
 
-    public String getId() {
-        return "" + alert.getPluginId();
-    }
+	public SarifLevel getDefaultLevel() {
+		return SarifLevel.fromAlertRisk(alert.getRisk());
+	}
 
-    public String getName() {
-        return alert.getName();
-    }
+	public String getId() {
+		return "" + alert.getPluginId();
+	}
 
-    public String getFullDescription() {
-        return alert.getDescription();
-    }
+	public String getName() {
+		return alert.getName();
+	}
 
-    public String getShortDescription() {
-        return alert.getName();
-    }
+	public String getFullDescription() {
+		return alert.getDescription();
+	}
 
-    public SarifRuleProperties getProperties() {
-        return ruleProperties;
-    }
+	public String getShortDescription() {
+		return alert.getName();
+	}
 
-    @Override
-    public int compareTo(SarifRule o) {
-        return alert.getPluginId() - o.alert.getPluginId();
-    }
+	public SarifRuleProperties getProperties() {
+		return ruleProperties;
+	}
 
-    public List<SarifRuleRelationShip> getRelationShips() {
-        if (relationShips == null) {
-            relationShips = createRelationShips();
-        }
-        return relationShips;
-    }
+	@Override
+	public int compareTo(SarifRule o) {
+		return alert.getPluginId() - o.alert.getPluginId();
+	}
 
-    private List<SarifRuleRelationShip> createRelationShips() {
-        List<SarifRuleRelationShip> list = new ArrayList<>();
-        /* CWE relationship */
-        if (alert.getCweId() > 0) {
-            SarifRuleRelationShip cweRelation = new SarifRuleRelationShip();
-            cweRelation.kinds.add("superset");
-            cweRelation.target.sarifGuid = new SarifGuid(alert);
-            cweRelation.target.id = "" + alert.getCweId();
-            cweRelation.target.toolComponent = DefaultSarifToolComponents.CWE;
-            list.add(cweRelation);
-        }
-        return list;
-    }
+	public List<SarifRuleRelationShip> getRelationShips() {
+		if (relationShips == null) {
+			relationShips = createRelationShips();
+		}
+		return relationShips;
+	}
 
-    public class SarifRuleRelationShip {
-        List<String> kinds = new ArrayList<>();
-        SarifRuleRelationShipTarget target = new SarifRuleRelationShipTarget();
+	private List<SarifRuleRelationShip> createRelationShips() {
+		List<SarifRuleRelationShip> list = new ArrayList<>();
+		/* CWE relationship */
+		if (alert.getCweId() > 0) {
 
-        public SarifRuleRelationShipTarget getTarget() {
-            return target;
-        }
+			SarifRuleRelationShip cweRelation = new SarifRuleRelationShip();
+			cweRelation.kinds.add("superset");
+			cweRelation.target.sarifGuid = SarifGuid.createByAlert(alert);
+			cweRelation.target.id = "" + alert.getCweId();
+			cweRelation.target.toolComponent = SarifToolData.INSTANCE.getCwe();
 
-        public List<String> getKinds() {
-            return kinds;
-        }
-    }
+			list.add(cweRelation);
+		}
+		return list;
+	}
 
-    public class SarifRuleRelationShipTarget {
-        SarifToolComponent toolComponent;
-        SarifGuid sarifGuid;
-        String id;
+	public class SarifRuleRelationShip {
+		List<String> kinds = new ArrayList<>();
+		SarifRuleRelationShipTarget target = new SarifRuleRelationShipTarget();
 
-        public SarifToolComponent getToolComponent() {
-            return toolComponent;
-        }
+		public SarifRuleRelationShipTarget getTarget() {
+			return target;
+		}
 
-        public String getGuid() {
-            return sarifGuid.getGuid();
-        }
+		public List<String> getKinds() {
+			return kinds;
+		}
+	}
 
-        public String getId() {
-            return id;
-        }
-    }
+	public class SarifRuleRelationShipTarget {
+		SarifToolComponent toolComponent;
+		SarifGuid sarifGuid;
+		String id;
 
-    public class SarifRuleProperties {
-        public Collection<String> getReferences() {
-            return Arrays.asList(alert.getReference());
-        }
+		public SarifToolComponent getToolComponent() {
+			return toolComponent;
+		}
 
-        public String getConfidence() {
-            switch (alert.getConfidence()) {
-                case Alert.CONFIDENCE_FALSE_POSITIVE:
-                    return "false-positive";
-                case Alert.CONFIDENCE_MEDIUM:
-                    return "medium";
-                case Alert.CONFIDENCE_HIGH:
-                    return "high";
-                case Alert.CONFIDENCE_LOW:
-                    return "low";
-                case Alert.CONFIDENCE_USER_CONFIRMED:
-                    return "confirmed";
-                default:
-                    return "unknown";
-            }
-        }
-    }
+		public String getGuid() {
+			return sarifGuid.getGuid();
+		}
+
+		public String getId() {
+			return id;
+		}
+	}
+
+	public class SarifRuleProperties {
+		public Collection<String> getReferences() {
+			return Arrays.asList(alert.getReference());
+		}
+
+		public String getConfidence() {
+			switch (alert.getConfidence()) {
+			case Alert.CONFIDENCE_FALSE_POSITIVE:
+				return "false-positive";
+			case Alert.CONFIDENCE_MEDIUM:
+				return "medium";
+			case Alert.CONFIDENCE_HIGH:
+				return "high";
+			case Alert.CONFIDENCE_LOW:
+				return "low";
+			case Alert.CONFIDENCE_USER_CONFIRMED:
+				return "confirmed";
+			default:
+				return "unknown";
+			}
+		}
+	}
 }

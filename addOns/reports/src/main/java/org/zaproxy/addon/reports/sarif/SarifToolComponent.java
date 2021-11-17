@@ -20,7 +20,19 @@
 package org.zaproxy.addon.reports.sarif;
 
 public interface SarifToolComponent {
-    String getGuid();
+	
+	/**
+	 * Return the GUID for the component
+	 * 
+	 * @return guid
+	 */
+	String getGuid();
 
-    String getName();
+	/**
+	 * Return the (short) name for the component
+	 * 
+	 * @return name
+	 */
+	String getName();
+
 }

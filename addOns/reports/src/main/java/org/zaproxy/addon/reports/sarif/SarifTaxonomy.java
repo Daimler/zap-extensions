@@ -19,4 +19,66 @@
  */
 package org.zaproxy.addon.reports.sarif;
 
-public class SarifTaxonomy {}
+import java.util.ArrayList;
+import java.util.Collection;
+
+public class SarifTaxonomy implements SarifTaxonomyDataProvider {
+
+	private SarifTaxonomyDataProvider provider;
+	private Collection<SarifTaxa> taxa = new ArrayList<>();
+
+	public SarifTaxonomy(SarifTaxonomyDataProvider provider) {
+		this.provider = provider;
+	}
+
+	public String getName() {
+		return provider.getName();
+	}
+
+	public SarifMessage getShortDescription() {
+		return provider.getShortDescription();
+	}
+
+	public String getDownloadUri() {
+		return provider.getDownloadUri();
+	}
+
+	public String getInformationUri() {
+		return provider.getInformationUri();
+	}
+
+	public boolean isComprehensive() {
+		return provider.isComprehensive();
+	}
+
+	public String getVersion() {
+		return provider.getVersion();
+	}
+
+	public void addTaxa(String taxonomyId) {
+		SarifGuid taxaGUID = SarifGuid
+				.createByIdentifier("taxonomy:" + getName() + ":" + getVersion() + ":" + taxonomyId);
+		taxa.add(new SarifTaxa(taxaGUID, taxonomyId));
+
+	}
+
+	public Collection<SarifTaxa> getTaxa() {
+		return taxa;
+	}
+
+	@Override
+	public String getGuid() {
+		return provider.getGuid();
+	}
+
+	@Override
+	public String getReleaseDateUtc() {
+		return provider.getReleaseDateUtc();
+	}
+
+	@Override
+	public String getOrganization() {
+		return provider.getOrganization();
+	}
+
+}
