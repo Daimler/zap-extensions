@@ -22,17 +22,17 @@ package org.zaproxy.addon.reports.sarif;
 /**
  * Internal class to hold protocol and version separated. Provides also parse functionality inside.
  */
-class ProtocolData {
+class SarifProtocolData {
 
     private String protocol;
     private String version;
 
-    private ProtocolData() {
+    private SarifProtocolData() {
         // private constructor - so static method must be used
     }
 
-    public static ProtocolData parseProtocolAndVersion(String versionString) {
-        ProtocolData data = new ProtocolData();
+    public static SarifProtocolData parseProtocolAndVersion(String versionString) {
+        SarifProtocolData data = new SarifProtocolData();
         // assume it is something like HTTP/1.1 - so $protocol/$version
         if (versionString == null || versionString.length() < 3) {
             return data;

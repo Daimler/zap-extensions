@@ -28,6 +28,8 @@ import static org.mockito.Mockito.withSettings;
 import static org.zaproxy.addon.reports.TestAlertBuilder.newAlertBuilder;
 import static org.zaproxy.addon.reports.TestAlertNodeBuilder.newAlertNodeBuilder;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -105,44 +107,19 @@ class SarifReportIntegrationTest {
         assertNotNull(sarifReportJSON);
         System.out.println(sarifReportJSON);
 
+        JsonNode rootNode = assertValidJSON(sarifReportJSON);
+        JsonNode firstRun = assertOneRunOnly(rootNode);
+        assertResults(firstRun);
+        assertTaxonomies(firstRun);
+    }
+
+    private JsonNode assertValidJSON(String sarifReportJSON)
+            throws JsonProcessingException, JsonMappingException {
         ObjectMapper objectMapper = new ObjectMapper();
-        // test it's valid JSON by reading tree
-        JsonNode rootNode = objectMapper.readTree(sarifReportJSON);
+        return objectMapper.readTree(sarifReportJSON);
+    }
 
-        // runs
-        JsonNode runs = rootNode.get("runs");
-        assertTrue(runs.isArray());
-        ArrayNode runsArray = (ArrayNode) runs;
-        assertEquals(1, runsArray.size());
-        JsonNode firstRun = runsArray.get(0);
-
-        // results
-        JsonNode results = firstRun.get("results");
-        assertTrue(results.isArray());
-        ArrayNode resultsArray = (ArrayNode) results;
-        assertEquals(2, resultsArray.size());
-        Iterator<JsonNode> resultiterator = resultsArray.iterator();
-        JsonNode firstResult = resultiterator.next();
-        JsonNode secondResult = resultiterator.next();
-
-        assertEquals("error", firstResult.get("level").asText());
-        assertEquals("40012", firstResult.get("ruleId").asText());
-
-        assertEquals("warning", secondResult.get("level").asText());
-        assertEquals("1", secondResult.get("ruleId").asText());
-
-        JsonNode webRequest = firstResult.get("webRequest");
-        assertEquals("HTTP", webRequest.get("protocol").asText());
-        assertEquals("1.1", webRequest.get("version").asText());
-        assertEquals("GET", webRequest.get("method").asText());
-
-        JsonNode webResponse = firstResult.get("webResponse");
-        assertEquals("HTTP", webResponse.get("protocol").asText());
-        assertEquals("1.1", webResponse.get("version").asText());
-        assertEquals("GET", webResponse.get("method").asText());
-        assertEquals("200", webResponse.get("statusCode").asText());
-
-        // taxonomies
+    private void assertTaxonomies(JsonNode firstRun) {
         JsonNode taxonomies = firstRun.get("taxonomies");
         assertTrue(taxonomies.isArray());
         ArrayNode taxonomiesArray = (ArrayNode) taxonomies;
@@ -165,6 +142,52 @@ class SarifReportIntegrationTest {
 
         assertEquals("79", firstTaxa.get("id").asText());
         assertEquals("693", secondTaxa.get("id").asText());
+    }
+
+    private void assertResults(JsonNode firstRun) {
+        JsonNode results = firstRun.get("results");
+        assertTrue(results.isArray());
+        ArrayNode resultsArray = (ArrayNode) results;
+        assertEquals(2, resultsArray.size());
+        Iterator<JsonNode> resultiterator = resultsArray.iterator();
+        JsonNode firstResult = resultiterator.next();
+        JsonNode secondResult = resultiterator.next();
+
+        assertEquals("error", firstResult.get("level").asText());
+        assertEquals("40012", firstResult.get("ruleId").asText());
+
+        assertEquals("warning", secondResult.get("level").asText());
+        assertEquals("1", secondResult.get("ruleId").asText());
+
+        assertWebRequest(firstResult);
+        assertWebResponse(firstResult);
+    }
+
+    private void assertWebResponse(JsonNode firstResult) {
+        JsonNode webResponse = firstResult.get("webResponse");
+        assertEquals("HTTP", webResponse.get("protocol").asText());
+        assertEquals("1.1", webResponse.get("version").asText());
+        assertEquals("GET", webResponse.get("method").asText());
+        assertEquals("200", webResponse.get("statusCode").asText());
+    }
+
+    private void assertWebRequest(JsonNode firstResult) {
+        JsonNode webRequest = firstResult.get("webRequest");
+        assertEquals(
+                "https://127.0.0.1:8080/greeting?name=%3C%2Fp%3E%3Cscript%3Ealert%281%29%3B%3C%2Fscript%3E%3Cp%3E",
+                webRequest.get("target").asText());
+        assertEquals("HTTP", webRequest.get("protocol").asText());
+        assertEquals("1.1", webRequest.get("version").asText());
+        assertEquals("GET", webRequest.get("method").asText());
+    }
+
+    private JsonNode assertOneRunOnly(JsonNode rootNode) {
+        JsonNode runs = rootNode.get("runs");
+        assertTrue(runs.isArray());
+        ArrayNode runsArray = (ArrayNode) runs;
+        assertEquals(1, runsArray.size());
+        JsonNode firstRun = runsArray.get(0);
+        return firstRun;
     }
 
     private Context createTestContext(ReportData reportData) {

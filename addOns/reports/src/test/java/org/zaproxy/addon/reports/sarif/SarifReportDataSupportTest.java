@@ -20,8 +20,8 @@
 package org.zaproxy.addon.reports.sarif;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.zaproxy.addon.reports.TestAlertBuilder.*;
-import static org.zaproxy.addon.reports.TestAlertNodeBuilder.*;
+import static org.zaproxy.addon.reports.TestAlertBuilder.newAlertBuilder;
+import static org.zaproxy.addon.reports.TestAlertNodeBuilder.newAlertNodeBuilder;
 
 import java.util.Arrays;
 import java.util.Collection;

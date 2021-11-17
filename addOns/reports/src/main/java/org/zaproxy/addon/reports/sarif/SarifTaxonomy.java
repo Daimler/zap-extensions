@@ -31,26 +31,32 @@ public class SarifTaxonomy implements SarifTaxonomyDataProvider {
         this.provider = provider;
     }
 
+    @Override
     public String getName() {
         return provider.getName();
     }
 
+    @Override
     public SarifMessage getShortDescription() {
         return provider.getShortDescription();
     }
 
+    @Override
     public String getDownloadUri() {
         return provider.getDownloadUri();
     }
 
+    @Override
     public String getInformationUri() {
         return provider.getInformationUri();
     }
 
+    @Override
     public boolean isComprehensive() {
         return provider.isComprehensive();
     }
 
+    @Override
     public String getVersion() {
         return provider.getVersion();
     }

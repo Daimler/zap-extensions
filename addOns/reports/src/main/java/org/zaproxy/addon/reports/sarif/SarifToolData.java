@@ -153,6 +153,7 @@ public class SarifToolData {
         private String taxonomyDownloadUri;
         private boolean taxonomyComprehensive;
 
+        @Override
         public String getOrganization() {
             return organization;
         }

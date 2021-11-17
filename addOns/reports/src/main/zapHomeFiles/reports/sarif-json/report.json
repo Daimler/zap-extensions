@@ -3,12 +3,12 @@
       {
          "results": [ [#th:block th:each="sarifResult, sarifResultState: ${sarifSupport.results}"]
             {
-               "level": [[${sarifResult.level.value}]],
+               "level": "[(${sarifResult.level.value})]",
                "locations": [[#th:block th:each="sarifLocation, sarifLocationState: ${sarifResult.locations}"]
                   {
                      "physicalLocation": {
                         "artifactLocation": {
-                           "uri": [[${sarifLocation.physicalLocation.artifactLocation.uri}]]
+                           "uri": "[(${sarifLocation.physicalLocation.artifactLocation.uri})]"
                         }
                      },
                      "properties": {
@@ -24,7 +24,7 @@
                "webRequest": {[#th:block th:with="webRequest=${sarifResult.webRequest}"]
                    "protocol": [[${webRequest.protocol}]],
                    "version": [[${webRequest.version}]],
-                   "target": [[${webRequest.target}]],
+                   "target": "[(${webRequest.target})]",
                    "method": [[${webRequest.method}]],
                    "headers": {[#th:block th:each="header, headerState: ${webRequest.headers}"]
                        [[${header.key}]] : [[${header.value}]][#th:block th:if="${! headerState.last}"],[/th:block]

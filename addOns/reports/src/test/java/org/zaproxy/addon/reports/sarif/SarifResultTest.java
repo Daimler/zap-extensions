@@ -19,7 +19,7 @@
  */
 package org.zaproxy.addon.reports.sarif;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.zaproxy.addon.reports.TestAlertBuilder.newAlertBuilder;
 
 import org.junit.jupiter.api.Test;
@@ -37,6 +37,7 @@ class SarifResultTest {
         Alert alert =
                 newAlertBuilder()
                         .setRisk(Alert.RISK_HIGH)
+                        .setUriString("https://example.com/highrisk")
                         .setDescription("description1")
                         .setEvidence("evidence1")
                         .setAttack("attack1")
@@ -48,7 +49,7 @@ class SarifResultTest {
         SarifResult result = new SarifResult(alert);
 
         /* test */
-        assertEquals(SarifLevel.ERROR.name(), result.getLevel());
+        assertEquals(SarifLevel.ERROR, result.getLevel());
 
         assertEquals(1, result.getLocations().size());
         SarifResultLocation firstLocation = result.getLocations().iterator().next();
@@ -57,9 +58,9 @@ class SarifResultTest {
         SarifArtifactLocation artifactLocation =
                 firstLocation.getPhysicalLocation().getArtifactLocation();
 
-        assertEquals("description1", result.getMessage());
+        assertEquals("name1", result.getMessage().getText());
         assertEquals("12345", result.getRuleId());
-        assertEquals(79, artifactLocation.getUri());
+        assertEquals("https://example.com/highrisk", artifactLocation.getUri());
         // @formatter:on
     }
 }

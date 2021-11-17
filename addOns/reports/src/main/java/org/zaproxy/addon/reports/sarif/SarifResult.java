@@ -77,8 +77,8 @@ public class SarifResult {
         for (HttpHeaderField headerField : requestHeaders) {
             webRequest.headers.put(headerField.getName(), headerField.getValue());
         }
-        ProtocolData requestProtocolData =
-                ProtocolData.parseProtocolAndVersion(requestHeader.getVersion());
+        SarifProtocolData requestProtocolData =
+                SarifProtocolData.parseProtocolAndVersion(requestHeader.getVersion());
         webRequest.protocol = requestProtocolData.getProtocol();
         webRequest.version = requestProtocolData.getVersion();
         webRequest.target = requestHeader.getURI().toString();
@@ -100,8 +100,8 @@ public class SarifResult {
         webResponse.statusCode = responseHeader.getStatusCode();
         webResponse.reasonPhrase = responseHeader.getReasonPhrase();
 
-        ProtocolData responseProtocolData =
-                ProtocolData.parseProtocolAndVersion(requestHeader.getVersion());
+        SarifProtocolData responseProtocolData =
+                SarifProtocolData.parseProtocolAndVersion(requestHeader.getVersion());
         webResponse.protocol = responseProtocolData.getProtocol();
         webResponse.version = responseProtocolData.getVersion();
         webResponse.method = requestHeader.getMethod();
