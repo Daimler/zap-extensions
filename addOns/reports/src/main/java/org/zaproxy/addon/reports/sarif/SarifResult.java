@@ -89,8 +89,12 @@ public class SarifResult {
         /*
          * FIXME de-jcup: sarif supports two nodes: text +binary. we should have some
          * logic here to only set ONE...
+         * 
+         * responseHeader.isText() ?!?!??!?!? 
+         * 
          */
         webResponse.body.text = httpMessage.getResponseBody().toString();
+        httpMessage.getResponseHeader().getNormalisedContentTypeValue();
 
         HttpResponseHeader responseHeader = httpMessage.getResponseHeader();
         List<HttpHeaderField> responseHeaders = responseHeader.getHeaders();
@@ -100,11 +104,14 @@ public class SarifResult {
         webResponse.statusCode = responseHeader.getStatusCode();
         webResponse.reasonPhrase = responseHeader.getReasonPhrase();
 
+        
         SarifProtocolData responseProtocolData =
-                SarifProtocolData.parseProtocolAndVersion(requestHeader.getVersion());
+                SarifProtocolData.parseProtocolAndVersion(responseHeader.getVersion());
         webResponse.protocol = responseProtocolData.getProtocol();
         webResponse.version = responseProtocolData.getVersion();
-        webResponse.method = requestHeader.getMethod();
+        
+        webResponse.noResponseReceived=responseHeader.isConnectionClose();
+        		
     }
 
     public String getRuleId() {
@@ -215,7 +222,6 @@ public class SarifResult {
     public class SarifWebResponse {
         private String protocol;
         private String version;
-        private String method;
         private Map<String, String> headers = new TreeMap<>();
         private SarifBody body = new SarifBody();
 
@@ -233,10 +239,6 @@ public class SarifResult {
 
         public String getVersion() {
             return version;
-        }
-
-        public String getMethod() {
-            return method;
         }
 
         public Map<String, String> getHeaders() {

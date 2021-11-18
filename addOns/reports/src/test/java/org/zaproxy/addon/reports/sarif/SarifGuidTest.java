@@ -20,38 +20,94 @@
 package org.zaproxy.addon.reports.sarif;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashSet;
 import java.util.Set;
+
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class SarifGuidTest {
 
-    @Test
-    void createByIdentifierResultsInGUIDStringWithExpectedLenghtOf36() {
-        /* prepare */
-        String identifier = "i.am.short";
+	@Test
+	void createForTaxaResultsInGUIDStringWithExpectedLenghtOf36() {
+		/* prepare */
+		String identifier = "i.am.short";
 
-        /* execute */
-        SarifGuid result = SarifGuid.createByIdentifier(identifier);
+		SarifTaxonomy taxonomy = Mockito.mock(SarifTaxonomy.class);
 
-        /* test */
-        assertEquals(36, result.getGuid().length());
-    }
+		/* execute */
+		SarifGuid result = SarifGuid.createForTaxa(identifier, taxonomy);
 
-    @Test
-    void createByIdentifierCalledMultipletTimesResultsAlwaysInSameGUIDString() {
-        /* prepare */
-        String identifier = "this.is.my.test.name";
-        Set<String> resultSet = new HashSet<>();
+		/* test */
+		assertEquals(36, result.getGuid().length());
+	}
 
-        /* execute */
-        for (int i = 0; i < 10; i++) {
-            SarifGuid result = SarifGuid.createByIdentifier(identifier);
-            resultSet.add(result.getGuid());
-        }
+	@Test
+	void createForTaxaCalledMultipletTimesResultsAlwaysInSameGUIDString() {
+		/* prepare */
+		String identifier = "this.is.my.test.name";
+		Set<String> resultSet = new HashSet<>();
+		SarifTaxonomy taxonomy = Mockito.mock(SarifTaxonomy.class);
 
-        /* test */
-        assertEquals(1, resultSet.size());
-    }
+		/* execute */
+		for (int i = 0; i < 10; i++) {
+			SarifGuid result = SarifGuid.createForTaxa(identifier, taxonomy);
+			resultSet.add(result.getGuid());
+		}
+
+		/* test */
+		assertEquals(1, resultSet.size());
+	}
+
+	@Test
+	void createForToolcomponentCalledMultipletTimesResultsAlwaysInSameGUIDString() {
+		/* prepare */
+		String identifier = "this.is.my.test.name";
+		Set<String> resultSet = new HashSet<>();
+		SarifTaxonomy taxonomy = Mockito.mock(SarifTaxonomy.class);
+
+		/* execute */
+		for (int i = 0; i < 10; i++) {
+			SarifGuid result = SarifGuid.createForTaxa(identifier, taxonomy);
+			resultSet.add(result.getGuid());
+		}
+
+		/* test */
+		assertEquals(1, resultSet.size());
+	}
+
+	@Test
+	void createCweGuidCalledMultipletTimesResultsAlwaysInSameGUIDString() {
+		/* prepare */
+		int identifier = 79;
+		Set<String> resultSet = new HashSet<>();
+
+		/* execute */
+		for (int i = 0; i < 10; i++) {
+			SarifGuid result = SarifGuid.createCweGuid(identifier);
+			resultSet.add(result.getGuid());
+		}
+
+		/* test */
+		assertEquals(1, resultSet.size());
+	}
+
+	@Test
+	void createCweGuidsForCwe1ToCwe255ResultsAlwaysInDifferentGUIDString() {
+		/* prepare */
+		Set<String> resultSet = new HashSet<>();
+
+		/* execute */
+		for (int i = 1; i < 255; i++) {
+			SarifGuid result = SarifGuid.createCweGuid(i);
+			boolean notAlreadyContainedInSet = resultSet.add(result.getGuid());
+
+			/* test */
+			assertTrue(notAlreadyContainedInSet,
+					"guid:" + result.getGuid() + " was already contained in set, means duplicate detected!");
+		}
+
+	}
 }

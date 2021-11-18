@@ -27,11 +27,12 @@ public class SarifToolData {
     private static final SarifToolDataProvider OWASP_ZAP =
             builder()
                     .setName("OWASP ZAP")
-                    .setTaxonomyVersion("1.0")
-                    . // we use 1.0 here - should normally not change
-                    setTaxonomyComprehensive(true)
+                    .// we use 1.0 here - should normally not change
+                    setTaxonomyVersion("1.0")
+                    .setTaxonomyComprehensive(true)
                     .setShortDescription("OWASP ZED Attack proxy")
                     .setOrganization("OWASP")
+                    .setTaxonomyInformationUri("https://www.zaproxy.org/")
                     .build();
 
     private static final SarifToolDataProvider CWE_WITH_4_4_TAXONOMY =
@@ -87,7 +88,7 @@ public class SarifToolData {
             component.taxonomyReleaseDateUtc = taxonomyReleaseDateUtc;
             component.organization = organization;
 
-            component.sarifGuid = SarifGuid.createByProvider("<<tool-component>>", component);
+            component.sarifGuid = SarifGuid.createToolcomponentGUID(component);
 
             return component;
         }
@@ -169,7 +170,7 @@ public class SarifToolData {
         }
 
         @Override
-        public String getVersion() {
+        public String getTaxonomyVersion() {
             return taxonomyVersion;
         }
 

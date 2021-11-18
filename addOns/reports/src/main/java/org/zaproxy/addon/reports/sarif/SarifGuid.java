@@ -21,8 +21,6 @@ package org.zaproxy.addon.reports.sarif;
 
 import java.util.Objects;
 import java.util.UUID;
-import org.parosproxy.paros.core.scanner.Alert;
-import org.zaproxy.addon.reports.sarif.SarifToolData.SarifToolDataProvider;
 
 /**
  * Represents a GUID for Sarif
@@ -36,42 +34,35 @@ public class SarifGuid {
         // force to use factory methods
     }
 
-    public static SarifGuid createByAlert(Alert alert) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("owasp-zap.sarif-guuid:");
-        sb.append(alert.getPluginId());
-        sb.append(":");
-        sb.append(alert.getCweId());
-
-        String string = sb.toString();
-
-        SarifGuid sarifGuid = createByIdentifier(string);
-
-        return sarifGuid;
+    public static SarifGuid createCweGuid(int cweId) {
+    	return createByProvider(""+cweId, SarifToolData.INSTANCE.getCwe());
     }
-
-    /**
-     * Creates a SARFI guid - by using only the given id
-     *
-     * @param identifier
-     * @return guid
-     */
-    public static SarifGuid createByIdentifier(String identifier) {
+    
+    public static SarifGuid createForTaxa(String identifier, SarifTaxonomy taxonomy) {
+    	return createByProvider(identifier, taxonomy);
+    }
+    
+    public static SarifGuid createToolcomponentGUID(SarifTaxonomyDataProvider component) {
+    	return createByProvider("<<tool-component>>", component);
+    }
+    
+    private static SarifGuid createByIdentifier(String identifier) {
         SarifGuid sarifGuid = new SarifGuid();
         UUID nameBasedUUID = UUID.nameUUIDFromBytes(identifier.getBytes());
         sarifGuid.guid = nameBasedUUID.toString();
         return sarifGuid;
     }
-
+    
     /**
-     * Creates a SARFI guid - by using data from provider (name, version) and the given id
+     * Creates a SARFI guid - by using data from provider (name, taxonomy version) and the given id.
      *
      * @param id
      * @param provider
      * @return guid
      */
-    public static SarifGuid createByProvider(String id, SarifToolDataProvider provider) {
-        String identifier = "name:" + provider.getName() + ":" + provider.getVersion() + ":" + id;
+    private static SarifGuid createByProvider(String id, SarifTaxonomyDataProvider provider) {
+    	// e.g. name:CWE:4.4:79
+        String identifier = "name:" + provider.getName() + ":" + provider.getTaxonomyVersion() + ":" + id;
         return createByIdentifier(identifier);
     }
 
@@ -92,4 +83,5 @@ public class SarifGuid {
         SarifGuid other = (SarifGuid) obj;
         return Objects.equals(guid, other.guid);
     }
+    
 }

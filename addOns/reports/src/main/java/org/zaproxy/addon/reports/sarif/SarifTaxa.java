@@ -23,10 +23,15 @@ public class SarifTaxa {
 
     private SarifGuid sarifGUID;
     private String id;
+    String helpUri;
 
     public SarifTaxa(SarifGuid sarifGUID, String identifier) {
         this.sarifGUID = sarifGUID;
         this.id = identifier;
+    }
+
+    public String getHelpUri() {
+        return helpUri;
     }
 
     public String getGUID() {

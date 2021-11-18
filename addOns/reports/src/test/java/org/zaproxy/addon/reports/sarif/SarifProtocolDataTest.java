@@ -63,7 +63,8 @@ class SarifProtocolDataTest {
     @Test
     void parseProtocolAndVersionResultContentAsExpected() {
         /* execute */
-        SarifProtocolData result = SarifProtocolData.parseProtocolAndVersion("MyProtocol/MyVersion");
+        SarifProtocolData result =
+                SarifProtocolData.parseProtocolAndVersion("MyProtocol/MyVersion");
 
         /* test */
         assertNotNull(result);

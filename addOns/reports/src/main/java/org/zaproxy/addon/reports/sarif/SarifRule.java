@@ -82,7 +82,7 @@ public class SarifRule implements Comparable<SarifRule> {
 
             SarifRuleRelationShip cweRelation = new SarifRuleRelationShip();
             cweRelation.kinds.add("superset");
-            cweRelation.target.sarifGuid = SarifGuid.createByAlert(alert);
+            cweRelation.target.sarifGuid = SarifGuid.createCweGuid(alert.getCweId());
             cweRelation.target.id = "" + alert.getCweId();
             cweRelation.target.toolComponent = SarifToolData.INSTANCE.getCwe();
 

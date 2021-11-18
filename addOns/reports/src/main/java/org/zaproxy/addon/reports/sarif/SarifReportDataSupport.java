@@ -90,7 +90,14 @@ public class SarifReportDataSupport {
         List<SarifTaxonomy> list = new ArrayList<>();
 
         /* currently we provide only CWE */
+        createCWETaxonomy(list);
+
+        return list;
+    }
+
+    private void createCWETaxonomy(List<SarifTaxonomy> list) {
         SarifTaxonomy taxonomy = new SarifTaxonomy(SarifToolData.INSTANCE.getCwe());
+        list.add(taxonomy);
 
         Set<Integer> foundCWEIds = new TreeSet<>();
         for (String site : reportData.getSites()) {
@@ -101,13 +108,11 @@ public class SarifReportDataSupport {
                 foundCWEIds.add(alert.getCweId());
             }
         }
+        
         for (Integer foundCWEId : foundCWEIds) {
-            taxonomy.addTaxa("" + foundCWEId);
+            SarifTaxa taxa = taxonomy.addTaxa("" + foundCWEId);
+            taxa.helpUri = "https://cwe.mitre.org/data/definitions/" + foundCWEId + ".html";
         }
-
-        list.add(taxonomy);
-
-        return list;
     }
 
     /** @return a sorted collection of SARIF rules */
@@ -130,6 +135,7 @@ public class SarifReportDataSupport {
 
                 int pluginId = alert.getPluginId();
                 if (registeredRules.containsKey(pluginId)) {
+                	// already registered
                     continue;
                 }
                 // create and register the rule

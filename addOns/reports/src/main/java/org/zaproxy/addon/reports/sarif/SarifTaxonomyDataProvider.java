@@ -22,7 +22,7 @@ package org.zaproxy.addon.reports.sarif;
 /** A provider interface for SARIF taxonomy data */
 public interface SarifTaxonomyDataProvider {
 
-    String getVersion();
+    String getTaxonomyVersion();
 
     SarifMessage getShortDescription();
 

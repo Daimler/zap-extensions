@@ -39,7 +39,6 @@
                    "reasonPhrase": [[${webResponse.reasonPhrase}]],
                    "protocol": [[${webResponse.protocol}]],
                    "version": [[${webResponse.version}]],
-                   "method": [[${webResponse.method}]],
                    "headers": {[#th:block th:each="header, headerState: ${webResponse.headers}"]
                        [[${header.key}]] : [[${header.value}]][#th:block th:if="${! headerState.last}"],[/th:block]
                    [/th:block]},
@@ -58,7 +57,7 @@
                "informationUri": "[(${sarifTaxonomy.informationUri})]",
                "isComprehensive": [(${sarifTaxonomy.comprehensive})],
                "language": "en",
-               "minimumRequiredLocalizedDataSemanticVersion": "[(${sarifTaxonomy.version})]",
+               "minimumRequiredLocalizedDataSemanticVersion": "[(${sarifTaxonomy.taxonomyVersion})]",
                "name":  "[(${sarifTaxonomy.name})]",
                "organization": "[(${sarifTaxonomy.organization})]",
                "releaseDateUtc": "[(${sarifTaxonomy.releaseDateUtc})]",
@@ -68,6 +67,7 @@
                "taxa": [[#th:block th:each="sarifTaxa, sarifTaxaState: ${sarifTaxonomy.taxa}"]
                   {
                      "guid": "[(${sarifTaxa.guid})]",
+                     "helpUri": "[(${sarifTaxa.helpUri})]",
                      "id": "[(${sarifTaxa.id})]"
                   }[#th:block th:if="${! sarifTaxaState.last}"],[/th:block]
                [/th:block]],
@@ -77,7 +77,7 @@
          "tool": {
             "driver": {
                "guid": "[(${sarifSupport.components.owaspZap.guid})]",
-               "informationUri": "https://www.zaproxy.org/",
+               "informationUri": "[(${sarifSupport.components.owaspZap.informationUri})]",
                "name": "[(${sarifSupport.components.owaspZap.name})]",
                "rules": [ [#th:block th:each="sarifRule, sarifRuleState: ${sarifSupport.rules}"]
                   {
