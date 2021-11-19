@@ -36,7 +36,8 @@ public class SarifRule implements Comparable<SarifRule> {
     public SarifRule(Alert alert) {
         requireNonNull(alert, "alert parameter may not be null!");
         this.alert = alert;
-        this.ruleProperties = new SarifRuleProperties();
+        ruleProperties = new SarifRuleProperties();
+        ruleProperties.solution = SarifMessage.fromHTML(alert.getSolution());
     }
 
     public SarifLevel getDefaultLevel() {
@@ -123,8 +124,15 @@ public class SarifRule implements Comparable<SarifRule> {
     }
 
     public class SarifRuleProperties {
+        private SarifMessage solution;
+
         public Collection<String> getReferences() {
+            /* FIXME de-jcup: change this */
             return Arrays.asList(alert.getReference());
+        }
+
+        public SarifMessage getSolution() {
+            return solution;
         }
 
         public String getConfidence() {

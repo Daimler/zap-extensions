@@ -27,7 +27,7 @@ public class SarifToolData {
     private static final SarifToolDataProvider OWASP_ZAP =
             builder()
                     .setName("OWASP ZAP")
-                    .// we use 1.0 here - should normally not change
+                    . // we use 1.0 here - should normally not change
                     setTaxonomyVersion("1.0")
                     .setTaxonomyComprehensive(true)
                     .setShortDescription("OWASP ZED Attack proxy")
@@ -78,9 +78,7 @@ public class SarifToolData {
         public SarifToolDataProvider build() {
             SarifToolDataProvider component = new SarifToolDataProvider();
             component.name = name;
-            component.taxonomyShortDescription = new SarifMessage();
-            component.taxonomyShortDescription = new SarifMessage();
-            component.taxonomyShortDescription.text = shortDescription;
+            component.taxonomyShortDescription = SarifMessage.fromHTML(shortDescription);
             component.taxonomyVersion = taxonomyVersion;
             component.taxonomyDownloadUri = taxonomyDownloadUri;
             component.taxonomyInformationUri = taxonomyInformationUri;

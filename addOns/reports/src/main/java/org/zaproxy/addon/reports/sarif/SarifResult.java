@@ -24,19 +24,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import org.parosproxy.paros.core.scanner.Alert;
+import org.parosproxy.paros.network.HttpBody;
+import org.parosproxy.paros.network.HttpHeader;
 import org.parosproxy.paros.network.HttpHeaderField;
 import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.network.HttpRequestHeader;
 import org.parosproxy.paros.network.HttpResponseHeader;
 
-public class SarifResult {
+public class SarifResult implements Comparable<SarifResult> {
 
     private SarifLevel level = SarifLevel.NONE;
-    private SarifMessage message = new SarifMessage();
+    private SarifMessage message;
     private List<SarifResultLocation> locations = new ArrayList<>();
-    private String ruleId = "0";
     private SarifWebRequest webRequest = new SarifWebRequest();
     private SarifWebResponse webResponse = new SarifWebResponse();
+    private int pluginId;
 
     public SarifWebRequest getWebRequest() {
         return webRequest;
@@ -46,76 +48,131 @@ public class SarifResult {
         return webResponse;
     }
 
-    public SarifResult(Alert alert) {
-        /* base parts */
-        level = SarifLevel.fromAlertRisk(alert.getRisk());
-        ruleId = "" + alert.getPluginId();
-        message.text = alert.getName();
+    public static SarifResultBuilder builder() {
+        return new SarifResultBuilder();
+    }
 
-        /* location */
-        SarifResultLocation resultLocation = new SarifResultLocation();
+    public static class SarifResultBuilder {
 
-        resultLocation.physicalLocation.artifactLocation.uri = alert.getUri();
-        resultLocation.properties.attack = alert.getAttack();
-        resultLocation.properties.evidence = alert.getEvidence();
-
-        locations.add(resultLocation);
-
-        HttpMessage httpMessage = alert.getMessage();
-
-        /* ----------- */
-        /* Web request */
-        /* ----------- */
-        /*
-         * FIXME de-jcup: sarif supports two nodes: text +binary. we should have some
-         * logic here to only set ONE...
-         */
-        webRequest.body.text = httpMessage.getRequestBody().toString();
-
-        HttpRequestHeader requestHeader = httpMessage.getRequestHeader();
-        List<HttpHeaderField> requestHeaders = requestHeader.getHeaders();
-        for (HttpHeaderField headerField : requestHeaders) {
-            webRequest.headers.put(headerField.getName(), headerField.getValue());
+        private SarifResultBuilder() {
+            // force static method call
         }
-        SarifProtocolData requestProtocolData =
-                SarifProtocolData.parseProtocolAndVersion(requestHeader.getVersion());
-        webRequest.protocol = requestProtocolData.getProtocol();
-        webRequest.version = requestProtocolData.getVersion();
-        webRequest.target = requestHeader.getURI().toString();
-        webRequest.method = requestHeader.getMethod();
-        /* ------------ */
-        /* Web response */
-        /* ------------ */
-        /*
-         * FIXME de-jcup: sarif supports two nodes: text +binary. we should have some
-         * logic here to only set ONE...
-         * 
-         * responseHeader.isText() ?!?!??!?!? 
-         * 
-         */
-        webResponse.body.text = httpMessage.getResponseBody().toString();
-        httpMessage.getResponseHeader().getNormalisedContentTypeValue();
 
-        HttpResponseHeader responseHeader = httpMessage.getResponseHeader();
-        List<HttpHeaderField> responseHeaders = responseHeader.getHeaders();
-        for (HttpHeaderField headerField : responseHeaders) {
-            webResponse.headers.put(headerField.getName(), headerField.getValue());
+        private SarifBinaryContentDetector binaryContentDetector;
+        private SarifBase64Encoder base64Encoder = SarifBase64Encoder.DEFAULT;
+        private Alert alert;
+
+        public SarifResultBuilder setAlert(Alert alert) {
+            this.alert = alert;
+            return this;
         }
-        webResponse.statusCode = responseHeader.getStatusCode();
-        webResponse.reasonPhrase = responseHeader.getReasonPhrase();
 
-        
-        SarifProtocolData responseProtocolData =
-                SarifProtocolData.parseProtocolAndVersion(responseHeader.getVersion());
-        webResponse.protocol = responseProtocolData.getProtocol();
-        webResponse.version = responseProtocolData.getVersion();
-        
-        webResponse.noResponseReceived=responseHeader.isConnectionClose();
-        		
+        public SarifResultBuilder setBinaryContentDetector(
+                SarifBinaryContentDetector binaryContentDetector) {
+            this.binaryContentDetector = binaryContentDetector;
+            return this;
+        }
+
+        public SarifResultBuilder setBase64Encoder(SarifBase64Encoder base64Encoder) {
+            this.base64Encoder = base64Encoder;
+            return this;
+        }
+
+        public SarifResult build() {
+            if (base64Encoder == null) {
+                base64Encoder = SarifBase64Encoder.DEFAULT;
+            }
+
+            if (binaryContentDetector == null) {
+                binaryContentDetector = SarifBinaryContentDetector.DEFAULT;
+            }
+
+            SarifResult result = new SarifResult();
+            /* base parts */
+            result.level = SarifLevel.fromAlertRisk(alert.getRisk());
+            result.pluginId = alert.getPluginId();
+            result.message = SarifMessage.fromPlainText(alert.getName());
+
+            /* location */
+            SarifResultLocation resultLocation = new SarifResultLocation();
+
+            resultLocation.physicalLocation.artifactLocation.uri = alert.getUri();
+            resultLocation.properties.attack = alert.getAttack();
+            resultLocation.properties.evidence = alert.getEvidence();
+
+            result.locations.add(resultLocation);
+
+            HttpMessage httpMessage = alert.getMessage();
+
+            /* ----------- */
+            /* Web request */
+            /* ----------- */
+            SarifWebRequest webRequest = result.webRequest;
+            HttpRequestHeader requestHeader = httpMessage.getRequestHeader();
+            handleBody(webRequest.body, requestHeader, httpMessage.getRequestBody());
+
+            List<HttpHeaderField> requestHeaders = requestHeader.getHeaders();
+            for (HttpHeaderField headerField : requestHeaders) {
+                webRequest.headers.put(headerField.getName(), headerField.getValue());
+            }
+            SarifProtocolData requestProtocolData =
+                    SarifProtocolData.parseProtocolAndVersion(requestHeader.getVersion());
+            webRequest.protocol = requestProtocolData.getProtocol();
+            webRequest.version = requestProtocolData.getVersion();
+            webRequest.target = safeToString(requestHeader.getURI());
+            webRequest.method = requestHeader.getMethod();
+
+            /* ------------ */
+            /* Web response */
+            /* ------------ */
+            SarifWebResponse webResponse = result.webResponse;
+            HttpResponseHeader responseHeader = httpMessage.getResponseHeader();
+            handleBody(webResponse.body, responseHeader, httpMessage.getResponseBody());
+
+            responseHeader.getNormalisedContentTypeValue();
+
+            List<HttpHeaderField> responseHeaders = responseHeader.getHeaders();
+            for (HttpHeaderField headerField : responseHeaders) {
+                webResponse.headers.put(headerField.getName(), headerField.getValue());
+            }
+            webResponse.statusCode = responseHeader.getStatusCode();
+            webResponse.reasonPhrase = responseHeader.getReasonPhrase();
+
+            SarifProtocolData responseProtocolData =
+                    SarifProtocolData.parseProtocolAndVersion(responseHeader.getVersion());
+            webResponse.protocol = responseProtocolData.getProtocol();
+            webResponse.version = responseProtocolData.getVersion();
+
+            webResponse.noResponseReceived = responseHeader.isConnectionClose();
+
+            return result;
+        }
+
+        private void handleBody(SarifBody sarifBody, HttpHeader header, HttpBody body) {
+            if (binaryContentDetector.isBinaryContent(header)) {
+                sarifBody.binary = encodeBodyToBase64(body);
+            } else {
+                sarifBody.text = safeToString(body);
+            }
+        }
+
+        private String encodeBodyToBase64(HttpBody body) {
+            if (body == null) {
+                return null;
+            }
+            return base64Encoder.encodeBytesToBase64(body.getBytes());
+        }
+
+        private String safeToString(Object object) {
+            if (object == null) {
+                return null;
+            }
+            return object.toString();
+        }
     }
 
     public String getRuleId() {
-        return ruleId;
+        return "" + pluginId;
     }
 
     public SarifMessage getMessage() {
@@ -130,7 +187,7 @@ public class SarifResult {
         return locations;
     }
 
-    public class SarifResultLocation {
+    public static class SarifResultLocation {
         SarifPhysicalLocation physicalLocation = new SarifPhysicalLocation();
         SarifResultLocationProperties properties = new SarifResultLocationProperties();
 
@@ -143,7 +200,7 @@ public class SarifResult {
         }
     }
 
-    public class SarifResultLocationProperties {
+    public static class SarifResultLocationProperties {
         private String attack;
         private String evidence;
 
@@ -156,7 +213,7 @@ public class SarifResult {
         }
     }
 
-    public class SarifPhysicalLocation {
+    public static class SarifPhysicalLocation {
         SarifArtifactLocation artifactLocation = new SarifArtifactLocation();
 
         public SarifArtifactLocation getArtifactLocation() {
@@ -164,7 +221,7 @@ public class SarifResult {
         }
     }
 
-    public class SarifArtifactLocation {
+    public static class SarifArtifactLocation {
         private String uri;
 
         public String getUri() {
@@ -172,7 +229,7 @@ public class SarifResult {
         }
     }
 
-    public class SarifBody {
+    public static class SarifBody {
 
         private String text;
         private String binary;
@@ -256,5 +313,16 @@ public class SarifResult {
         public boolean isNoResponseReceived() {
             return noResponseReceived;
         }
+    }
+
+    @Override
+    public int compareTo(SarifResult o) {
+        /* level/risk is descending - High, Medium, Low, None... */
+        int levelCompared = o.level.getAlertRisk() - level.getAlertRisk();
+        if (levelCompared != 0) {
+            return levelCompared;
+        }
+        /* plugin id is ascdending sorted*/
+        return pluginId - o.pluginId;
     }
 }

@@ -89,6 +89,18 @@
                         "text": [[(${sarifRule.fullDescription})]]
                      },
                      "name": "[(${sarifRule.name})]",
+                     "properties": {
+                            "references": [
+                                "a",
+                                "b",
+                                "c",
+                                "d"
+                            ],
+                            "solution": {
+                                "text": [[(${sarifRule.properties.solution.text})]]
+                            },
+                            "confidence": "[(${sarifRule.properties.confidence})]"
+                     },
                      "relationships": [ [#th:block th:each="relationShip, relationShipState: ${sarifRule.relationShips}"]
                         {
                            "kinds": [

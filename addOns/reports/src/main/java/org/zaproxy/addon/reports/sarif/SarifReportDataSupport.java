@@ -21,6 +21,7 @@ package org.zaproxy.addon.reports.sarif;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
@@ -71,10 +72,13 @@ public class SarifReportDataSupport {
                     ReportHelper.getAlertsForSite(reportData.getAlertTreeRootNode(), site);
 
             for (Alert alert : alertsForSite) {
-                SarifResult sarifResult = new SarifResult(alert);
+                SarifResult sarifResult = SarifResult.builder().setAlert(alert).build();
                 results.add(sarifResult);
             }
         }
+
+        /* sort, so always in same order */
+        Collections.sort(results);
 
         return results;
     }
@@ -108,7 +112,7 @@ public class SarifReportDataSupport {
                 foundCWEIds.add(alert.getCweId());
             }
         }
-        
+
         for (Integer foundCWEId : foundCWEIds) {
             SarifTaxa taxa = taxonomy.addTaxa("" + foundCWEId);
             taxa.helpUri = "https://cwe.mitre.org/data/definitions/" + foundCWEId + ".html";
@@ -135,7 +139,7 @@ public class SarifReportDataSupport {
 
                 int pluginId = alert.getPluginId();
                 if (registeredRules.containsKey(pluginId)) {
-                	// already registered
+                    // already registered
                     continue;
                 }
                 // create and register the rule

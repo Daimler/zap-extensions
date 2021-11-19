@@ -24,73 +24,73 @@ import java.util.Collection;
 
 public class SarifTaxonomy implements SarifTaxonomyDataProvider {
 
-	private SarifTaxonomyDataProvider provider;
-	private Collection<SarifTaxa> taxaCollection = new ArrayList<>();
+    private SarifTaxonomyDataProvider provider;
+    private Collection<SarifTaxa> taxaCollection = new ArrayList<>();
 
-	public SarifTaxonomy(SarifTaxonomyDataProvider provider) {
-		this.provider = provider;
-	}
+    public SarifTaxonomy(SarifTaxonomyDataProvider provider) {
+        this.provider = provider;
+    }
 
-	@Override
-	public String getName() {
-		return provider.getName();
-	}
+    @Override
+    public String getName() {
+        return provider.getName();
+    }
 
-	@Override
-	public SarifMessage getShortDescription() {
-		return provider.getShortDescription();
-	}
+    @Override
+    public SarifMessage getShortDescription() {
+        return provider.getShortDescription();
+    }
 
-	@Override
-	public String getDownloadUri() {
-		return provider.getDownloadUri();
-	}
+    @Override
+    public String getDownloadUri() {
+        return provider.getDownloadUri();
+    }
 
-	@Override
-	public String getInformationUri() {
-		return provider.getInformationUri();
-	}
+    @Override
+    public String getInformationUri() {
+        return provider.getInformationUri();
+    }
 
-	@Override
-	public boolean isComprehensive() {
-		return provider.isComprehensive();
-	}
+    @Override
+    public boolean isComprehensive() {
+        return provider.isComprehensive();
+    }
 
-	@Override
-	public String getTaxonomyVersion() {
-		return provider.getTaxonomyVersion();
-	}
+    @Override
+    public String getTaxonomyVersion() {
+        return provider.getTaxonomyVersion();
+    }
 
-	/**
-	 * Creates a taxa entry with dediced SARIF guid, add it to this taxonomy and
-	 * return the created object
-	 *
-	 * @param taxonomyId
-	 * @return taxa
-	 */
-	public SarifTaxa addTaxa(String taxonomyId) {
-		SarifGuid taxaGUID = SarifGuid.createForTaxa(taxonomyId, this);
-		SarifTaxa taxa = new SarifTaxa(taxaGUID, taxonomyId);
-		taxaCollection.add(taxa);
-		return taxa;
-	}
+    /**
+     * Creates a taxa entry with dediced SARIF guid, add it to this taxonomy and return the created
+     * object
+     *
+     * @param taxonomyId
+     * @return taxa
+     */
+    public SarifTaxa addTaxa(String taxonomyId) {
+        SarifGuid taxaGUID = SarifGuid.createForTaxa(taxonomyId, this);
+        SarifTaxa taxa = new SarifTaxa(taxaGUID, taxonomyId);
+        taxaCollection.add(taxa);
+        return taxa;
+    }
 
-	public Collection<SarifTaxa> getTaxa() {
-		return taxaCollection;
-	}
+    public Collection<SarifTaxa> getTaxa() {
+        return taxaCollection;
+    }
 
-	@Override
-	public String getGuid() {
-		return provider.getGuid();
-	}
+    @Override
+    public String getGuid() {
+        return provider.getGuid();
+    }
 
-	@Override
-	public String getReleaseDateUtc() {
-		return provider.getReleaseDateUtc();
-	}
+    @Override
+    public String getReleaseDateUtc() {
+        return provider.getReleaseDateUtc();
+    }
 
-	@Override
-	public String getOrganization() {
-		return provider.getOrganization();
-	}
+    @Override
+    public String getOrganization() {
+        return provider.getOrganization();
+    }
 }

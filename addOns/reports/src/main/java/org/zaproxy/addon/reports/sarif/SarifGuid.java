@@ -35,24 +35,24 @@ public class SarifGuid {
     }
 
     public static SarifGuid createCweGuid(int cweId) {
-    	return createByProvider(""+cweId, SarifToolData.INSTANCE.getCwe());
+        return createByProvider("" + cweId, SarifToolData.INSTANCE.getCwe());
     }
-    
+
     public static SarifGuid createForTaxa(String identifier, SarifTaxonomy taxonomy) {
-    	return createByProvider(identifier, taxonomy);
+        return createByProvider(identifier, taxonomy);
     }
-    
+
     public static SarifGuid createToolcomponentGUID(SarifTaxonomyDataProvider component) {
-    	return createByProvider("<<tool-component>>", component);
+        return createByProvider("<<tool-component>>", component);
     }
-    
+
     private static SarifGuid createByIdentifier(String identifier) {
         SarifGuid sarifGuid = new SarifGuid();
         UUID nameBasedUUID = UUID.nameUUIDFromBytes(identifier.getBytes());
         sarifGuid.guid = nameBasedUUID.toString();
         return sarifGuid;
     }
-    
+
     /**
      * Creates a SARFI guid - by using data from provider (name, taxonomy version) and the given id.
      *
@@ -61,8 +61,9 @@ public class SarifGuid {
      * @return guid
      */
     private static SarifGuid createByProvider(String id, SarifTaxonomyDataProvider provider) {
-    	// e.g. name:CWE:4.4:79
-        String identifier = "name:" + provider.getName() + ":" + provider.getTaxonomyVersion() + ":" + id;
+        // e.g. name:CWE:4.4:79
+        String identifier =
+                "name:" + provider.getName() + ":" + provider.getTaxonomyVersion() + ":" + id;
         return createByIdentifier(identifier);
     }
 
@@ -83,5 +84,4 @@ public class SarifGuid {
         SarifGuid other = (SarifGuid) obj;
         return Objects.equals(guid, other.guid);
     }
-    
 }

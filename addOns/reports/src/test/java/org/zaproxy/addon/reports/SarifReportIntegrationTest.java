@@ -29,6 +29,11 @@ import static org.mockito.Mockito.withSettings;
 import static org.zaproxy.addon.reports.TestAlertBuilder.newAlertBuilder;
 import static org.zaproxy.addon.reports.TestAlertNodeBuilder.newAlertNodeBuilder;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,7 +42,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
-
 import org.apache.commons.httpclient.URIException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -59,296 +63,338 @@ import org.zaproxy.zap.extension.pscan.PluginPassiveScanner;
 import org.zaproxy.zap.utils.I18N;
 import org.zaproxy.zap.utils.ZapXmlConfiguration;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-
 /**
- * This integration test uses the real ZAP template engine to create a SARIF
- * report output. Why an integration test and not "normal" junit test? The
- * {@link SarifReportDataSupport} creates an adopted sarif data structure/model
- * and there are multiple objects necessary to provide an easy to read report
- * template file. So we test multiple objects here which we do not all want to
- * mock - also it gave the the chance to develop the SARIF report parts without
- * always starting ZAP UI. So test data is much more detailed as normally
- * expected to simulate a real world scenario.
+ * This integration test uses the real ZAP template engine to create a SARIF report output. Why an
+ * integration test and not "normal" junit test? The {@link SarifReportDataSupport} creates an
+ * adopted sarif data structure/model and there are multiple objects necessary to provide an easy to
+ * read report template file. So we test multiple objects here which we do not all want to mock -
+ * also it gave the the chance to develop the SARIF report parts without always starting ZAP UI. So
+ * test data is much more detailed as normally expected to simulate a real world scenario.
  */
 class SarifReportIntegrationTest {
 
-	private static final String FINDING_1_URI = "https://127.0.0.1:8080/greeting?name=%3C%2Fp%3E%3Cscript%3Ealert%281%29%3B%3C%2Fscript%3E%3Cp%3E";
-	private Template template;
-	private TemplateEngine templateEngine;
+    private static final String FINDING_1_URI =
+            "https://127.0.0.1:8080/greeting?name=%3C%2Fp%3E%3Cscript%3Ealert%281%29%3B%3C%2Fscript%3E%3Cp%3E";
+    private Template template;
+    private TemplateEngine templateEngine;
 
-	@BeforeEach
-	void setUp() throws Exception {
-		/* setup ZAP for testing - necessary dependencies for report data creation */
-		Constant.messages = new I18N(Locale.ENGLISH);
+    @BeforeEach
+    void setUp() throws Exception {
+        /* setup ZAP for testing - necessary dependencies for report data creation */
+        Constant.messages = new I18N(Locale.ENGLISH);
 
-		Model model = mock(Model.class, withSettings().defaultAnswer(CALLS_REAL_METHODS));
-		Model.setSingletonForTesting(model);
-		ExtensionLoader extensionLoader = mock(ExtensionLoader.class, withSettings().lenient());
-		Control.initSingletonForTesting(Model.getSingleton(), extensionLoader);
-		Model.getSingleton().getOptionsParam().load(new ZapXmlConfiguration());
+        Model model = mock(Model.class, withSettings().defaultAnswer(CALLS_REAL_METHODS));
+        Model.setSingletonForTesting(model);
+        ExtensionLoader extensionLoader = mock(ExtensionLoader.class, withSettings().lenient());
+        Control.initSingletonForTesting(Model.getSingleton(), extensionLoader);
+        Model.getSingleton().getOptionsParam().load(new ZapXmlConfiguration());
 
-		Constant.PROGRAM_VERSION = "Dev Build";
-	}
+        Constant.PROGRAM_VERSION = "Dev Build";
+    }
 
-	@Test
-	void templateEngineCanProcessSarifJsonReportAndOutputIsAsExpected() throws Exception {
-		/* prepare */
-		configureTemplateEngine("sarif-json");
+    @Test
+    void templateEngineCanProcessSarifJsonReportAndOutputIsAsExpected() throws Exception {
+        /* prepare */
+        configureTemplateEngine("sarif-json");
 
-		ReportData reportData = createTestReportDataWithAlerts(template);
-		Context context = createTestContext(reportData);
-		StringWriter writer = new StringWriter();
+        ReportData reportData = createTestReportDataWithAlerts(template);
+        Context context = createTestContext(reportData);
+        StringWriter writer = new StringWriter();
 
-		/* execute */
-		templateEngine.process(template.getReportTemplateFile().getAbsolutePath(), context, writer);
+        /* execute */
+        templateEngine.process(template.getReportTemplateFile().getAbsolutePath(), context, writer);
 
-		/* test */
-		String sarifReportJSON = writer.getBuffer().toString();
-		assertNotNull(sarifReportJSON);
+        /* test */
+        String sarifReportJSON = writer.getBuffer().toString();
+        assertNotNull(sarifReportJSON);
 
-		InspectionContext inspectionContext = new InspectionContext();
+        InspectionContext inspectionContext = new InspectionContext();
 
-		JsonNode rootNode = assertValidJSON(sarifReportJSON);
-		JsonNode firstRun = assertOneRunOnly(rootNode);
-		assertResults(firstRun);
-		assertTaxonomies(firstRun, inspectionContext);
-		assertTool(firstRun, inspectionContext);
+        JsonNode rootNode = assertValidJSON(sarifReportJSON);
+        JsonNode firstRun = assertOneRunOnly(rootNode);
+        assertResults(firstRun);
+        assertTaxonomies(firstRun, inspectionContext);
+        assertTool(firstRun, inspectionContext);
+    }
 
-	}
+    private void assertTool(JsonNode firstRun, InspectionContext inspectionContext) {
+        SarifToolDataProvider owaspZap = SarifToolData.INSTANCE.getOwaspZap();
+        SarifToolDataProvider cwe = SarifToolData.INSTANCE.getCwe();
 
-	private void assertTool(JsonNode firstRun, InspectionContext inspectionContext) {
-		SarifToolDataProvider owaspZap = SarifToolData.INSTANCE.getOwaspZap();
-		SarifToolDataProvider cwe = SarifToolData.INSTANCE.getCwe();
+        JsonNode tool = firstRun.get("tool");
 
-		JsonNode tool = firstRun.get("tool");
+        // driver
+        JsonNode driver = tool.get("driver");
+        assertEquals(owaspZap.getGuid(), driver.get("guid").asText());
+        assertEquals(owaspZap.getInformationUri(), driver.get("informationUri").asText());
+        assertEquals(owaspZap.getName(), driver.get("name").asText());
+        assertEquals("99.9.9", driver.get("version").asText());
+        assertEquals("99.9.9", driver.get("semanticVersion").asText());
 
-		// driver
-		JsonNode driver = tool.get("driver");
-		assertEquals(owaspZap.getGuid(), driver.get("guid").asText());
-		assertEquals(owaspZap.getInformationUri(), driver.get("informationUri").asText());
-		assertEquals(owaspZap.getName(), driver.get("name").asText());
-		assertEquals("99.9.9", driver.get("version").asText());
-		assertEquals("99.9.9", driver.get("semanticVersion").asText());
+        // driver - rules
+        assertRules(inspectionContext, cwe, driver);
 
-		// driver - rules
-		JsonNode rules = driver.get("rules");
-		assertTrue(rules.isArray());
-		ArrayNode rulesArray = (ArrayNode) rules;
-		for (JsonNode rule : rulesArray) {
-			JsonNode relationShips = rule.get("relationships");
-			assertTrue(relationShips.isArray());
-			ArrayNode relationShipsArray = (ArrayNode) relationShips;
-			for (JsonNode relationShip : relationShipsArray) {
-				JsonNode target = relationShip.get("target");
-				String targetId = target.get("id").asText();
-				String targetGuid = target.get("guid").asText();
+        // driver - supported taxonomies
+        assertTaxonomies(cwe, driver);
+    }
 
-				JsonNode toolComponent = target.get("toolComponent");
-				String toolComponentName = toolComponent.get("name").asText();
-				String toolComponentGuid = toolComponent.get("guid").asText();
-				
-				switch (toolComponentName) {
-				case "CWE":
-					assertEquals(cwe.getGuid(),toolComponentGuid,"CWE guid not found as tool component guid!");
-					assertCWEGuidNotDifferent(Integer.parseInt(targetId), targetGuid, inspectionContext);
-					break;
-				default:
-					fail("This component name is not wellknown in test:" + toolComponentName
-							+ " - maybe new, but not tested tool component?");
-				}
+    private void assertTaxonomies(SarifToolDataProvider cwe, JsonNode driver) {
+        JsonNode supportedTaxonomies = driver.get("supportedTaxonomies");
+        assertTrue(supportedTaxonomies.isArray());
+        ArrayNode supportedTaxonimiesArray = (ArrayNode) supportedTaxonomies;
+        assertEquals(1, supportedTaxonimiesArray.size());
+        JsonNode supportedTaxonmy = supportedTaxonimiesArray.iterator().next();
+        assertEquals(cwe.getGuid(), supportedTaxonmy.get("guid").asText());
+        assertEquals(cwe.getName(), supportedTaxonmy.get("name").asText());
+    }
 
-			}
+    private void assertRules(
+            InspectionContext inspectionContext, SarifToolDataProvider cwe, JsonNode driver) {
+        JsonNode rules = driver.get("rules");
+        assertTrue(rules.isArray());
+        ArrayNode rulesArray = (ArrayNode) rules;
+        for (JsonNode rule : rulesArray) {
+            assertRuleHasCweEntrAndGuidsNotDuplicated(inspectionContext, cwe, rule);
+        }
+        assertEquals(2, rulesArray.size());
+        Iterator<JsonNode> ruleIt = rulesArray.iterator();
+        assertRule1(ruleIt.next());
+        assertRule2(ruleIt.next());
+    }
 
-		}
+    private void assertRule2(JsonNode rule) {
+        // properties
+        JsonNode properties = rule.get("properties");
+        assertEquals("medium", properties.get("confidence").asText());
+        assertEquals("Phase: 1\n\nDo ....", properties.get("solution").get("text").asText());
 
-		// driver - supported taxonomies
-		JsonNode supportedTaxonomies = driver.get("supportedTaxonomies");
-		assertTrue(supportedTaxonomies.isArray());
-		ArrayNode supportedTaxonimiesArray = (ArrayNode) supportedTaxonomies;
-		assertEquals(1, supportedTaxonimiesArray.size());
-		JsonNode supportedTaxonmy = supportedTaxonimiesArray.iterator().next();
-		assertEquals(cwe.getGuid(), supportedTaxonmy.get("guid").asText());
-		assertEquals(cwe.getName(), supportedTaxonmy.get("name").asText());
+        //		JsonNode references = rule.get("references");
 
-	}
+    }
 
-	private class InspectionContext {
+    private void assertRule1(JsonNode rule) {
+        // properties
+        JsonNode properties = rule.get("properties");
+        assertEquals("medium", properties.get("confidence").asText());
+        assertEquals("Test Solution", properties.get("solution").get("text").asText());
 
-		private Map<Integer, String> cweIdToGuidMap = new TreeMap<Integer, String>();
-	}
+        //		JsonNode references = rule.get("references");
 
-	private void configureTemplateEngine(String templateName) throws Exception {
-		/* configure template engine */
-		templateEngine = new TemplateEngine();
-		template = ExtensionReportsUnitTest.getTemplateFromYamlFile(templateName);
+    }
 
-		FileTemplateResolver templateResolver = new FileTemplateResolver();
-		templateResolver.setTemplateMode(template.getMode());
-		templateEngine.setTemplateResolver(templateResolver);
-		templateEngine.setMessageResolver(new ReportMessageResolver(template));
-	}
+    private void assertRuleHasCweEntrAndGuidsNotDuplicated(
+            InspectionContext inspectionContext, SarifToolDataProvider cwe, JsonNode rule) {
 
-	private JsonNode assertValidJSON(String sarifReportJSON) throws JsonProcessingException, JsonMappingException {
-		/* when debugging enabled dump JSON to system out: */
-		if (Boolean.getBoolean("zap.extensions.reports.sarif.test.debug")) {
-			System.out.println(sarifReportJSON);
-		}
+        // relationships
+        JsonNode relationShips = rule.get("relationships");
+        assertTrue(relationShips.isArray());
+        ArrayNode relationShipsArray = (ArrayNode) relationShips;
+        for (JsonNode relationShip : relationShipsArray) {
+            JsonNode target = relationShip.get("target");
+            String targetId = target.get("id").asText();
+            String targetGuid = target.get("guid").asText();
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		return objectMapper.readTree(sarifReportJSON);
-	}
+            JsonNode toolComponent = target.get("toolComponent");
+            String toolComponentName = toolComponent.get("name").asText();
+            String toolComponentGuid = toolComponent.get("guid").asText();
 
-	private void assertTaxonomies(JsonNode firstRun, InspectionContext inspectionContext) {
-		JsonNode taxonomies = firstRun.get("taxonomies");
-		assertTrue(taxonomies.isArray());
-		ArrayNode taxonomiesArray = (ArrayNode) taxonomies;
+            switch (toolComponentName) {
+                case "CWE":
+                    assertEquals(
+                            cwe.getGuid(),
+                            toolComponentGuid,
+                            "CWE guid not found as tool component guid!");
+                    assertCWEGuidNotDifferent(
+                            Integer.parseInt(targetId), targetGuid, inspectionContext);
+                    break;
+                default:
+                    fail(
+                            "This component name is not wellknown in test:"
+                                    + toolComponentName
+                                    + " - maybe new, but not tested tool component?");
+            }
+        }
+    }
 
-		// taxonomy: CWE
-		assertEquals(1, taxonomiesArray.size()); // currently we provide only one: CWE
-		JsonNode firstTaxonomy = taxonomiesArray.iterator().next();
-		SarifToolDataProvider cwe = SarifToolData.INSTANCE.getCwe();
-		assertEquals(cwe.getDownloadUri(), firstTaxonomy.get("downloadUri").asText());
-		assertEquals(cwe.getInformationUri(), firstTaxonomy.get("informationUri").asText());
+    private class InspectionContext {
 
-		// taxa
-		JsonNode taxa = firstTaxonomy.get("taxa");
-		assertTrue(taxa.isArray());
-		ArrayNode taxaArray = (ArrayNode) taxa;
-		assertEquals(2, taxaArray.size());
-		Iterator<JsonNode> taxaIterator = taxaArray.iterator();
-		JsonNode firstTaxa = taxaIterator.next();
-		JsonNode secondTaxa = taxaIterator.next();
+        private Map<Integer, String> cweIdToGuidMap = new TreeMap<Integer, String>();
+    }
 
-		assertEquals("79", firstTaxa.get("id").asText());
-		assertEquals("https://cwe.mitre.org/data/definitions/79.html", firstTaxa.get("helpUri").asText());
-		String cwe79guid = firstTaxa.get("guid").asText();
-		assertCWEGuidNotDifferent(79, cwe79guid, inspectionContext);
+    private void configureTemplateEngine(String templateName) throws Exception {
+        /* configure template engine */
+        templateEngine = new TemplateEngine();
+        template = ExtensionReportsUnitTest.getTemplateFromYamlFile(templateName);
 
-		assertEquals("693", secondTaxa.get("id").asText());
-		assertEquals("https://cwe.mitre.org/data/definitions/693.html", secondTaxa.get("helpUri").asText());
-	}
+        FileTemplateResolver templateResolver = new FileTemplateResolver();
+        templateResolver.setTemplateMode(template.getMode());
+        templateEngine.setTemplateResolver(templateResolver);
+        templateEngine.setMessageResolver(new ReportMessageResolver(template));
+    }
 
-	private void assertCWEGuidNotDifferent(int cweId, String expectedGuid, InspectionContext inspectionContext) {
-		String guidFound = inspectionContext.cweIdToGuidMap.get(cweId);
-		if (guidFound == null) {
-			// just first registration
-			inspectionContext.cweIdToGuidMap.put(cweId, expectedGuid);
-		} else {
-			// already registered - so test if registered with same guid
-			assertEquals(expectedGuid, guidFound, "Generated GUIDs are not same for CWE id:" + cweId);
-		}
+    private JsonNode assertValidJSON(String sarifReportJSON)
+            throws JsonProcessingException, JsonMappingException {
+        /* when debugging enabled dump JSON to system out: */
+        if (Boolean.getBoolean("zap.extensions.reports.sarif.test.debug")) {
+            System.out.println(sarifReportJSON);
+        }
 
-	}
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.readTree(sarifReportJSON);
+    }
 
-	private void assertResults(JsonNode firstRun) {
-		JsonNode results = firstRun.get("results");
-		assertTrue(results.isArray());
-		ArrayNode resultsArray = (ArrayNode) results;
-		assertEquals(2, resultsArray.size());
-		Iterator<JsonNode> resultiterator = resultsArray.iterator();
+    private void assertTaxonomies(JsonNode firstRun, InspectionContext inspectionContext) {
+        JsonNode taxonomies = firstRun.get("taxonomies");
+        assertTrue(taxonomies.isArray());
+        ArrayNode taxonomiesArray = (ArrayNode) taxonomies;
 
-		JsonNode firstResult = assertFirstResult(resultiterator);
-		assertWebRequest(firstResult);
-		assertWebResponse(firstResult);
+        // taxonomy: CWE
+        assertEquals(1, taxonomiesArray.size()); // currently we provide only one: CWE
+        JsonNode firstTaxonomy = taxonomiesArray.iterator().next();
+        SarifToolDataProvider cwe = SarifToolData.INSTANCE.getCwe();
+        assertEquals(cwe.getDownloadUri(), firstTaxonomy.get("downloadUri").asText());
+        assertEquals(cwe.getInformationUri(), firstTaxonomy.get("informationUri").asText());
 
-		assertSecondResult(resultiterator);
-	}
+        // taxa
+        JsonNode taxa = firstTaxonomy.get("taxa");
+        assertTrue(taxa.isArray());
+        ArrayNode taxaArray = (ArrayNode) taxa;
+        assertEquals(2, taxaArray.size());
+        Iterator<JsonNode> taxaIterator = taxaArray.iterator();
+        JsonNode firstTaxa = taxaIterator.next();
+        JsonNode secondTaxa = taxaIterator.next();
 
-	private JsonNode assertSecondResult(Iterator<JsonNode> resultiterator) {
-		JsonNode secondResult = resultiterator.next();
+        assertEquals("79", firstTaxa.get("id").asText());
+        assertEquals(
+                "https://cwe.mitre.org/data/definitions/79.html",
+                firstTaxa.get("helpUri").asText());
+        String cwe79guid = firstTaxa.get("guid").asText();
+        assertCWEGuidNotDifferent(79, cwe79guid, inspectionContext);
 
-		assertEquals("warning", secondResult.get("level").asText());
-		assertEquals("1", secondResult.get("ruleId").asText());
-		return secondResult;
-	}
+        assertEquals("693", secondTaxa.get("id").asText());
+        assertEquals(
+                "https://cwe.mitre.org/data/definitions/693.html",
+                secondTaxa.get("helpUri").asText());
+    }
 
-	private JsonNode assertFirstResult(Iterator<JsonNode> resultiterator) {
-		/* first */
-		JsonNode firstResult = resultiterator.next();
+    private void assertCWEGuidNotDifferent(
+            int cweId, String expectedGuid, InspectionContext inspectionContext) {
+        String guidFound = inspectionContext.cweIdToGuidMap.get(cweId);
+        if (guidFound == null) {
+            // just first registration
+            inspectionContext.cweIdToGuidMap.put(cweId, expectedGuid);
+        } else {
+            // already registered - so test if registered with same guid
+            assertEquals(
+                    expectedGuid, guidFound, "Generated GUIDs are not same for CWE id:" + cweId);
+        }
+    }
 
-		assertEquals("error", firstResult.get("level").asText());
-		assertEquals("40012", firstResult.get("ruleId").asText());
+    private void assertResults(JsonNode firstRun) {
+        JsonNode results = firstRun.get("results");
+        assertTrue(results.isArray());
+        ArrayNode resultsArray = (ArrayNode) results;
+        assertEquals(2, resultsArray.size());
+        Iterator<JsonNode> resultiterator = resultsArray.iterator();
 
-		JsonNode locations = firstResult.get("locations");
-		assertTrue(locations.isArray());
-		ArrayNode locationsArray = (ArrayNode) locations;
-		assertEquals(1, locationsArray.size());
-		JsonNode firstLocation = locationsArray.iterator().next();
+        JsonNode firstResult = assertFirstResult(resultiterator);
+        assertWebRequest(firstResult);
+        assertWebResponse(firstResult);
 
-		// first location - physical parts
-		JsonNode physicalLocation = firstLocation.get("physicalLocation");
-		JsonNode artifactLocation = physicalLocation.get("artifactLocation");
-		JsonNode artifactLocationUri = artifactLocation.get("uri");
-		assertEquals(FINDING_1_URI, artifactLocationUri.asText());
+        assertSecondResult(resultiterator);
+    }
 
-		// first location - properties
-		JsonNode properties = firstLocation.get("properties");
-		JsonNode attack = properties.get("attack");
-		JsonNode evidence = properties.get("evidence");
+    private JsonNode assertSecondResult(Iterator<JsonNode> resultiterator) {
+        JsonNode secondResult = resultiterator.next();
 
-		assertEquals("</p><script>alert(1);</script><p>", attack.asText());
-		assertEquals("</p><script>alert(1);</script><p>", evidence.asText());
+        assertEquals("warning", secondResult.get("level").asText());
+        assertEquals("1", secondResult.get("ruleId").asText());
+        return secondResult;
+    }
 
-		return firstResult;
-	}
+    private JsonNode assertFirstResult(Iterator<JsonNode> resultiterator) {
+        /* first */
+        JsonNode firstResult = resultiterator.next();
 
-	private void assertWebResponse(JsonNode firstResult) {
-		JsonNode webResponse = firstResult.get("webResponse");
-		assertEquals("HTTP", webResponse.get("protocol").asText());
-		assertEquals("1.1", webResponse.get("version").asText());
-		assertEquals("200", webResponse.get("statusCode").asText());
-	}
+        assertEquals("error", firstResult.get("level").asText());
+        assertEquals("40012", firstResult.get("ruleId").asText());
 
-	private void assertWebRequest(JsonNode firstResult) {
-		JsonNode webRequest = firstResult.get("webRequest");
-		assertEquals(FINDING_1_URI, webRequest.get("target").asText());
-		assertEquals("HTTP", webRequest.get("protocol").asText());
-		assertEquals("1.1", webRequest.get("version").asText());
-		assertEquals("GET", webRequest.get("method").asText());
-	}
+        JsonNode locations = firstResult.get("locations");
+        assertTrue(locations.isArray());
+        ArrayNode locationsArray = (ArrayNode) locations;
+        assertEquals(1, locationsArray.size());
+        JsonNode firstLocation = locationsArray.iterator().next();
 
-	private JsonNode assertOneRunOnly(JsonNode rootNode) {
-		JsonNode runs = rootNode.get("runs");
-		assertTrue(runs.isArray());
-		ArrayNode runsArray = (ArrayNode) runs;
-		assertEquals(1, runsArray.size());
-		JsonNode firstRun = runsArray.get(0);
-		return firstRun;
-	}
+        // first location - physical parts
+        JsonNode physicalLocation = firstLocation.get("physicalLocation");
+        JsonNode artifactLocation = physicalLocation.get("artifactLocation");
+        JsonNode artifactLocationUri = artifactLocation.get("uri");
+        assertEquals(FINDING_1_URI, artifactLocationUri.asText());
 
-	private Context createTestContext(ReportData reportData) {
-		Context context = new Context();
-		context.setVariable("alertTree", reportData.getAlertTreeRootNode());
-		context.setVariable("reportTitle", reportData.getTitle());
-		context.setVariable("description", reportData.getDescription());
-		context.setVariable("helper", new ReportHelper());
-		context.setVariable("zapVersion", "99.9.9");
-		context.setVariable("reportData", reportData);
-		context.setVariable("report", reportData);
-		return context;
-	}
+        // first location - properties
+        JsonNode properties = firstLocation.get("properties");
+        JsonNode attack = properties.get("attack");
+        JsonNode evidence = properties.get("evidence");
 
-	private static ReportData createTestReportDataWithAlerts(Template template)
-			throws URIException, HttpMalformedHeaderException {
-		ReportData reportData = new ReportData();
-		reportData.setTitle("Test Title");
-		reportData.setDescription("Test Description");
-		reportData.setIncludeAllConfidences(true);
-		reportData.setSections(template.getSections());
-		reportData.setIncludeAllRisks(true);
+        assertEquals("</p><script>alert(1);</script><p>", attack.asText());
+        assertEquals("</p><script>alert(1);</script><p>", evidence.asText());
 
-		List<PluginPassiveScanner> list = new ArrayList<>();
-		PassiveScanJobResultData pscanData = new PassiveScanJobResultData("passiveScan-wait", list);
-		reportData.addReportObjects(pscanData.getKey(), pscanData);
+        return firstResult;
+    }
 
-		AlertNode rootAlertNode = new AlertNode(0, "TestRootNode"); // represents root node at top of alert tree in UI
-		reportData.setAlertTreeRootNode(rootAlertNode);
-		/** @formatter:off */
+    private void assertWebResponse(JsonNode firstResult) {
+        JsonNode webResponse = firstResult.get("webResponse");
+        assertEquals("HTTP", webResponse.get("protocol").asText());
+        assertEquals("1.1", webResponse.get("version").asText());
+        assertEquals("200", webResponse.get("statusCode").asText());
+    }
+
+    private void assertWebRequest(JsonNode firstResult) {
+        JsonNode webRequest = firstResult.get("webRequest");
+        assertEquals(FINDING_1_URI, webRequest.get("target").asText());
+        assertEquals("HTTP", webRequest.get("protocol").asText());
+        assertEquals("1.1", webRequest.get("version").asText());
+        assertEquals("GET", webRequest.get("method").asText());
+    }
+
+    private JsonNode assertOneRunOnly(JsonNode rootNode) {
+        JsonNode runs = rootNode.get("runs");
+        assertTrue(runs.isArray());
+        ArrayNode runsArray = (ArrayNode) runs;
+        assertEquals(1, runsArray.size());
+        JsonNode firstRun = runsArray.get(0);
+        return firstRun;
+    }
+
+    private Context createTestContext(ReportData reportData) {
+        Context context = new Context();
+        context.setVariable("alertTree", reportData.getAlertTreeRootNode());
+        context.setVariable("reportTitle", reportData.getTitle());
+        context.setVariable("description", reportData.getDescription());
+        context.setVariable("helper", new ReportHelper());
+        context.setVariable("zapVersion", "99.9.9");
+        context.setVariable("reportData", reportData);
+        context.setVariable("report", reportData);
+        return context;
+    }
+
+    private static ReportData createTestReportDataWithAlerts(Template template)
+            throws URIException, HttpMalformedHeaderException {
+        ReportData reportData = new ReportData();
+        reportData.setTitle("Test Title");
+        reportData.setDescription("Test Description");
+        reportData.setIncludeAllConfidences(true);
+        reportData.setSections(template.getSections());
+        reportData.setIncludeAllRisks(true);
+
+        List<PluginPassiveScanner> list = new ArrayList<>();
+        PassiveScanJobResultData pscanData = new PassiveScanJobResultData("passiveScan-wait", list);
+        reportData.addReportObjects(pscanData.getKey(), pscanData);
+
+        AlertNode rootAlertNode =
+                new AlertNode(0, "TestRootNode"); // represents root node at top of alert tree in UI
+        reportData.setAlertTreeRootNode(rootAlertNode);
+        /** @formatter:off */
         Alert cssAlert =
                 newAlertBuilder()
                         .setName("Cross Site Scripting")
@@ -427,6 +473,6 @@ class SarifReportIntegrationTest {
 
         reportData.setSites(Arrays.asList("https://127.0.0.1"));
         /** @formatter:on */
-		return reportData;
-	}
+        return reportData;
+    }
 }

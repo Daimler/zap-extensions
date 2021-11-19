@@ -32,36 +32,40 @@ public enum SarifLevel {
     /*
      * The rule specified by ruleId was evaluated and a serious problem was found.
      */
-    ERROR,
+    ERROR(Alert.RISK_HIGH),
 
     /* The rule specified by ruleId was evaluated and a problem was found. */
-    WARNING,
+    WARNING(Alert.RISK_MEDIUM),
     /*
      * he rule specified by ruleId was evaluated and a minor problem or an
      * opportunity to improve the code was found.
      */
-    NOTE,
+    NOTE(Alert.RISK_LOW),
 
     /*
      * The concept of “severity” does not apply to this result because the kind
      * property (§3.27.9) has a value other than "fail".
      */
-    NONE,
+    NONE(Alert.RISK_INFO),
     ;
 
+    private int alertRisk;
+
+    SarifLevel(int alertRisk) {
+        this.alertRisk = alertRisk;
+    }
+
     public static SarifLevel fromAlertRisk(int alertRisk) {
-        switch (alertRisk) {
-            case Alert.RISK_HIGH:
-                return ERROR;
-            case Alert.RISK_MEDIUM:
-                return WARNING;
-            case Alert.RISK_LOW:
-                return NOTE;
-            case Alert.RISK_INFO:
-                return NONE;
-            default:
-                throw new IllegalArgumentException("Unsupported alert risk value:" + alertRisk);
+        for (SarifLevel level : values()) {
+            if (level.alertRisk == alertRisk) {
+                return level;
+            }
         }
+        throw new IllegalArgumentException("Unsupported alert risk value:" + alertRisk);
+    }
+
+    public int getAlertRisk() {
+        return alertRisk;
     }
 
     /**

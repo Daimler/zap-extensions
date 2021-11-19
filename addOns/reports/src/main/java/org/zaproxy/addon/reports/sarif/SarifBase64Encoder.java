@@ -19,27 +19,17 @@
  */
 package org.zaproxy.addon.reports.sarif;
 
-public class SarifMessage {
-    private String text;
+import java.util.Base64;
 
-    private SarifMessage() {
-        // force usage of static methods
-    }
+public class SarifBase64Encoder {
 
-    public static SarifMessage fromPlainText(String plainText) {
-        SarifMessage message = new SarifMessage();
-        message.text = plainText;
-        return message;
-    }
+    public static final SarifBase64Encoder DEFAULT = new SarifBase64Encoder();
 
-    public static SarifMessage fromHTML(String html) {
-        SarifMessage message = new SarifMessage();
-        /* FIXME de-jcup*/
-        message.text = html;
-        return message;
-    }
-
-    public String getText() {
-        return text;
+    public String encodeBytesToBase64(byte[] bytes) {
+        if (bytes == null) {
+            return null;
+        }
+        byte[] encoded = Base64.getEncoder().encode(bytes);
+        return new String(encoded);
     }
 }
