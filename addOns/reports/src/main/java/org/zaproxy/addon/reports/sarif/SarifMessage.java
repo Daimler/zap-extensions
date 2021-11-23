@@ -20,43 +20,43 @@
 package org.zaproxy.addon.reports.sarif;
 
 public class SarifMessage {
-	private String text;
+    private String text;
 
-	public static class SarifMessageBuilder {
-		private SarifHTMLtoPlainTextConverter converter = SarifHTMLtoPlainTextConverter.DEFAULT;
-		private String plainText;
-		
-		public SarifMessageBuilder setContentAsHTML(String html) {
-			this.plainText = converter.convertToPlainText(html);
-			return this;
-		}
-		
-		public SarifMessageBuilder setContentAsPlainText(String plainText) {
-			this.plainText = plainText;
-			return this;
-		}
+    public static class SarifMessageBuilder {
+        private SarifHTMLtoPlainTextConverter converter = SarifHTMLtoPlainTextConverter.DEFAULT;
+        private String plainText;
 
-		SarifMessageBuilder setConverter(SarifHTMLtoPlainTextConverter converter) {
-			this.converter = converter;
-			return this;
-		}
+        public SarifMessageBuilder setContentAsHTML(String html) {
+            this.plainText = converter.convertToPlainText(html);
+            return this;
+        }
 
-		public SarifMessage build() {
-			SarifMessage message = new SarifMessage();
-			message.text=plainText;
-			return message;
-		}
-	}
-	
-	public static SarifMessageBuilder builder() {
-		return new SarifMessageBuilder();
-	}
+        public SarifMessageBuilder setContentAsPlainText(String plainText) {
+            this.plainText = plainText;
+            return this;
+        }
 
-	private SarifMessage() {
-		// force usage of builder
-	}
+        SarifMessageBuilder setConverter(SarifHTMLtoPlainTextConverter converter) {
+            this.converter = converter;
+            return this;
+        }
 
-	public String getText() {
-		return text;
-	}
+        public SarifMessage build() {
+            SarifMessage message = new SarifMessage();
+            message.text = plainText;
+            return message;
+        }
+    }
+
+    public static SarifMessageBuilder builder() {
+        return new SarifMessageBuilder();
+    }
+
+    private SarifMessage() {
+        // force usage of builder
+    }
+
+    public String getText() {
+        return text;
+    }
 }

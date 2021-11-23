@@ -19,7 +19,7 @@
  */
 package org.zaproxy.addon.reports.sarif;
 
-import static java.util.Objects.*;
+import static java.util.Objects.requireNonNull;
 
 import org.parosproxy.paros.network.HttpHeader;
 

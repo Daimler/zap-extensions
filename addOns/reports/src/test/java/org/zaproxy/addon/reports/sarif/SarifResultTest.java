@@ -84,7 +84,7 @@ class SarifResultTest {
         SarifArtifactLocation artifactLocation =
                 firstLocation.getPhysicalLocation().getArtifactLocation();
 
-        assertEquals("name1", result.getMessage().getText());
+        assertEquals("description1", result.getMessage().getText());
         assertEquals("12345", result.getRuleId());
         assertEquals("https://example.com/highrisk", artifactLocation.getUri());
         // @formatter:on

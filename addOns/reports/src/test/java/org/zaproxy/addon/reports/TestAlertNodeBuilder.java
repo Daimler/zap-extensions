@@ -23,8 +23,10 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.apache.commons.httpclient.URI;
 import org.parosproxy.paros.core.scanner.Alert;
+import org.parosproxy.paros.network.HttpMalformedHeaderException;
 import org.parosproxy.paros.network.HttpMessage;
 import org.zaproxy.zap.extension.alert.AlertNode;
 
@@ -48,6 +50,8 @@ public class TestAlertNodeBuilder {
         private String uriString = "undefined";
         private String requestBody = "";
         private String responseBody = "";
+		private String requestHeader;
+		private String responseHeader;
 
         public TestNewInstanceBuilder setUri(String uri) {
             this.uriString = uri;
@@ -63,6 +67,16 @@ public class TestAlertNodeBuilder {
             this.responseBody = responseBody;
             return this;
         }
+        
+        public TestNewInstanceBuilder setRequestHeader(String requestHeader) {
+        	this.requestHeader = requestHeader;
+			return this;
+		}
+        
+        public TestNewInstanceBuilder setResponseHeader(String responseHeader) {
+        	this.responseHeader = responseHeader;
+			return this;
+		}
 
         /**
          * Builds new instance and adds to sub root node.
@@ -91,10 +105,28 @@ public class TestAlertNodeBuilder {
             }
             httpMessage.setRequestBody(requestBody);
             httpMessage.setResponseBody(responseBody);
+            
+            if (requestHeader!=null) {
+            	try {
+            		httpMessage.setRequestHeader(requestHeader);
+            	} catch (HttpMalformedHeaderException e) {
+            		throw new IllegalStateException("test case wrong implemented",e);
+            	}
+            }
+
+            if (responseHeader!=null) {
+            	try {
+            		httpMessage.setRequestHeader(responseHeader);
+            	} catch (HttpMalformedHeaderException e) {
+            		throw new IllegalStateException("test case wrong implemented",e);
+            	}
+            }
 
             instanceAlert.setMessage(httpMessage);
             return instanceAlert;
         }
+
+		
     }
 
     /**

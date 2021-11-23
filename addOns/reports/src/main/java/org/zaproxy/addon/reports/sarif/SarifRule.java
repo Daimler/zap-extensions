@@ -24,7 +24,6 @@ import static java.util.Objects.requireNonNull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
 import org.parosproxy.paros.core.scanner.Alert;
 
 public class SarifRule implements Comparable<SarifRule> {
@@ -36,11 +35,13 @@ public class SarifRule implements Comparable<SarifRule> {
     public SarifRule(Alert alert) {
         requireNonNull(alert, "alert parameter may not be null!");
         this.alert = alert;
-        SarifMessage solution = SarifMessage.builder().setContentAsHTML(alert.getSolution()).build();
+        SarifMessage solution =
+                SarifMessage.builder().setContentAsHTML(alert.getSolution()).build();
 
         ruleProperties = new SarifRuleProperties();
-        ruleProperties.solution = solution; 
-        ruleProperties.references=SarifHTMLToStringListConverter.DEFAULT.convertToList(alert.getReference());
+        ruleProperties.solution = solution;
+        ruleProperties.references =
+                SarifHTMLToStringListConverter.DEFAULT.convertToList(alert.getReference());
     }
 
     public SarifLevel getDefaultLevel() {
@@ -131,7 +132,7 @@ public class SarifRule implements Comparable<SarifRule> {
         private List<String> references;
 
         public Collection<String> getReferences() {
-        	return references;
+            return references;
         }
 
         public SarifMessage getSolution() {
