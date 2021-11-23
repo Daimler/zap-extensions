@@ -22,9 +22,9 @@ package org.zaproxy.addon.reports.sarif;
 import static java.util.Objects.requireNonNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+
 import org.parosproxy.paros.core.scanner.Alert;
 
 public class SarifRule implements Comparable<SarifRule> {
@@ -36,8 +36,11 @@ public class SarifRule implements Comparable<SarifRule> {
     public SarifRule(Alert alert) {
         requireNonNull(alert, "alert parameter may not be null!");
         this.alert = alert;
+        SarifMessage solution = SarifMessage.builder().setContentAsHTML(alert.getSolution()).build();
+
         ruleProperties = new SarifRuleProperties();
-        ruleProperties.solution = SarifMessage.fromHTML(alert.getSolution());
+        ruleProperties.solution = solution; 
+        ruleProperties.references=SarifHTMLToStringListConverter.DEFAULT.convertToList(alert.getReference());
     }
 
     public SarifLevel getDefaultLevel() {
@@ -125,10 +128,10 @@ public class SarifRule implements Comparable<SarifRule> {
 
     public class SarifRuleProperties {
         private SarifMessage solution;
+        private List<String> references;
 
         public Collection<String> getReferences() {
-            /* FIXME de-jcup: change this */
-            return Arrays.asList(alert.getReference());
+        	return references;
         }
 
         public SarifMessage getSolution() {

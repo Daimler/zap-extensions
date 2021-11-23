@@ -9,6 +9,12 @@
                      "physicalLocation": {
                         "artifactLocation": {
                            "uri": "[(${sarifLocation.physicalLocation.artifactLocation.uri})]"
+                        },
+                        "region": {
+                           "startLine": [(${sarifLocation.physicalLocation.region.startLine})], 
+                           "snippet": {
+                               "text": [[${sarifLocation.physicalLocation.region.snippet.text}]]
+                           }
                         }
                      },
                      "properties": {
@@ -30,8 +36,7 @@
                        [[${header.key}]] : [[${header.value}]][#th:block th:if="${! headerState.last}"],[/th:block]
                    [/th:block]},
                    "body": {
-                       "text": [[${webRequest.body.text}]],
-                       "binary": [[${webRequest.body.binary}]]
+                       [#th:block th:if="${webRequest.body.containingText}"]"text": [[${webRequest.body.text}]][/th:block][#th:block th:if="${webRequest.body.containingBinary}"]"binary": [[${webRequest.body.binary}]][/th:block]
                    }
                }[/th:block],
                "webResponse": {[#th:block th:with="webResponse=${sarifResult.webResponse}"]
@@ -43,8 +48,7 @@
                        [[${header.key}]] : [[${header.value}]][#th:block th:if="${! headerState.last}"],[/th:block]
                    [/th:block]},
                    "body": {
-                       "text": [[${webResponse.body.text}]],
-                       "binary": [[${webResponse.body.binary}]]
+                       [#th:block th:if="${webResponse.body.containingText}"]"text": [[${webResponse.body.text}]][/th:block][#th:block th:if="${webResponse.body.containingBinary}"]"binary": [[${webResponse.body.binary}]][/th:block]
                    },
                    "noResponseReceived": [[${webResponse.noResponseReceived}]]
                }[/th:block]
@@ -90,12 +94,9 @@
                      },
                      "name": "[(${sarifRule.name})]",
                      "properties": {
-                            "references": [
-                                "a",
-                                "b",
-                                "c",
-                                "d"
-                            ],
+                            "references": [[#th:block th:each="sarifReference, sarifReferenceState: ${sarifRule.properties.references}"]
+                                "[(${sarifReference})]"[#th:block th:if="${! sarifReferenceState.last}"],[/th:block]
+                            [/th:block]],
                             "solution": {
                                 "text": [[(${sarifRule.properties.solution.text})]]
                             },

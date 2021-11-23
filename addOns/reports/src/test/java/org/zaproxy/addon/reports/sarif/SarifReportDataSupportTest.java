@@ -97,7 +97,7 @@ class SarifReportDataSupportTest {
     }
 
     @Test
-    void rule_has_full_description() {
+    void ruleHasFullDescription() {
         /* prepare */
         reportData = new ReportData();
         AlertNode rootNode = new AlertNode(0, "root");
