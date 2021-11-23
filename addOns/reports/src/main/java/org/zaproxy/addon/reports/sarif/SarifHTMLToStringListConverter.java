@@ -58,14 +58,13 @@ public class SarifHTMLToStringListConverter {
             String group = matcher.group(1);
             list.add(group.trim());
         }
-        
+
         if (list.isEmpty()) {
-        	// happens when no HTML parts/only one entry
-        	String[] lines = content.split("\n");
-        	for (String line: lines) {
-        		list.add(line);
-        	}
-        	
+            // happens when no HTML parts/only one entry
+            String[] lines = content.split("\n");
+            for (String line : lines) {
+                list.add(line);
+            }
         }
 
         return list;

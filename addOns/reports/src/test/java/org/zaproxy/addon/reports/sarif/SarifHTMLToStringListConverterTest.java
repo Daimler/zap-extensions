@@ -48,12 +48,19 @@ class SarifHTMLToStringListConverterTest {
 
     @Test
     void convertSinglePlainTextLineAsOneElement() {
-        assertConvertToPlainText("http://seclists.org/lists/webappsec/2002/Oct-Dec/0111.html", Arrays.asList("http://seclists.org/lists/webappsec/2002/Oct-Dec/0111.html"));
+        assertConvertToPlainText(
+                "http://seclists.org/lists/webappsec/2002/Oct-Dec/0111.html",
+                Arrays.asList("http://seclists.org/lists/webappsec/2002/Oct-Dec/0111.html"));
     }
-    
+
     @Test
     void convertThreeMultiPlainTextLinesAsThreElement() {
-        assertConvertToPlainText("http://seclists.org/lists/webappsec/2002/Oct-Dec/0111.html\nOther\nLast", Arrays.asList("http://seclists.org/lists/webappsec/2002/Oct-Dec/0111.html","Other","Last"));
+        assertConvertToPlainText(
+                "http://seclists.org/lists/webappsec/2002/Oct-Dec/0111.html\nOther\nLast",
+                Arrays.asList(
+                        "http://seclists.org/lists/webappsec/2002/Oct-Dec/0111.html",
+                        "Other",
+                        "Last"));
     }
 
     @Test

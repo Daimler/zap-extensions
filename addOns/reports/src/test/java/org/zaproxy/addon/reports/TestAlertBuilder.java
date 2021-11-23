@@ -47,7 +47,7 @@ public class TestAlertBuilder {
     private String solution = "Test Solution";
     private String requestBody;
     private String responseBody = "Test Response Body";
-    private String reference = "Test Reference";
+    private String reference;
     private String evidence = "Test <p>Evidence</p>";
     private String uriString;
     private String requestHeader;

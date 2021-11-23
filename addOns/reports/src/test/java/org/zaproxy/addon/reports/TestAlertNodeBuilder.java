@@ -23,7 +23,6 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.commons.httpclient.URI;
 import org.parosproxy.paros.core.scanner.Alert;
 import org.parosproxy.paros.network.HttpMalformedHeaderException;
@@ -50,8 +49,21 @@ public class TestAlertNodeBuilder {
         private String uriString = "undefined";
         private String requestBody = "";
         private String responseBody = "";
-		private String requestHeader;
-		private String responseHeader;
+        private String requestHeader;
+        private String responseHeader;
+        private String otherInfo;
+
+        /**
+         * Zap plugins can set other info with details - so we can simulate this here (other info
+         * shall differ to origin one)
+         *
+         * @param otherInfo
+         * @return
+         */
+        public TestNewInstanceBuilder setOtherInfo(String otherInfo) {
+            this.otherInfo = otherInfo;
+            return this;
+        }
 
         public TestNewInstanceBuilder setUri(String uri) {
             this.uriString = uri;
@@ -67,16 +79,16 @@ public class TestAlertNodeBuilder {
             this.responseBody = responseBody;
             return this;
         }
-        
+
         public TestNewInstanceBuilder setRequestHeader(String requestHeader) {
-        	this.requestHeader = requestHeader;
-			return this;
-		}
-        
+            this.requestHeader = requestHeader;
+            return this;
+        }
+
         public TestNewInstanceBuilder setResponseHeader(String responseHeader) {
-        	this.responseHeader = responseHeader;
-			return this;
-		}
+            this.responseHeader = responseHeader;
+            return this;
+        }
 
         /**
          * Builds new instance and adds to sub root node.
@@ -105,28 +117,30 @@ public class TestAlertNodeBuilder {
             }
             httpMessage.setRequestBody(requestBody);
             httpMessage.setResponseBody(responseBody);
-            
-            if (requestHeader!=null) {
-            	try {
-            		httpMessage.setRequestHeader(requestHeader);
-            	} catch (HttpMalformedHeaderException e) {
-            		throw new IllegalStateException("test case wrong implemented",e);
-            	}
+
+            if (requestHeader != null) {
+                try {
+                    httpMessage.setRequestHeader(requestHeader);
+                } catch (HttpMalformedHeaderException e) {
+                    throw new IllegalStateException("test case wrong implemented", e);
+                }
             }
 
-            if (responseHeader!=null) {
-            	try {
-            		httpMessage.setRequestHeader(responseHeader);
-            	} catch (HttpMalformedHeaderException e) {
-            		throw new IllegalStateException("test case wrong implemented",e);
-            	}
+            if (responseHeader != null) {
+                try {
+                    httpMessage.setResponseHeader(responseHeader);
+                } catch (HttpMalformedHeaderException e) {
+                    throw new IllegalStateException("test case wrong implemented", e);
+                }
             }
 
+            if (otherInfo != null) {
+                instanceAlert.setOtherInfo(otherInfo);
+            }
             instanceAlert.setMessage(httpMessage);
+            instanceAlert.setUri(uriString);
             return instanceAlert;
         }
-
-		
     }
 
     /**

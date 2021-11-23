@@ -77,6 +77,8 @@ class SarifReportIntegrationTest {
 
     private static final String FINDING_1_URI =
             "https://127.0.0.1:8080/greeting?name=%3C%2Fp%3E%3Cscript%3Ealert%281%29%3B%3C%2Fscript%3E%3Cp%3E";
+    private static final String FINDING_2_URI =
+            "https://127.0.0.1:8080/greeting2?name=%3C%2Fp%3E%3Cscript%3Ealert%281%29%3B%3C%2Fscript%3E%3Cp%3E";
     private Template template;
     private TemplateEngine templateEngine;
 
@@ -182,7 +184,7 @@ class SarifReportIntegrationTest {
         List<String> expectedReferences = new ArrayList<>();
         expectedReferences.add("http://projects.webappsec.org/Cross-Site-Scripting");
         expectedReferences.add("http://cwe.mitre.org/data/definitions/79.html");
-        
+
         assertPropertiesContainReferences(properties, expectedReferences);
     }
 
@@ -306,28 +308,44 @@ class SarifReportIntegrationTest {
         JsonNode results = firstRun.get("results");
         assertTrue(results.isArray());
         ArrayNode resultsArray = (ArrayNode) results;
-        assertEquals(2, resultsArray.size());
+        assertEquals(
+                3,
+                resultsArray
+                        .size()); // 2 different rules, but css was found 2 times so 3 results at
+        // all
         Iterator<JsonNode> resultiterator = resultsArray.iterator();
 
-        assertFirstResult(resultiterator);
-        assertSecondResult(resultiterator);
+        assertCSS1Result(resultiterator);
+        assertCSS2Result(resultiterator);
+        assertCSPResult(resultiterator);
     }
 
-    private void assertFirstResult(Iterator<JsonNode> resultiterator) {
-        JsonNode firstResult = assertFirstResultFoundAndLocationAsExpected(resultiterator);
+    private void assertCSS1Result(Iterator<JsonNode> resultiterator) {
+        JsonNode result = assertCSS1ResultFoundAndLocationAsExpected(resultiterator);
 
         // first result has "otherInfo" set, so we expect the other info expect the full description
-        JsonNode message = firstResult.get("message");
+        JsonNode message = result.get("message");
         JsonNode messageText = message.get("text");
         assertEquals(
                 "Some other additional information which shall appear inside the message",
                 messageText.asText());
 
-        assertWebRequestOfFirstResult(firstResult);
-        assertWebResponseOfFirstResult(firstResult);
+        assertWebRequestOfCSS1Result(result);
+        assertWebResponseOfCSS1Result(result);
     }
 
-    private JsonNode assertSecondResult(Iterator<JsonNode> resultiterator) {
+    private void assertCSS2Result(Iterator<JsonNode> resultiterator) {
+        JsonNode result = assertCSS2ResultFoundAndLocationAsExpected(resultiterator);
+
+        // first result has "otherInfo" set, so we expect the other info expect the full description
+        JsonNode message = result.get("message");
+        JsonNode messageText = message.get("text");
+        assertEquals(
+                "Some other additional information2 which shall appear inside the message",
+                messageText.asText());
+    }
+
+    private JsonNode assertCSPResult(Iterator<JsonNode> resultiterator) {
         JsonNode secondResult = resultiterator.next();
 
         // second result has no "otherInfo" set, so we expect the description as fallback
@@ -342,8 +360,7 @@ class SarifReportIntegrationTest {
         return secondResult;
     }
 
-    private JsonNode assertFirstResultFoundAndLocationAsExpected(
-            Iterator<JsonNode> resultiterator) {
+    private JsonNode assertCSS1ResultFoundAndLocationAsExpected(Iterator<JsonNode> resultiterator) {
         /* first */
         JsonNode firstResult = resultiterator.next();
 
@@ -383,7 +400,47 @@ class SarifReportIntegrationTest {
         return firstResult;
     }
 
-    private void assertWebResponseOfFirstResult(JsonNode firstResult) {
+    private JsonNode assertCSS2ResultFoundAndLocationAsExpected(Iterator<JsonNode> resultiterator) {
+        /* first */
+        JsonNode firstResult = resultiterator.next();
+
+        assertEquals("error", firstResult.get("level").asText());
+        assertEquals("40012", firstResult.get("ruleId").asText());
+
+        JsonNode locations = firstResult.get("locations");
+        assertTrue(locations.isArray());
+        ArrayNode locationsArray = (ArrayNode) locations;
+        assertEquals(1, locationsArray.size());
+        JsonNode firstLocation = locationsArray.iterator().next();
+
+        // first location - physical parts
+        JsonNode physicalLocation = firstLocation.get("physicalLocation");
+        JsonNode artifactLocation = physicalLocation.get("artifactLocation");
+        JsonNode artifactLocationUri = artifactLocation.get("uri");
+        assertEquals(FINDING_2_URI, artifactLocationUri.asText());
+
+        JsonNode region = physicalLocation.get("region");
+        JsonNode startLine = region.get("startLine");
+        JsonNode snippet = region.get("snippet");
+        JsonNode snippetText = snippet.get("text");
+
+        String snipppetTextString = snippetText.asText();
+        long startLineLong = startLine.asLong();
+        assertEquals(11, startLineLong);
+        assertEquals("</p><script>alert(1);</script><p>", snipppetTextString);
+
+        // first location - properties
+        JsonNode properties = firstLocation.get("properties");
+        JsonNode attack = properties.get("attack");
+        JsonNode evidence = properties.get("evidence");
+
+        assertEquals("</p><script>alert(1);</script><p>", attack.asText());
+        assertEquals("</p><script>alert(1);</script><p>", evidence.asText());
+
+        return firstResult;
+    }
+
+    private void assertWebResponseOfCSS1Result(JsonNode firstResult) {
         JsonNode webResponse = firstResult.get("webResponse");
         assertEquals("HTTP", webResponse.get("protocol").asText());
         assertEquals("1.1", webResponse.get("version").asText());
@@ -415,7 +472,7 @@ class SarifReportIntegrationTest {
         assertNull(bodyText, "text does exist in body json but may not!");
     }
 
-    private void assertWebRequestOfFirstResult(JsonNode firstResult) {
+    private void assertWebRequestOfCSS1Result(JsonNode firstResult) {
         JsonNode webRequest = firstResult.get("webRequest");
         assertEquals(FINDING_1_URI, webRequest.get("target").asText());
         assertEquals("HTTP", webRequest.get("protocol").asText());
@@ -528,28 +585,50 @@ class SarifReportIntegrationTest {
         rootAlertNode.add(
                 newAlertNodeBuilder(cssAlert)
                         .newInstance()
-                        .setRequestHeader( "GET "
-                                + FINDING_1_URI
-                                + " HTTP/1.1\n"
-                                + "Host: 127.0.0.1:8080\n"
-                                + "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:92.0) Gecko/20100101 Firefox/92.0\n"
-                                + "Pragma: no-cache\n"
-                                + "Cache-Control: no-cache\n"
-                                + "Referer: https://127.0.0.1:8080/hello\n"
-                                + "Cookie: JSESSIONID=38AA1F7A61982DF1073D7F43A3707798; locale=de\n"
-                                + "Content-Length: 0\n")
-                        .setResponseBody("<!DOCTYPE HTML>\n"
-                                + "<html>\n"
-                                + "<head>\n"
-                                + "    <title>Getting Started2: Serving Web Content</title>\n"
-                                + "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n"
-                                + "</head>\n"
-                                + "<body>\n"
-                                + "    <!-- unsecure text used (th:utext instead th:text)- to create vulnerability (XSS) -->\n"
-                                + "    <!-- simple usage: http://localhost:8080/greeting?name=Test2</p><script>;alert(\"hallo\")</script> -->\n"
-                                + "    <p >XSS attackable parameter output: </p><script>alert(1);</script><p>!</p>\n"
-                                + "</body>\n"
-                                + "</html>")
+                        .setUri(FINDING_2_URI)
+                        .setRequestHeader(
+                                "GET "
+                                        + FINDING_2_URI
+                                        + " HTTP/1.1\n"
+                                        + "Host: 127.0.0.1:8080\n"
+                                        + "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:92.0) Gecko/20100101 Firefox/92.0\n"
+                                        + "Pragma: no-cache\n"
+                                        + "Cache-Control: no-cache\n"
+                                        + "Referer: https://127.0.0.1:8080/hello\n"
+                                        + "Cookie: JSESSIONID=38AA1F7A61982DF1073D7F43A3707798; locale=de\n"
+                                        + "Content-Length: 0\n")
+                        .setResponseHeader(
+                                "HTTP/1.1 200\n"
+                                        + "Set-Cookie: locale=de; HttpOnly; SameSite=strict\n"
+                                        + "X-Content-Type-Options: nosniff\n"
+                                        + "X-XSS-Protection: 1; mode=block\n"
+                                        + "Cache-Control: no-cache, no-store, max-age=0, must-revalidate\n"
+                                        + "Pragma: no-cache\n"
+                                        + "Expires: 0\n"
+                                        + "Strict-Transport-Security: max-age=31536000 ; includeSubDomains\n"
+                                        + "X-Frame-Options: DENY\n"
+                                        + "Content-Security-Policy: script-src 'self'\n"
+                                        + "Referrer-Policy: no-referrer\n"
+                                        + "Content-Type: text/html;charset=UTF-8\n"
+                                        + "Content-Language: en-US\n"
+                                        + "Date: Thu, 11 Nov 2021 09:56:20 GMT\n"
+                                        + "")
+                        .setResponseBody(
+                                "<!DOCTYPE HTML>\n"
+                                        + "<html>\n"
+                                        + "<head>\n"
+                                        + "    <title>Getting Started2: Serving Web Content</title>\n"
+                                        + "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n"
+                                        + "</head>\n"
+                                        + "<body>\n"
+                                        + "    <!-- Additional line to have other startline in Test -->\n"
+                                        + "    <!-- unsecure text used (th:utext instead th:text)- to create vulnerability (XSS) -->\n"
+                                        + "    <!-- simple usage: http://localhost:8080/greeting2?name=Test2</p><script>;alert(\"hallo\")</script> -->\n"
+                                        + "    <p >XSS attackable parameter output: </p><script>alert(1);</script><p>!</p>\n"
+                                        + "</body>\n"
+                                        + "</html>")
+                        .setOtherInfo(
+                                "Some other additional information2 which shall appear inside the message")
                         .add()
                         .build());
 

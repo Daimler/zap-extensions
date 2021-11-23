@@ -29,7 +29,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import org.parosproxy.paros.core.scanner.Alert;
 import org.zaproxy.addon.reports.ReportData;
-import org.zaproxy.addon.reports.ReportHelper;
+import org.zaproxy.zap.extension.alert.AlertNode;
 
 /**
  * The SARIF data structure needs GUIDs, has multiple references etc. inside which are not available
@@ -65,16 +65,12 @@ public class SarifReportDataSupport {
 
     private List<SarifResult> createResults() {
         List<SarifResult> results = new ArrayList<>();
-        List<String> sites = reportData.getSites();
 
-        for (String site : sites) {
-            List<Alert> alertsForSite =
-                    ReportHelper.getAlertsForSite(reportData.getAlertTreeRootNode(), site);
+        List<Alert> allAlerts = collectAllAlerts(reportData.getAlertTreeRootNode());
 
-            for (Alert alert : alertsForSite) {
-                SarifResult sarifResult = SarifResult.builder().setAlert(alert).build();
-                results.add(sarifResult);
-            }
+        for (Alert alert : allAlerts) {
+            SarifResult sarifResult = SarifResult.builder().setAlert(alert).build();
+            results.add(sarifResult);
         }
 
         /* sort, so always in same order */
@@ -99,18 +95,28 @@ public class SarifReportDataSupport {
         return list;
     }
 
+    private List<Alert> collectAllAlerts(AlertNode rootNode) {
+        List<Alert> list = new ArrayList<>();
+
+        for (int alertIndex = 0; alertIndex < rootNode.getChildCount(); alertIndex++) {
+            AlertNode alertNode = rootNode.getChildAt(alertIndex);
+            for (int instIndex = 0; instIndex < alertNode.getChildCount(); instIndex++) {
+                AlertNode instanceNode = alertNode.getChildAt(instIndex);
+                list.add(instanceNode.getUserObject());
+            }
+        }
+        return list;
+    }
+
     private void createCWETaxonomy(List<SarifTaxonomy> list) {
         SarifTaxonomy taxonomy = new SarifTaxonomy(SarifToolData.INSTANCE.getCwe());
         list.add(taxonomy);
 
         Set<Integer> foundCWEIds = new TreeSet<>();
-        for (String site : reportData.getSites()) {
-            List<Alert> alertsForSite =
-                    ReportHelper.getAlertsForSite(reportData.getAlertTreeRootNode(), site);
+        List<Alert> allAlerts = collectAllAlerts(reportData.getAlertTreeRootNode());
 
-            for (Alert alert : alertsForSite) {
-                foundCWEIds.add(alert.getCweId());
-            }
+        for (Alert alert : allAlerts) {
+            foundCWEIds.add(alert.getCweId());
         }
 
         for (Integer foundCWEId : foundCWEIds) {
@@ -130,22 +136,17 @@ public class SarifReportDataSupport {
     private SortedMap<Integer, SarifRule> createRules() {
         SortedMap<Integer, SarifRule> registeredRules = new TreeMap<>();
 
-        List<String> sites = reportData.getSites();
+        List<Alert> alerts = collectAllAlerts(reportData.getAlertTreeRootNode());
+        for (Alert alert : alerts) {
 
-        for (String site : sites) {
-            List<Alert> alerts =
-                    ReportHelper.getAlertsForSite(reportData.getAlertTreeRootNode(), site);
-            for (Alert alert : alerts) {
-
-                int pluginId = alert.getPluginId();
-                if (registeredRules.containsKey(pluginId)) {
-                    // already registered
-                    continue;
-                }
-                // create and register the rule
-                SarifRule rule = new SarifRule(alert);
-                registeredRules.put(pluginId, rule);
+            int pluginId = alert.getPluginId();
+            if (registeredRules.containsKey(pluginId)) {
+                // already registered
+                continue;
             }
+            // create and register the rule
+            SarifRule rule = new SarifRule(alert);
+            registeredRules.put(pluginId, rule);
         }
 
         return registeredRules;

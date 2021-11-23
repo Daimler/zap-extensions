@@ -60,7 +60,7 @@ public class SarifResult implements Comparable<SarifResult> {
         }
 
         private SarifBinaryContentDetector binaryContentDetector;
-        private SarifBase64Encoder base64Encoder = SarifBase64Encoder.DEFAULT;
+        private SarifBase64Encoder base64Encoder;
         private Alert alert;
 
         public SarifResultBuilder setAlert(Alert alert) {
@@ -160,11 +160,10 @@ public class SarifResult implements Comparable<SarifResult> {
                     SarifMessage.builder().setContentAsPlainText(attack).build();
 
             SarifBodyStartLineFinder startLineFinder = SarifBodyStartLineFinder.DEFAULT;
-			long startLine =
-					startLineFinder.findStartLine(webResponse.body, attack);
-            if (startLine==0) {
-            	// fallback to evidence when not found by attack
-            	 startLineFinder.findStartLine(webResponse.body, alert.getEvidence());
+            long startLine = startLineFinder.findStartLine(webResponse.body, attack);
+            if (startLine == 0) {
+                // fallback to evidence when not found by attack
+                startLineFinder.findStartLine(webResponse.body, alert.getEvidence());
             }
             resultLocation.physicalLocation.region.startLine = startLine;
 
