@@ -1,4 +1,4 @@
-{[#th:block th:with="sarifSupport=${helper.createSupport('sarif',reportData)}"]
+{[#th:block th:with="sarifSupport=${new org.zaproxy.addon.reports.sarif.SarifReportDataSupport(reportData)}"]
    "runs": [
       {
          "results": [ [#th:block th:each="sarifResult, sarifResultState: ${sarifSupport.results}"]
