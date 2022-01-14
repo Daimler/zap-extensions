@@ -105,10 +105,9 @@ public class SarifResult implements Comparable<SarifResult> {
             /* location */
             SarifResultLocation resultLocation = new SarifResultLocation();
 
-            String attack = alert.getAttack();
+            String attackVector = alert.getAttack();
             resultLocation.physicalLocation.artifactLocation.uri = alert.getUri();
-            resultLocation.properties.attack = attack;
-            resultLocation.properties.evidence = alert.getEvidence();
+            resultLocation.properties.attack = attackVector;
 
             result.locations.add(resultLocation);
 
@@ -155,16 +154,13 @@ public class SarifResult implements Comparable<SarifResult> {
 
             webResponse.noResponseReceived = responseHeader.isConnectionClose();
 
-            /* build physical location region by repsonse body + attack */
+            String evidenceSnippet = alert.getEvidence();
+            /* build physical location region by response body + evidence */
             resultLocation.physicalLocation.region.snippet =
-                    SarifMessage.builder().setContentAsPlainText(attack).build();
+                    SarifMessage.builder().setContentAsPlainText(evidenceSnippet).build();
 
             SarifBodyStartLineFinder startLineFinder = SarifBodyStartLineFinder.DEFAULT;
-            long startLine = startLineFinder.findStartLine(webResponse.body, attack);
-            if (startLine == 0) {
-                // fallback to evidence when not found by attack
-                startLineFinder.findStartLine(webResponse.body, alert.getEvidence());
-            }
+            long startLine = startLineFinder.findStartLine(webResponse.body, evidenceSnippet);
             resultLocation.physicalLocation.region.startLine = startLine;
 
             return result;
@@ -224,14 +220,9 @@ public class SarifResult implements Comparable<SarifResult> {
 
     public static class SarifResultLocationProperties {
         private String attack;
-        private String evidence;
 
         public String getAttack() {
             return attack;
-        }
-
-        public String getEvidence() {
-            return evidence;
         }
     }
 

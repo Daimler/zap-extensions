@@ -80,7 +80,7 @@ class SarifResultTest {
         assertEquals(1, result.getLocations().size());
         SarifResultLocation firstLocation = result.getLocations().iterator().next();
         assertEquals("attack1", firstLocation.getProperties().getAttack());
-        assertEquals("evidence1", firstLocation.getProperties().getEvidence());
+        assertEquals("evidence1", firstLocation.getPhysicalLocation().getRegion().getSnippet().getText());
         SarifArtifactLocation artifactLocation =
                 firstLocation.getPhysicalLocation().getArtifactLocation();
 

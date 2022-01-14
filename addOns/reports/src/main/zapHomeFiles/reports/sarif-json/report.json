@@ -18,8 +18,7 @@
                         }
                      },
                      "properties": {
-                         "attack": [[${sarifLocation.properties.attack}]],
-                         "evidence": [[${sarifLocation.properties.evidence}]]
+                         "attack": [[${sarifLocation.properties.attack}]]
                      }
                   }[#th:block th:if="${! sarifLocationState.last}"],[/th:block]
                [/th:block]],
