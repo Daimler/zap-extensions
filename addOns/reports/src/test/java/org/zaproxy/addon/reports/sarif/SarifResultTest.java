@@ -24,7 +24,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.zaproxy.addon.reports.TestAlertBuilder.newAlertBuilder;
+import static org.zaproxy.addon.reports.sarif.TestAlertBuilder.newAlertBuilder;
 
 import java.util.ArrayList;
 import java.util.Collections;

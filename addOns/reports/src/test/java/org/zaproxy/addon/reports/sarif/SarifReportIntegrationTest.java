@@ -27,8 +27,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.withSettings;
-import static org.zaproxy.addon.reports.TestAlertBuilder.newAlertBuilder;
-import static org.zaproxy.addon.reports.TestAlertNodeBuilder.newAlertNodeBuilder;
+import static org.zaproxy.addon.reports.sarif.TestAlertBuilder.newAlertBuilder;
+import static org.zaproxy.addon.reports.sarif.TestAlertNodeBuilder.newAlertNodeBuilder;
 
 import java.io.StringWriter;
 import java.util.ArrayList;

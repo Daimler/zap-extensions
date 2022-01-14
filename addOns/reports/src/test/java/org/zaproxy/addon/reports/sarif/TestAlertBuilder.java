@@ -17,7 +17,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.zaproxy.addon.reports;
+package org.zaproxy.addon.reports.sarif;
 
 import org.apache.commons.httpclient.URI;
 import org.parosproxy.paros.core.scanner.Alert;
