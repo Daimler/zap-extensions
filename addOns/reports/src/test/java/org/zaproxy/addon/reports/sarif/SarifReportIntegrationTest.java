@@ -17,7 +17,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.zaproxy.addon.reports;
+package org.zaproxy.addon.reports.sarif;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -30,11 +30,6 @@ import static org.mockito.Mockito.withSettings;
 import static org.zaproxy.addon.reports.TestAlertBuilder.newAlertBuilder;
 import static org.zaproxy.addon.reports.TestAlertNodeBuilder.newAlertNodeBuilder;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,6 +39,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
+
 import org.apache.commons.httpclient.URIException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,13 +53,23 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templateresolver.FileTemplateResolver;
 import org.zaproxy.addon.automation.jobs.PassiveScanJobResultData;
-import org.zaproxy.addon.reports.sarif.SarifReportDataSupport;
-import org.zaproxy.addon.reports.sarif.SarifToolData;
+import org.zaproxy.addon.reports.ExtensionReports;
+import org.zaproxy.addon.reports.ReportData;
+import org.zaproxy.addon.reports.ReportHelper;
+import org.zaproxy.addon.reports.ReportMessageResolver;
+import org.zaproxy.addon.reports.Template;
 import org.zaproxy.addon.reports.sarif.SarifToolData.SarifToolDataProvider;
 import org.zaproxy.zap.extension.alert.AlertNode;
 import org.zaproxy.zap.extension.pscan.PluginPassiveScanner;
+import org.zaproxy.zap.testutils.TestUtils;
 import org.zaproxy.zap.utils.I18N;
 import org.zaproxy.zap.utils.ZapXmlConfiguration;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
 /**
  * This integration test uses the real ZAP template engine to create a SARIF report output. Why an
@@ -238,7 +244,7 @@ class SarifReportIntegrationTest {
     private void configureTemplateEngine(String templateName) throws Exception {
         /* configure template engine */
         templateEngine = new TemplateEngine();
-        template = ExtensionReportsUnitTest.getTemplateFromYamlFile(templateName);
+        template = getTemplateFromYamlFile(templateName);
 
         FileTemplateResolver templateResolver = new FileTemplateResolver();
         templateResolver.setTemplateMode(template.getMode());
@@ -392,10 +398,8 @@ class SarifReportIntegrationTest {
         // first location - properties
         JsonNode properties = firstLocation.get("properties");
         JsonNode attack = properties.get("attack");
-        JsonNode evidence = properties.get("evidence");
 
         assertEquals("</p><script>alert(1);</script><p>", attack.asText());
-        assertEquals("</p><script>alert(1);</script><p>", evidence.asText());
 
         return firstResult;
     }
@@ -432,10 +436,8 @@ class SarifReportIntegrationTest {
         // first location - properties
         JsonNode properties = firstLocation.get("properties");
         JsonNode attack = properties.get("attack");
-        JsonNode evidence = properties.get("evidence");
 
         assertEquals("</p><script>alert(1);</script><p>", attack.asText());
-        assertEquals("</p><script>alert(1);</script><p>", evidence.asText());
 
         return firstResult;
     }
@@ -664,6 +666,14 @@ class SarifReportIntegrationTest {
         return reportData;
     }
 
+    private static Template getTemplateFromYamlFile(String templateName) throws Exception {
+        return new Template(
+                TestUtils.getResourcePath(
+                                ExtensionReports.class,
+                                "/reports/" + templateName + "/template.yaml")
+                        .toFile());
+    }
+    
     private class InspectionContext {
 
         private Map<Integer, String> cweIdToGuidMap = new TreeMap<Integer, String>();
