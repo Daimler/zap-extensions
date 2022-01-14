@@ -41,6 +41,7 @@ public class SarifReportDataSupport {
 
     private ReportData reportData;
     private List<SarifResult> results;
+  
 
     // we use a sorted map here, so values set will always be sorted available - so
     // same report will produce same
@@ -62,7 +63,7 @@ public class SarifReportDataSupport {
         }
         return results;
     }
-
+    
     private List<SarifResult> createResults() {
         List<SarifResult> results = new ArrayList<>();
 
