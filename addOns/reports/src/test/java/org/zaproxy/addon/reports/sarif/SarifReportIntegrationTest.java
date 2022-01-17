@@ -30,6 +30,11 @@ import static org.mockito.Mockito.withSettings;
 import static org.zaproxy.addon.reports.sarif.TestAlertBuilder.newAlertBuilder;
 import static org.zaproxy.addon.reports.sarif.TestAlertNodeBuilder.newAlertNodeBuilder;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,7 +44,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
-
 import org.apache.commons.httpclient.URIException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -64,12 +68,6 @@ import org.zaproxy.zap.extension.pscan.PluginPassiveScanner;
 import org.zaproxy.zap.testutils.TestUtils;
 import org.zaproxy.zap.utils.I18N;
 import org.zaproxy.zap.utils.ZapXmlConfiguration;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 
 /**
  * This integration test uses the real ZAP template engine to create a SARIF report output. Why an
@@ -673,7 +671,7 @@ class SarifReportIntegrationTest {
                                 "/reports/" + templateName + "/template.yaml")
                         .toFile());
     }
-    
+
     private class InspectionContext {
 
         private Map<Integer, String> cweIdToGuidMap = new TreeMap<Integer, String>();
