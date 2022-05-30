@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import org.parosproxy.paros.core.scanner.Alert;
 import org.parosproxy.paros.network.HttpBody;
-import org.parosproxy.paros.network.HttpHeader;
 import org.parosproxy.paros.network.HttpHeaderField;
 import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.network.HttpRequestHeader;
@@ -57,11 +56,14 @@ public class SarifResult implements Comparable<SarifResult> {
 
         private static final int MAX_ALLOWED_REQUEST_BODY = 32 * 1024; // 32 kbyte
         private static final int MAX_ALLOWED_RESPONSE_BODY = 8 * 1024; // 8 kbyte
-        private SarifBigContentShrinker bigConentShrinker;
+        private static final int MAX_ALLOWED_BINARY_CONTENT_SIZE = 1 * 1024; // 1 kbyte
+        private static final int MAX_ALLOWED_EVICENCE_SNIPPET_SIZE = 1 * 1024; // 1 kbyte
+
+        private SarifBigContentShrinker bigContentShrinker;
 
         private SarifResultBuilder() {
             // force static method call
-            this.bigConentShrinker = new SarifBigContentShrinker();
+            this.bigContentShrinker = new SarifBigContentShrinker();
         }
 
         private SarifBinaryContentDetector binaryContentDetector;
@@ -123,9 +125,11 @@ public class SarifResult implements Comparable<SarifResult> {
             /* ----------- */
             SarifWebRequest webRequest = result.webRequest;
             HttpRequestHeader requestHeader = httpMessage.getRequestHeader();
+            boolean isBinaryRequest = binaryContentDetector.isBinaryContent(requestHeader);
+
             handleBody(
                     webRequest.body,
-                    requestHeader,
+                    isBinaryRequest,
                     httpMessage.getRequestBody(),
                     MAX_ALLOWED_REQUEST_BODY,
                     attackVector);
@@ -144,15 +148,20 @@ public class SarifResult implements Comparable<SarifResult> {
             /* ------------ */
             /* Web response */
             /* ------------ */
-            String evidenceSnippet = alert.getEvidence();
+            String shortEvidenceSnippet =
+                    bigContentShrinker.shrinkTextWithoutMarkers(
+                            alert.getEvidence(), MAX_ALLOWED_EVICENCE_SNIPPET_SIZE);
             SarifWebResponse webResponse = result.webResponse;
             HttpResponseHeader responseHeader = httpMessage.getResponseHeader();
+
+            boolean isBinaryResponse = binaryContentDetector.isBinaryContent(responseHeader);
+
             handleBody(
                     webResponse.body,
-                    responseHeader,
+                    isBinaryResponse,
                     httpMessage.getResponseBody(),
                     MAX_ALLOWED_RESPONSE_BODY,
-                    evidenceSnippet);
+                    shortEvidenceSnippet);
 
             responseHeader.getNormalisedContentTypeValue();
 
@@ -172,10 +181,10 @@ public class SarifResult implements Comparable<SarifResult> {
 
             /* build physical location region by response body + evidence */
             resultLocation.physicalLocation.region.snippet =
-                    SarifMessage.builder().setContentAsPlainText(evidenceSnippet).build();
+                    SarifMessage.builder().setContentAsPlainText(shortEvidenceSnippet).build();
 
             SarifBodyStartLineFinder startLineFinder = SarifBodyStartLineFinder.DEFAULT;
-            long startLine = startLineFinder.findStartLine(webResponse.body, evidenceSnippet);
+            long startLine = startLineFinder.findStartLine(webResponse.body, shortEvidenceSnippet);
             resultLocation.physicalLocation.region.startLine = startLine;
 
             return result;
@@ -183,23 +192,45 @@ public class SarifResult implements Comparable<SarifResult> {
 
         private void handleBody(
                 SarifBody sarifBody,
-                HttpHeader header,
+                boolean isBinary,
                 HttpBody body,
                 int maxAllowedChars,
                 String snippet) {
-            if (binaryContentDetector.isBinaryContent(header)) {
+            if (isBinary) {
+                /*
+                 * "...SHALL contain a property named binary whose value is a string containing
+                 * the MIME Base64 encoding [RFC2045] of the bytes in the relevant portion of
+                 * the artifact." - see
+                 * https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#
+                 * _Toc34317425
+                 *
+                 * In case of binary, we just show up the first KiloByte of bytes as base64 encoded string.
+                 * Should be enough to identify the result type and some additional data. So we avaoid to
+                 * blow up the report with (human) unreadable content.
+                 */
                 sarifBody.binary =
-                        bigConentShrinker.shrinkTextContent(encodeBodyToBase64(body), 32000, null);
+                        useBodyBytesBase64EncodedAndShrinkIfNecessary(
+                                body, MAX_ALLOWED_BINARY_CONTENT_SIZE);
             } else {
-                sarifBody.text = safeToString(body);
+                sarifBody.text = useBodyTextAndShrinkIfNecessary(body, maxAllowedChars, snippet);
             }
         }
 
-        private String encodeBodyToBase64(HttpBody body) {
+        private String useBodyTextAndShrinkIfNecessary(
+                HttpBody body, int maxAllowedChars, String snippet) {
             if (body == null) {
                 return null;
             }
-            return base64Encoder.encodeBytesToBase64(body.getBytes());
+            return bigContentShrinker.shrinkTextToSnippetAreaWithMarkers(
+                    body.toString(), maxAllowedChars, snippet);
+        }
+
+        private String useBodyBytesBase64EncodedAndShrinkIfNecessary(HttpBody body, int maxLength) {
+            if (body == null) {
+                return null;
+            }
+            return base64Encoder.encodeBytesToBase64(
+                    bigContentShrinker.shrinkBytesArray(body.getBytes(), maxLength));
         }
 
         private String safeToString(Object object) {

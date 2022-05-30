@@ -19,6 +19,8 @@
  */
 package org.zaproxy.addon.reports.sarif;
 
+import java.util.Arrays;
+
 /**
  * Represents a shrinker mechanism for big content data. It is used to avoid too big SARIF reports.
  * Usage is e.g. inside web response body.
@@ -26,6 +28,28 @@ package org.zaproxy.addon.reports.sarif;
 public class SarifBigContentShrinker {
 
     private static final String SHRINK_MARKER = "[...]";
+
+    /**
+     * Shrink given byte array to max size if necessary
+     *
+     * @param bytes the byte array to shrink
+     * @param maxAllowedBytes amount of maximum allowed bytes
+     * @return array with maximum allowed bytes or <code>null</code> of given array was <code>null
+     *     </code>
+     */
+    public byte[] shrinkBytesArray(byte[] bytes, int maxAllowedBytes) {
+        if (bytes == null) {
+            return null;
+        }
+        int wantedLength = maxAllowedBytes;
+        if (wantedLength < 0) {
+            wantedLength = 0;
+        }
+        if (bytes.length <= wantedLength) {
+            return bytes;
+        }
+        return Arrays.copyOf(bytes, wantedLength);
+    }
 
     /**
      * Shrink a text when maximum allowed characters are reached. When shrink is necessary and a
@@ -43,7 +67,8 @@ public class SarifBigContentShrinker {
      * @param snippet defines an (optional) text area to locate. Can be <code>null</code>
      * @return result text or <code>null</code> when origin content was also <code>null</code>
      */
-    public String shrinkTextContent(String content, int maxAllowedCharacters, String snippet) {
+    public String shrinkTextToSnippetAreaWithMarkers(
+            String content, int maxAllowedCharacters, String snippet) {
         if (content == null) {
             return null;
         }
@@ -115,5 +140,19 @@ public class SarifBigContentShrinker {
         }
 
         return sb.toString();
+    }
+
+    public String shrinkTextWithoutMarkers(String evidence, int maxSize) {
+        if (evidence == null) {
+            return null;
+        }
+        int wantedSize = maxSize;
+        if (wantedSize < 0) {
+            wantedSize = 0;
+        }
+        if (evidence.length() <= wantedSize) {
+            return evidence;
+        }
+        return evidence.substring(0, wantedSize);
     }
 }

@@ -20,9 +20,12 @@
 package org.zaproxy.addon.reports.sarif;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class SarifBigContentShrinkerTest {
 
@@ -33,116 +36,103 @@ class SarifBigContentShrinkerTest {
         shrinkerToTest = new SarifBigContentShrinker();
     }
 
-    @Test
-    void notShrinking12345678901234567890WhenMaxIs30andSnippetNotSet() {
+    // @formatter:off
+    @CsvSource({
+        "l2345,2,l2",
+        "l2345,5,l2345",
+        "l2345,10,l2345",
+        ",5,",
+        ",-1,",
+        "l2345,-1,''",
+        "'',-1,''",
+        "'',10,''"
+    })
+    // @formatter:on
+    @ParameterizedTest(name = "\"{0}\", maximum: {1} results in \"{2}\"")
+    void shrinkTextWithoutMarkers(String evidence, int maximum, String expectedResult) {
+        /* execute */
+        String result = shrinkerToTest.shrinkTextWithoutMarkers(evidence, maximum);
+
+        /* test */
+        assertEquals(expectedResult, result);
+    }
+
+    @CsvSource({"0", "10", "1", "-1", "-10"})
+    @ParameterizedTest(name = "null, maximum: {0} results in null")
+    void shrinkTextWithoutMarkersNullString(int maximum) {
+        /* execute */
+        String result = shrinkerToTest.shrinkTextWithoutMarkers(null, maximum);
+
+        /* test */
+        assertNull(result);
+    }
+
+    // @formatter:off
+    @CsvSource({
+        "4,5,4",
+        "10,11,10",
+        "10,2,2",
+        "0,5,0",
+        "0,0,0",
+        "1,1,1",
+        "30,1,1",
+        "4,0,0",
+        "4,-1,0",
+        "5,-2,0"
+    })
+    // @formatter:on
+    @ParameterizedTest(
+            name = "an array having {0} bytes, maximum: {1} results in array with {2} bytes")
+    void byteArrayShrinkingAsExpected(int givenArraySize, int maximum, int expectedArraySize) {
         /* prepare */
-        String content = "12345678901234567890";
-        String snippet = null;
+        byte[] givenArray = new byte[givenArraySize];
+        for (int i = 0; i < givenArraySize; i++) {
+            givenArray[i] = (byte) i;
+        }
+        /* execute */
+        byte[] result = shrinkerToTest.shrinkBytesArray(givenArray, maximum);
+
+        /* test */
+        assertNotNull(result);
+        assertEquals(expectedArraySize, result.length);
+        for (int i = 0; i < expectedArraySize; i++) {
+            assertEquals((byte) i, result[i]);
+        }
+    }
+
+    @CsvSource({"0", "10", "1", "-1", "-10"})
+    @ParameterizedTest(name = "null, maximum: {0} results in null")
+    void byteArrayShrinkingWithArrayNullandDifferentMaximum(int maximum) {
+        /* execute */
+        byte[] result = shrinkerToTest.shrinkBytesArray(null, maximum);
+
+        /* test */
+        assertNull(result);
+    }
+
+    // @formatter:off
+    @CsvSource({
+        "12345678901234567890,,30,12345678901234567890",
+        "12345678901234567890,12345678901234567890,30,12345678901234567890",
+        "12345678901234567890,,15,123456789012345[...]",
+        "12345678901234567890,not-found,15,123456789012345[...]",
+        "1234567890abcd1234567890,abcd,2,ab[...]",
+        "1234567890abcd1234567890,abcd,14,[...]67890abcd12345[...]",
+        "12345678901234567890abcd,abcd,14,[...]67890abcd",
+        "12345678901234567890abcd12345,abcd,14,[...]67890abcd12345",
+    })
+    @ParameterizedTest(name = "\"{0}\", snippet:\"{1}\" maximum: {2} results in \"{2}\"")
+    void shrinkTextToSnippetAreaWithMarkers(
+            String content, String snippet, int maxAllowed, String expected) {
+        /* prepare */
         int maxAllowedChars = 30;
 
         /* execute */
-        String result = shrinkerToTest.shrinkTextContent(content, maxAllowedChars, snippet);
+        String result =
+                shrinkerToTest.shrinkTextToSnippetAreaWithMarkers(
+                        content, maxAllowedChars, snippet);
 
         /* test */
         assertEquals(content, result);
-    }
-
-    @Test
-    void notShrinking12345678901234567890WhenMaxIs30andSnippetLikeContent() {
-        /* prepare */
-        String content = "12345678901234567890";
-        String snippet = content;
-        int maxAllowedChars = 30;
-
-        /* execute */
-        String result = shrinkerToTest.shrinkTextContent(content, maxAllowedChars, snippet);
-
-        /* test */
-        assertEquals(content, result);
-    }
-
-    @Test
-    void shrinking12345678901234567890WhenMaxIs15andSnippetLikeContent() {
-        /* prepare */
-        String content = "12345678901234567890";
-        String snippet = null;
-        int maxAllowedChars = 15;
-
-        /* execute */
-        String result = shrinkerToTest.shrinkTextContent(content, maxAllowedChars, snippet);
-
-        /* test */
-        assertEquals("123456789012345[...]", result);
-    }
-
-    @Test
-    void shrinking12345678901234567890WhenMaxIs15andSnippetSetButNotFound() {
-        /* prepare */
-        String content = "12345678901234567890";
-        String snippet = "not-found";
-        int maxAllowedChars = 15;
-
-        /* execute */
-        String result = shrinkerToTest.shrinkTextContent(content, maxAllowedChars, snippet);
-
-        /* test */
-        assertEquals("123456789012345[...]", result);
-    }
-
-    @Test
-    void shrinking1234567890abcd1234567890WhenMaxIs2andSnippetSetAsABCD() {
-        /* prepare */
-        String content = "1234567890abcd1234567890";
-        String snippet = "abcd";
-        int maxAllowedChars = 2;
-
-        /* execute */
-        String result = shrinkerToTest.shrinkTextContent(content, maxAllowedChars, snippet);
-
-        /* test */
-        assertEquals("ab[...]", result);
-    }
-
-    @Test
-    void shrinking1234567890abcd1234567890WhenMaxIs14andSnippetSetAsABCD() {
-        /* prepare */
-        String content = "1234567890abcd1234567890";
-        String snippet = "abcd";
-        int maxAllowedChars = 14;
-
-        /* execute */
-        String result = shrinkerToTest.shrinkTextContent(content, maxAllowedChars, snippet);
-
-        /* test */
-        assertEquals(
-                "[...]67890abcd12345[...]", result); // 5 before, 4 chars (abcd) and 5 chars after
-    }
-
-    @Test
-    void shrinking12345678901234567890abcdWhenMaxIs14andSnippetSetAsABCD() {
-        /* prepare */
-        String content = "12345678901234567890abcd";
-        String snippet = "abcd";
-        int maxAllowedChars = 14;
-
-        /* execute */
-        String result = shrinkerToTest.shrinkTextContent(content, maxAllowedChars, snippet);
-
-        /* test */
-        assertEquals("[...]67890abcd", result); // 5 before, 4 chars (abcd) and 5 chars after
-    }
-
-    @Test
-    void shrinking12345678901234567890abc12345dWhenMaxIs14andSnippetSetAsABCD() {
-        /* prepare */
-        String content = "12345678901234567890abcd12345";
-        String snippet = "abcd";
-        int maxAllowedChars = 14;
-
-        /* execute */
-        String result = shrinkerToTest.shrinkTextContent(content, maxAllowedChars, snippet);
-
-        /* test */
-        assertEquals("[...]67890abcd12345", result); // 5 before, 4 chars (abcd) and 5 chars after
     }
 }
