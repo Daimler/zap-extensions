@@ -56,6 +56,23 @@ class SarifBinaryContentDetectorTest {
         "application/zip,true",
         "audio/mp4,true",
         ",true",
+
+        /* obsolete javascript definitions - but maybe still used:*/
+        "text/javascript,false",
+        "text/javascript1.0,false",
+        "text/jscript,false",
+        "text/livescript,false",
+        "text/x-javascript,false",
+        "text/ecmascript,false",
+        "text/x-ecmascript,false",
+        "application/x-javascript,false",
+        "application/javascript,false",
+        "application/javascript,false",
+        "application/x-ecmascript,false",
+
+        /* official javascript setup - see https://www.rfc-editor.org/rfc/rfc4329.txt */
+        "application/javascript,false",
+        "application/ecmascript,false",
     })
     // @formatter:on
     @ParameterizedTest(name = "content type:{0} is binary:{1}")

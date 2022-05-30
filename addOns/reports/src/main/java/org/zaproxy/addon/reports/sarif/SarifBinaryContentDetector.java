@@ -46,6 +46,15 @@ public class SarifBinaryContentDetector {
         }
         return !(contentTypeLowerCased.startsWith("text")
                 || contentTypeLowerCased.contains("/json")
-                || contentTypeLowerCased.contains("/xml"));
+                || contentTypeLowerCased.contains("/xml")
+                || isJavaScriptApplication(contentTypeLowerCased));
+    }
+
+    private boolean isJavaScriptApplication(String contentTypeLowerCased) {
+        if (!contentTypeLowerCased.startsWith("application/")) {
+            return false;
+        }
+        return contentTypeLowerCased.contains("javascript")
+                || contentTypeLowerCased.contains("ecmascript");
     }
 }
