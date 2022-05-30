@@ -26,7 +26,6 @@ import net.htmlparser.jericho.Source;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.core.scanner.Alert;
 import org.parosproxy.paros.network.HttpMessage;
-import org.zaproxy.zap.extension.pscan.PassiveScanThread;
 import org.zaproxy.zap.extension.pscan.PluginPassiveScanner;
 
 /** A class to passively scan responses for indications that this is a modern web application. */
@@ -49,7 +48,7 @@ public class ModernAppDetectionScanRule extends PluginPassiveScanner {
         String otherInfo = null;
 
         List<Element> links = source.getAllElements(HTMLElementName.A);
-        if (links.size() == 0) {
+        if (links.isEmpty()) {
             // if no links but there are scripts then thats another indication
             List<Element> scripts = source.getAllElements(HTMLElementName.SCRIPT);
             if (scripts.size() > 0) {
@@ -93,11 +92,6 @@ public class ModernAppDetectionScanRule extends PluginPassiveScanner {
                     .setEvidence(evidence)
                     .raise();
         }
-    }
-
-    @Override
-    public void setParent(PassiveScanThread parent) {
-        // Nothing to do.
     }
 
     @Override

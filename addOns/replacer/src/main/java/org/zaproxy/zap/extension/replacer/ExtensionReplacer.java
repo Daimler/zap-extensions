@@ -89,11 +89,16 @@ public class ExtensionReplacer extends ExtensionAdaptor implements HttpSenderLis
         return optionsReplacerPanel;
     }
 
-    protected ReplacerParam getParams() {
+    public ReplacerParam getParams() {
         if (params == null) {
             params = new ReplacerParam();
         }
         return params;
+    }
+
+    @Override
+    public String getUIName() {
+        return Constant.messages.getString(PREFIX + ".name");
     }
 
     @Override

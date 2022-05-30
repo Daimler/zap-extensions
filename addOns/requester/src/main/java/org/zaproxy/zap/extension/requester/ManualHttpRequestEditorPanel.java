@@ -33,6 +33,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import javax.swing.SwingConstants;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
 import org.apache.logging.log4j.LogManager;
@@ -48,6 +49,7 @@ import org.parosproxy.paros.view.View;
 import org.zaproxy.zap.PersistentConnectionListener;
 import org.zaproxy.zap.extension.help.ExtensionHelp;
 import org.zaproxy.zap.extension.httppanel.HttpPanel;
+import org.zaproxy.zap.extension.httppanel.HttpPanel.OptionsLocation;
 import org.zaproxy.zap.extension.httppanel.HttpPanelRequest;
 import org.zaproxy.zap.extension.httppanel.HttpPanelResponse;
 import org.zaproxy.zap.extension.httppanel.Message;
@@ -58,6 +60,8 @@ public class ManualHttpRequestEditorPanel extends ManualRequestEditorPanel {
 
     private static final long serialVersionUID = -5830450800029295419L;
     private static final Logger logger = LogManager.getLogger(ManualHttpRequestEditorPanel.class);
+    private static final String CONFIG_KEY = "requesterpanel";
+    private static final String HELP_KEY = "requester";
 
     private ZapMenuItem menuItem;
 
@@ -72,18 +76,9 @@ public class ManualHttpRequestEditorPanel extends ManualRequestEditorPanel {
     private JLabel labelTimeElapse = null;
     private JLabel labelContentLength = null;
     private JLabel labelTotalLength = null;
-    private String helpKey = null;
 
-    public ManualHttpRequestEditorPanel(boolean isSendEnabled, String configurationKey)
-            throws HeadlessException {
-        this(isSendEnabled, configurationKey, null);
-    }
-
-    public ManualHttpRequestEditorPanel(
-            boolean isSendEnabled, String configurationKey, String helpKey)
-            throws HeadlessException {
-        super(isSendEnabled, configurationKey);
-        this.helpKey = helpKey;
+    public ManualHttpRequestEditorPanel() throws HeadlessException {
+        super(true, CONFIG_KEY);
         sender = new HttpPanelSender(getRequestPanel(), getResponsePanel());
 
         initialize();
@@ -152,6 +147,7 @@ public class ManualHttpRequestEditorPanel extends ManualRequestEditorPanel {
         if (responsePanel == null) {
             responsePanel = new HttpPanelResponse(false, configurationKey);
             responsePanel.setEnableViewSelect(true);
+
             responsePanel.loadConfig(Model.getSingleton().getOptionsParam().getConfig());
         }
         return responsePanel;
@@ -164,14 +160,12 @@ public class ManualHttpRequestEditorPanel extends ManualRequestEditorPanel {
                     new RequestResponsePanel(
                             configurationKey, getRequestPanel(), getResponsePanel());
 
-            if (helpKey != null) {
-                JButton helpButton = new JButton();
-                helpButton.setIcon(ExtensionHelp.getHelpIcon());
-                helpButton.setToolTipText(
-                        Constant.messages.getString("help.dialog.button.tooltip"));
-                helpButton.addActionListener(e -> ExtensionHelp.showHelp(helpKey));
-                requestResponsePanel.addToolbarButton(helpButton);
-            }
+            JButton helpButton = new JButton();
+            helpButton.setIcon(ExtensionHelp.getHelpIcon());
+            helpButton.setToolTipText(Constant.messages.getString("help.dialog.button.tooltip"));
+            helpButton.addActionListener(e -> ExtensionHelp.showHelp(HELP_KEY));
+            requestResponsePanel.addResponseToolbarButton(
+                    helpButton, HttpPanel.OptionsLocation.END);
 
             requestResponsePanel.addEndButton(getBtnSend());
             requestResponsePanel.addSeparator();
@@ -266,10 +260,9 @@ public class ManualHttpRequestEditorPanel extends ManualRequestEditorPanel {
             menuItem.addActionListener(
                     e -> {
                         Message message = getMessage();
-                        if (message == null) {
-                            setDefaultMessage();
-                        } else if (message instanceof HttpMessage
-                                && ((HttpMessage) message).getRequestHeader().isEmpty()) {
+                        if (message == null
+                                || (message instanceof HttpMessage
+                                        && ((HttpMessage) message).getRequestHeader().isEmpty())) {
                             setDefaultMessage();
                         }
                         setVisible(true);
@@ -293,9 +286,7 @@ public class ManualHttpRequestEditorPanel extends ManualRequestEditorPanel {
             msg.setRequestHeader(
                     new HttpRequestHeader(HttpRequestHeader.GET, uri, HttpHeader.HTTP11));
             setMessage(msg);
-        } catch (HttpMalformedHeaderException e) {
-            logger.error(e.getMessage(), e);
-        } catch (URIException e) {
+        } catch (HttpMalformedHeaderException | URIException e) {
             logger.error(e.getMessage(), e);
         }
     }
@@ -307,7 +298,7 @@ public class ManualHttpRequestEditorPanel extends ManualRequestEditorPanel {
      */
     private JLabel getLabelTimeLapse() {
         if (labelTimeElapse == null) {
-            labelTimeElapse = new JLabel("", JLabel.LEADING);
+            labelTimeElapse = new JLabel("", SwingConstants.LEADING);
         }
         return labelTimeElapse;
     }
@@ -319,7 +310,7 @@ public class ManualHttpRequestEditorPanel extends ManualRequestEditorPanel {
      */
     private JLabel getLabelContentLength() {
         if (labelContentLength == null) {
-            labelContentLength = new JLabel("", JLabel.LEADING);
+            labelContentLength = new JLabel("", SwingConstants.LEADING);
         }
         return labelContentLength;
     }
@@ -331,7 +322,7 @@ public class ManualHttpRequestEditorPanel extends ManualRequestEditorPanel {
      */
     private JLabel getLabelTotalLength() {
         if (labelTotalLength == null) {
-            labelTotalLength = new JLabel("", JLabel.LEADING);
+            labelTotalLength = new JLabel("", SwingConstants.LEADING);
         }
         return labelTotalLength;
     }
@@ -494,6 +485,10 @@ public class ManualHttpRequestEditorPanel extends ManualRequestEditorPanel {
 
         public void addToolbarButton(JButton button) {
             requestPanel.addOptions(button, HttpPanel.OptionsLocation.AFTER_COMPONENTS);
+        }
+
+        public void addResponseToolbarButton(JButton button, OptionsLocation location) {
+            responsePanel.addOptions(button, location);
         }
 
         public void addSeparator() {

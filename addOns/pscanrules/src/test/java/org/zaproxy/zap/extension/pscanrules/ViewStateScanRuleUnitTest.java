@@ -31,7 +31,10 @@ import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.parosproxy.paros.core.scanner.Alert;
+import org.parosproxy.paros.core.scanner.Plugin.AlertThreshold;
 import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.network.HttpRequestHeader;
 import org.zaproxy.addon.commonlib.CommonAlertTag;
@@ -105,19 +108,38 @@ class ViewStateScanRuleUnitTest extends PassiveScannerTest<ViewstateScanRule> {
     }
 
     @Test
-    void shouldRaiseAlertAsThereIsNoValidMACUnsure() {
+    void shouldRaiseAlertAsThereIsNoValidMACUnsureLowThreshold() {
+        // Given
         msg.setResponseBody(
                 "<input name=\"__VIEWSTATE\" value=\"/wEPDWUKMTkwNjc4NTIwMWRkaKrolbpTKYmPUNsab597kh8iOBU=\">");
-
+        rule.setAlertThreshold(AlertThreshold.LOW);
+        // When
         scanHttpResponseReceive(msg);
-
+        // Then
         assertThat(alertsRaised.size(), equalTo(1));
         assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_HIGH));
         assertThat(
                 alertsRaised.get(0).getName(), equalTo("Viewstate without MAC Signature (Unsure)"));
         assertThat(alertsRaised.get(0).getWascId(), equalTo(14));
         assertThat(alertsRaised.get(0).getCweId(), equalTo(642));
+        assertThat(alertsRaised.get(0).getAlertRef(), equalTo("10032-4"));
         assertSame(msg, alertsRaised.get(0).getMessage());
+    }
+
+    @ParameterizedTest
+    @EnumSource(
+            value = AlertThreshold.class,
+            names = {"MEDIUM", "HIGH"})
+    void shouldNotRaiseAlertAsThereIsNoValidMACUnsureMediumOrHighThreshold(
+            AlertThreshold threshold) {
+        // Given
+        msg.setResponseBody(
+                "<input name=\"__VIEWSTATE\" value=\"/wEPDWUKMTkwNjc4NTIwMWRkaKrolbpTKYmPUNsab597kh8iOBU=\">");
+        rule.setAlertThreshold(threshold);
+        // When
+        scanHttpResponseReceive(msg);
+        // Then
+        assertThat(alertsRaised.size(), equalTo(0));
     }
 
     @Test
@@ -133,6 +155,7 @@ class ViewStateScanRuleUnitTest extends PassiveScannerTest<ViewstateScanRule> {
                 alertsRaised.get(0).getName(), equalTo("Viewstate without MAC Signature (Sure)"));
         assertThat(alertsRaised.get(0).getWascId(), equalTo(14));
         assertThat(alertsRaised.get(0).getCweId(), equalTo(642));
+        assertThat(alertsRaised.get(0).getAlertRef(), equalTo("10032-5"));
         assertSame(msg, alertsRaised.get(0).getMessage());
     }
 
@@ -143,13 +166,14 @@ class ViewStateScanRuleUnitTest extends PassiveScannerTest<ViewstateScanRule> {
 
         scanHttpResponseReceive(msg);
 
-        assertThat("There should be two alerts raised.", alertsRaised.size(), equalTo(2));
-        assertThat(alertsRaised.get(1).getRisk(), equalTo(Alert.RISK_LOW));
-        assertThat(alertsRaised.get(1).getName(), equalTo("Old Asp.Net Version in Use"));
-        assertThat(alertsRaised.get(1).getWascId(), equalTo(14));
-        assertThat(alertsRaised.get(1).getCweId(), equalTo(642));
-        assertThat(alertsRaised.get(1).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
-        assertSame(msg, alertsRaised.get(1).getMessage());
+        assertThat("There should be one alert raised.", alertsRaised.size(), equalTo(1));
+        assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_LOW));
+        assertThat(alertsRaised.get(0).getName(), equalTo("Old Asp.Net Version in Use"));
+        assertThat(alertsRaised.get(0).getWascId(), equalTo(14));
+        assertThat(alertsRaised.get(0).getCweId(), equalTo(642));
+        assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
+        assertThat(alertsRaised.get(0).getAlertRef(), equalTo("10032-3"));
+        assertSame(msg, alertsRaised.get(0).getMessage());
     }
 
     @Test
@@ -176,6 +200,7 @@ class ViewStateScanRuleUnitTest extends PassiveScannerTest<ViewstateScanRule> {
         assertThat(alertsRaised.get(0).getOtherInfo(), equalTo("[Itest@test.com]"));
         assertThat(alertsRaised.get(0).getWascId(), equalTo(14));
         assertThat(alertsRaised.get(0).getCweId(), equalTo(642));
+        assertThat(alertsRaised.get(0).getAlertRef(), equalTo("10032-2"));
         assertSame(msg, alertsRaised.get(0).getMessage());
     }
 
@@ -199,6 +224,7 @@ class ViewStateScanRuleUnitTest extends PassiveScannerTest<ViewstateScanRule> {
         assertThat(alertsRaised.get(0).getOtherInfo(), equalTo("[127.0.0.1]"));
         assertThat(alertsRaised.get(0).getWascId(), equalTo(14));
         assertThat(alertsRaised.get(0).getCweId(), equalTo(642));
+        assertThat(alertsRaised.get(0).getAlertRef(), equalTo("10032-1"));
         assertSame(msg, alertsRaised.get(0).getMessage());
     }
 
@@ -212,11 +238,12 @@ class ViewStateScanRuleUnitTest extends PassiveScannerTest<ViewstateScanRule> {
 
         scanHttpResponseReceive(msg);
 
-        assertThat(alertsRaised.size(), equalTo(2));
-        assertThat(alertsRaised.get(1).getRisk(), equalTo(Alert.RISK_INFO));
-        assertThat(alertsRaised.get(1).getName(), equalTo("Split Viewstate in Use"));
-        assertThat(alertsRaised.get(1).getWascId(), equalTo(14));
-        assertThat(alertsRaised.get(1).getCweId(), equalTo(642));
+        assertThat(alertsRaised.size(), equalTo(1));
+        assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_INFO));
+        assertThat(alertsRaised.get(0).getName(), equalTo("Split Viewstate in Use"));
+        assertThat(alertsRaised.get(0).getWascId(), equalTo(14));
+        assertThat(alertsRaised.get(0).getCweId(), equalTo(642));
+        assertThat(alertsRaised.get(0).getAlertRef(), equalTo("10032-6"));
         assertSame(msg, alertsRaised.get(0).getMessage());
     }
 

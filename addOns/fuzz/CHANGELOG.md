@@ -4,7 +4,24 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
+### Changed
+- Allow circular redirects always.
+- Maintenance changes.
 
+## [13.6.0] - 2022-01-14
+### Added
+- An option to edit the selected message - note this will clear any defined fuzz locations
+- Fuzzer statistics
+
+### Changed
+- Update minimum ZAP version to 2.11.1.
+
+## [13.5.0] - 2021-11-04
+### Changed
+- Enhanced the help entry for the Options tab in the main fuzz dialog.
+
+### Fixed
+- Ensure the "Follow Redirects" option is displayed.
 
 ## [13.4.0] - 2021-10-14
 ### Added
@@ -157,6 +174,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - First version.
 
+[13.6.0]: https://github.com/zaproxy/zap-extensions/releases/fuzz-v13.6.0
+[13.5.0]: https://github.com/zaproxy/zap-extensions/releases/fuzz-v13.5.0
 [13.4.0]: https://github.com/zaproxy/zap-extensions/releases/fuzz-v13.4.0
 [13.3.0]: https://github.com/zaproxy/zap-extensions/releases/fuzz-v13.3.0
 [13.2.0]: https://github.com/zaproxy/zap-extensions/releases/fuzz-v13.2.0

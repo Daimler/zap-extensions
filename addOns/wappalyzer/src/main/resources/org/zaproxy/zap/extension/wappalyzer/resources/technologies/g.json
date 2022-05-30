@@ -1,4 +1,16 @@
 {
+  "GEODIS": {
+    "cats": [
+      99
+    ],
+    "description": "GEODIS is a global transport and logistics company.",
+    "icon": "GEODIS.svg",
+    "requiresCategory": 6,
+    "text": [
+      "\\bGeodis\\b"
+    ],
+    "website": "https://geodis.com"
+  },
   "GEOvendas": {
     "cats": [
       6
@@ -12,6 +24,18 @@
     ],
     "saas": true,
     "website": "https://www.geovendas.com"
+  },
+  "GLS": {
+    "cats": [
+      99
+    ],
+    "description": "GLS offers parcel, logistics and express services, throughout Europe as well as in the US and in Canada.",
+    "icon": "GLS.svg",
+    "requiresCategory": 6,
+    "text": [
+      "\\bGLS\\b"
+    ],
+    "website": "https://gls-group.eu"
   },
   "GOV.UK Elements": {
     "cats": [
@@ -40,7 +64,7 @@
     "js": {
       "GOVUKFrontend": ""
     },
-    "scripts": [
+    "scriptSrc": [
       "govuk-frontend(?:[^>]*?([0-9a-fA-F]{7,40}|[\\d]+(?:.[\\d]+(?:.[\\d]+)?)?)|)[^>]*?(?:\\.min)?\\.js\\;version:\\1"
     ],
     "website": "https://design-system.service.gov.uk/"
@@ -60,7 +84,7 @@
     "js": {
       "GOVUK": ""
     },
-    "scripts": [
+    "scriptSrc": [
       "govuk-template\\.js"
     ],
     "website": "https://github.com/alphagov/govuk_template/"
@@ -89,8 +113,41 @@
       "gsap.version": "([\\d.]+)\\;version:\\1",
       "gsapVersions": ""
     },
-    "scripts": "TweenMax(?:\\.min)?\\.js",
+    "scriptSrc": "TweenMax(?:\\.min)?\\.js",
     "website": "https://greensock.com/gsap"
+  },
+  "GTranslate": {
+    "cats": [
+      87,
+      89
+    ],
+    "description": "GTranslate is a website translator which can translate any website to any language automatically.",
+    "dom": "link[href*='/wp-content/plugins/gtranslate/'], img[src*='/wp-content/plugins/gtranslate/']",
+    "icon": "GTranslate.svg",
+    "pricing": [
+      "freemium",
+      "low",
+      "recurring"
+    ],
+    "requires": "WordPress",
+    "website": "https://gtranslate.io"
+  },
+  "GTranslate app": {
+    "cats": [
+      100,
+      89
+    ],
+    "description": "GTranslate app is a website translator which can translate any website to any language automatically.",
+    "dom": "img[src*='gtranslate.io/shopify']",
+    "icon": "GTranslate.svg",
+    "pricing": [
+      "freemium",
+      "low",
+      "recurring"
+    ],
+    "requires": "Shopify",
+    "scriptSrc": "gtranslate\\.io/shopify/",
+    "website": "https://apps.shopify.com/multilingual-shop-by-gtranslate"
   },
   "GX WebManager": {
     "cats": [
@@ -130,7 +187,7 @@
     "js": {
       "gambio": ""
     },
-    "scripts": "gm_javascript\\.js\\.php",
+    "scriptSrc": "gm_javascript\\.js\\.php",
     "website": "http://gambio.de"
   },
   "Gatsby": {
@@ -178,7 +235,7 @@
       "gemius_pending": "",
       "pp_gemius_hit": ""
     },
-    "scripts": [
+    "scriptSrc": [
       "hit\\.gemius\\.pl/xgemius\\.js",
       "hit\\.gemius\\.pl\\;confidence:80",
       "xgemius\\.js\\;confidence:30"
@@ -196,7 +253,7 @@
     "js": {
       "gx.gxVersion": "^(.+)-.*$\\;version:\\1"
     },
-    "scripts": [
+    "scriptSrc": [
       "/static/gxgral\\.js",
       "/static/gxtimezone\\.js"
     ],
@@ -224,7 +281,7 @@
     },
     "icon": "generatepress.png",
     "requires": "WordPress",
-    "scripts": [
+    "scriptSrc": [
       "themes/generatepress\\S*\\.js(?:\\?ver=([0-9.]+))?\\;version:\\1"
     ],
     "website": "https://generatepress.com/"
@@ -240,7 +297,7 @@
       "genesis_responsive_menu": ""
     },
     "requires": "WordPress",
-    "scripts": "/wp-content/themes/genesis/lib/js/",
+    "scriptSrc": "/wp-content/themes/genesis/lib/js/",
     "website": "https://www.studiopress.com/themes/genesis"
   },
   "Genesys Cloud": {
@@ -259,11 +316,25 @@
       "recurring"
     ],
     "saas": true,
-    "scripts": [
+    "scriptSrc": [
       "apps\\.mypurecloud\\.\\w+/widgets/([\\d.]+)\\;version:\\1",
       "apps\\.mypurecloud\\.\\w+"
     ],
     "website": "https://www.genesys.com"
+  },
+  "Geniee": {
+    "cats": [
+      36
+    ],
+    "description": "Geniee is an ad technology company.",
+    "dom": "img[src*='.gssprt.jp/'], link[href*='.gssprt.jp']",
+    "icon": "Geniee.png",
+    "pricing": [
+      "poa"
+    ],
+    "saas": true,
+    "scriptSrc": "\\.gsspcln\\.jp/",
+    "website": "https://geniee.co.jp"
   },
   "Gentoo": {
     "cats": [
@@ -276,6 +347,19 @@
     },
     "icon": "Gentoo.png",
     "website": "http://www.gentoo.org"
+  },
+  "Geo Targetly": {
+    "cats": [
+      79
+    ],
+    "description": "Geo Targetly is a website geo personalisation software.",
+    "icon": "Geo Targetly.svg",
+    "pricing": [
+      "payg"
+    ],
+    "saas": true,
+    "scriptSrc": "geotargetly\\.co/",
+    "website": "https://geotargetly.com"
   },
   "Gerrit": {
     "cats": [
@@ -297,7 +381,7 @@
     "meta": {
       "title": "^Gerrit Code Review$"
     },
-    "scripts": "^gerrit_ui/gerrit_ui",
+    "scriptSrc": "^gerrit_ui/gerrit_ui",
     "website": "http://www.gerritcodereview.com"
   },
   "Get Satisfaction": {
@@ -320,6 +404,45 @@
       "usabilla_live": ""
     },
     "website": "https://www.getfeedback.com"
+  },
+  "GetMeAShop": {
+    "cats": [
+      6
+    ],
+    "description": "GetMeAShop is a cloud-based ecommerce solution for small and midsize businesses across industries such as retail and manufacturing.",
+    "dom": "link[href*='.getmeashop.com']",
+    "icon": "GetMeAShop.png",
+    "js": {
+      "gmas_base_url": "'\\.getmeashop\\.com",
+      "search_api_base_uri": "search\\.getmeashop\\.com"
+    },
+    "pricing": [
+      "low",
+      "recurring"
+    ],
+    "saas": true,
+    "website": "https://www.getmeashop.com"
+  },
+  "GetResponse": {
+    "cats": [
+      32,
+      75
+    ],
+    "description": "GetResponse is an email marketing app that allows you to create a mailing list and capture data onto it.",
+    "dom": "form[action*='.getresponse.com/']",
+    "icon": "GetResponse.svg",
+    "js": {
+      "GRAPP": "",
+      "GRWF2": ""
+    },
+    "pricing": [
+      "freemium",
+      "recurring",
+      "payg"
+    ],
+    "saas": true,
+    "scriptSrc": "\\.getresponse\\.com/",
+    "website": "https://www.getresponse.com"
   },
   "GetSimple CMS": {
     "cats": [
@@ -348,7 +471,7 @@
       "recurring"
     ],
     "saas": true,
-    "scripts": "api\\.at\\.getsocial\\.io",
+    "scriptSrc": "api\\.at\\.getsocial\\.io",
     "website": "https://getsocial.io"
   },
   "GetYourGuide": {
@@ -374,7 +497,7 @@
       "payg"
     ],
     "saas": true,
-    "scripts": "\\.getyourguide\\.com/",
+    "scriptSrc": "\\.getyourguide\\.com/",
     "website": "https://partner.getyourguide.com"
   },
   "Getintent": {
@@ -402,7 +525,7 @@
       "recurring"
     ],
     "saas": true,
-    "scripts": "\\.getsitecontrol\\.com/",
+    "scriptSrc": "\\.getsitecontrol\\.com/",
     "website": "https://getsitecontrol.com"
   },
   "Ghost": {
@@ -421,15 +544,42 @@
     },
     "website": "http://ghost.org"
   },
+  "Gist Giftship": {
+    "cats": [
+      100
+    ],
+    "description": "Gist Giftship is a gifting app on Shopify that allows your customers to complete all of their gift shopping at once.",
+    "icon": "Gist.svg",
+    "pricing": [
+      "mid",
+      "recurring",
+      "payg"
+    ],
+    "requires": "Shopify",
+    "saas": true,
+    "scriptSrc": "assets/js/giftship\\.([\\d\\.]+)\\.js\\;version:\\1",
+    "website": "https://gist-apps.com/giftship"
+  },
   "GitBook": {
     "cats": [
       4
     ],
     "description": "GitBook is a command-line tool for creating documentation using Git and Markdown.",
     "icon": "GitBook.png",
+    "js": {
+      "__GITBOOK_INITIAL_PROPS__": "",
+      "__GITBOOK_INITIAL_STATE__": "",
+      "__GITBOOK_LAZY_MODULES__": ""
+    },
     "meta": {
       "generator": "GitBook ([\\d.]+)?\\;version:\\1"
     },
+    "pricing": [
+      "freemium",
+      "low",
+      "recurring"
+    ],
+    "saas": true,
     "url": "^https?://[^/]+\\.gitbook\\.com/",
     "website": "https://www.gitbook.com"
   },
@@ -443,7 +593,6 @@
       "X-GitHub-Request-Id": ""
     },
     "icon": "GitHub.svg",
-    "implies": "Ruby on Rails",
     "url": "^https?://[^/]+\\.github\\.io",
     "website": "https://pages.github.com/"
   },
@@ -499,6 +648,7 @@
       "<div class=\"ui left\">\\n\\s+© Gitea Version: ([\\d.]+)\\;version:\\1"
     ],
     "icon": "gitea.svg",
+    "implies": "Go",
     "meta": {
       "keywords": "^go,git,self-hosted,gitea$"
     },
@@ -515,6 +665,25 @@
     ],
     "website": "http://gerrit.googlesource.com/gitiles/"
   },
+  "GiveWP": {
+    "cats": [
+      41,
+      87
+    ],
+    "description": "GiveWP is a donation plugin for WordPress.",
+    "icon": "GiveWP.svg",
+    "js": {
+      "Give.donor": "",
+      "giveApiSettings": ""
+    },
+    "pricing": [
+      "freemium",
+      "onetime"
+    ],
+    "requires": "WordPress",
+    "scriptSrc": "/wp-content/plugins/give/.+give\\.js(?:\\?ver=(\\d+(?:\\.\\d+)+))?\\;version:\\1",
+    "website": "https://givewp.com"
+  },
   "Gladly": {
     "cats": [
       52,
@@ -526,7 +695,7 @@
       "Gladly": ""
     },
     "saas": true,
-    "scripts": "cdn\\.gladly\\.com",
+    "scriptSrc": "cdn\\.gladly\\.com",
     "website": " https://www.gladly.com/"
   },
   "GlassFish": {
@@ -541,9 +710,23 @@
     "implies": "Java",
     "website": "http://glassfish.java.net"
   },
+  "Glitch": {
+    "cats": [
+      62
+    ],
+    "description": "Glitch is a collaborative programming environment that lives in your browser and deploys code as you type.",
+    "icon": "Glitch.svg",
+    "pricing": [
+      "freemium",
+      "low",
+      "recurring"
+    ],
+    "url": "https://[^.]+\\.glitch\\.me",
+    "website": "https://glitch.com"
+  },
   "Global-e": {
     "cats": [
-      6
+      106
     ],
     "cookies": {
       "GlobalE_CT_Data": "",
@@ -560,8 +743,102 @@
       "poa"
     ],
     "saas": true,
-    "scripts": "\\.global-e\\.com",
+    "scriptSrc": "\\.global-e\\.com",
     "website": "https://www.global-e.com"
+  },
+  "GlobalShopex": {
+    "cats": [
+      106
+    ],
+    "description": "GlobalShopex offers a logistics ecommerce solution easy to integrate, which helps online businesses to sell in over 200 countries.",
+    "icon": "GlobalShopex.png",
+    "js": {
+      "GSXMiniCheckout": "",
+      "GSXPreviewCheckout": ""
+    },
+    "pricing": [
+      "poa"
+    ],
+    "saas": true,
+    "scriptSrc": "//globalshopex\\.com/",
+    "website": "http://www.globalshopex.com"
+  },
+  "Globo Also Bought": {
+    "cats": [
+      100
+    ],
+    "description": "Also Bought is a conversion Shopify app by Globo.",
+    "icon": "Globo apps.png",
+    "implies": "Shopify",
+    "pricing": [
+      "freemium",
+      "low",
+      "recurring"
+    ],
+    "saas": true,
+    "scriptSrc": "assets/globo\\.alsobought\\.js",
+    "website": "https://apps.shopify.com/globo-related-products"
+  },
+  "Globo Color Swatch": {
+    "cats": [
+      100
+    ],
+    "description": "Globo Color Swatch app gives you an easy-to-use tool to display product variants on both collection page, homepage and product page creatively as a means to enhance customers' experience and stimulate them to purchase.",
+    "icon": "Globo apps.png",
+    "implies": "Shopify",
+    "pricing": [
+      "freemium"
+    ],
+    "saas": true,
+    "scriptSrc": "assets/globo\\.swatch\\.data\\.js",
+    "website": "https://apps.shopify.com/globo-related-products"
+  },
+  "Globo Form Builder": {
+    "cats": [
+      100
+    ],
+    "description": "Form Builder is a Shopify form builder app for contact form built by Globo.",
+    "icon": "Globo apps.png",
+    "implies": "Shopify",
+    "pricing": [
+      "freemium",
+      "low",
+      "recurring"
+    ],
+    "saas": true,
+    "scriptSrc": "/assets/globo\\.formbuilder\\.init\\.js",
+    "website": "https://apps.shopify.com/form-builder-contact-form"
+  },
+  "Glopal": {
+    "cats": [
+      106
+    ],
+    "description": "Glopal provides advanced international marketing solutions for ecommerce retailers and brands seeking to grow their businesses' globally.",
+    "icon": "Glopal.png",
+    "pricing": [
+      "freemium",
+      "mid",
+      "recurring",
+      "payg"
+    ],
+    "saas": true,
+    "scriptSrc": "\\.glopal\\.com/",
+    "website": "https://www.glopal.com"
+  },
+  "GloriaFood": {
+    "cats": [
+      93
+    ],
+    "description": "GloriaFood is an online ordering and food delivery platform that helps restaurant owners manage orders and streamline point-of-sale operations.",
+    "icon": "Oracle.svg",
+    "js": {
+      "glfBindButtons": "",
+      "glfWidget": ""
+    },
+    "pricing": [
+      "freemium"
+    ],
+    "website": "https://www.gloriafood.com"
   },
   "Glyphicons": {
     "cats": [
@@ -572,6 +849,37 @@
     "icon": "Glyphicons.png",
     "website": "http://glyphicons.com"
   },
+  "Gnuboard": {
+    "cats": [
+      1
+    ],
+    "description": "Gnuboard is an open-source bulletin board system or CMS from South Korea.",
+    "dom": {
+      "a[href*='board.php']": {
+        "attributes": {
+          "href": "(?:gnuboard/)?bbs/(?:gnu)?board\\.php"
+        }
+      },
+      "link[href*='/gnuboard/style.css']": {
+        "attributes": {
+          "href": ""
+        }
+      }
+    },
+    "icon": "default.svg",
+    "implies": [
+      "PHP",
+      "MySQL"
+    ],
+    "js": {
+      "g4_bbs_img": "",
+      "g4_is_admin": "",
+      "g5_is_admin": "",
+      "g5_js_ver": ""
+    },
+    "oss": true,
+    "website": "https://github.com/gnuboard"
+  },
   "Go": {
     "cats": [
       27
@@ -579,6 +887,23 @@
     "cpe": "cpe:/a:golang:go",
     "icon": "Go.svg",
     "website": "https://golang.org"
+  },
+  "GoAffPro": {
+    "cats": [
+      71
+    ],
+    "description": "Goaffpro is an affiliate marketing solution for ecommerce stores.",
+    "icon": "goaffpro.svg",
+    "js": {
+      "gfp_api_server": ""
+    },
+    "pricing": [
+      "freemium",
+      "mid",
+      "recurring"
+    ],
+    "scriptSrc": "api\\.goaffpro\\.com/loader\\.js",
+    "website": "https://goaffpro.com/"
   },
   "GoAhead": {
     "cats": [
@@ -590,6 +915,20 @@
     },
     "icon": "GoAhead.png",
     "website": "http://embedthis.com/products/goahead/index.html"
+  },
+  "GoAnywhere": {
+    "cats": [
+      19
+    ],
+    "description": "GoAnywhere by HelpSystems is a Managed File Transfer (MFT) system with sharing and collaboration features",
+    "headers": {
+      "Server": "goanywhere"
+    },
+    "icon": "goanywhere.png",
+    "js": {
+      "appContainer": "GoAnywhereWebClientContainer"
+    },
+    "website": "https://www.goanywhere.com/"
   },
   "GoCache": {
     "cats": [
@@ -603,6 +942,94 @@
     "icon": "GoCache.png",
     "website": "https://www.gocache.com.br/"
   },
+  "GoDaddy": {
+    "cats": [
+      88
+    ],
+    "description": "GoDaddy is used as a web host and domain registrar.",
+    "dns": {
+      "NS": "\\.domaincontrol\\.com",
+      "SOA": "\\.domaincontrol\\.com"
+    },
+    "icon": "GoDaddy.svg",
+    "pricing": [
+      "low",
+      "recurring"
+    ],
+    "website": "https://www.godaddy.com"
+  },
+  "GoDaddy CoBlocks": {
+    "cats": [
+      87,
+      51
+    ],
+    "description": "GoDaddy CoBlocks is a suite of professional page building content blocks for the WordPress Gutenberg block editor.",
+    "dom": "link[href*='/wp-content/plugins/coblocks/']",
+    "icon": "GoDaddy.svg",
+    "oss": true,
+    "requires": "WordPress",
+    "scriptSrc": "/wp-content/plugins/coblocks/",
+    "website": "https://github.com/godaddy-wordpress/coblocks"
+  },
+  "GoDaddy Escapade": {
+    "cats": [
+      80
+    ],
+    "description": "GoDaddy Escapade is a GoDaddy Primer child theme with a unique sidebar navigation.",
+    "dom": "link[href*='/wp-content/themes/escapade/']",
+    "excludes": "GoDaddy Primer",
+    "icon": "GoDaddy.svg",
+    "requires": "WordPress",
+    "website": "https://github.com/godaddy-wordpress/primer-child-escapade"
+  },
+  "GoDaddy Go": {
+    "cats": [
+      80
+    ],
+    "description": "GoDaddy Go is a flexible Gutenberg-first WordPress theme built for go-getters everywhere.",
+    "dom": "link#go-style-css",
+    "icon": "GoDaddy.svg",
+    "js": {
+      "goFrontend.openMenuOnHover": ""
+    },
+    "oss": true,
+    "requires": "WordPress",
+    "scriptSrc": "/wp-content/themes/go/.+frontend\\.min\\.js(?:.+ver=([\\d\\.]+))?\\;version:\\1",
+    "website": "https://github.com/godaddy-wordpress/go"
+  },
+  "GoDaddy Lyrical": {
+    "cats": [
+      80
+    ],
+    "description": "GoDaddy Lyrical is a GoDaddy Primer child theme with a focus on photography and beautiful fonts.",
+    "dom": "link[href*='/wp-content/themes/lyrical/']",
+    "excludes": "GoDaddy Primer",
+    "icon": "GoDaddy.svg",
+    "requires": "WordPress",
+    "website": "https://github.com/godaddy-wordpress/primer-child-lyrical"
+  },
+  "GoDaddy Primer": {
+    "cats": [
+      80
+    ],
+    "description": "GoDaddy Primer is a powerful theme that brings clarity to your content in a fresh design. This is the parent for all themes in the GoDaddy Primer theme family.",
+    "dom": "link[href*='/wp-content/themes/primer/']",
+    "icon": "GoDaddy.svg",
+    "requires": "WordPress",
+    "scriptSrc": "/wp-content/themes/primer/.+navigation\\.min\\.js(?:.+ver=([\\d\\.]+))?\\;version:\\1",
+    "website": "https://github.com/godaddy-wordpress/primer"
+  },
+  "GoDaddy Uptown Style": {
+    "cats": [
+      80
+    ],
+    "description": "GoDaddy Uptown Style is a GoDaddy Primer child theme with elegance and class.",
+    "dom": "link[href*='/wp-content/themes/uptown-style/']",
+    "excludes": "GoDaddy Primer",
+    "icon": "GoDaddy.svg",
+    "requires": "WordPress",
+    "website": "https://github.com/godaddy-wordpress/primer-child-uptownstyle"
+  },
   "GoDaddy Website Builder": {
     "cats": [
       1
@@ -610,7 +1037,7 @@
     "cookies": {
       "dps_site_id": ""
     },
-    "icon": "godaddy.svg",
+    "icon": "GoDaddy.svg",
     "meta": {
       "generator": "Go Daddy Website Builder (.+)\\;version:\\1"
     },
@@ -643,6 +1070,37 @@
     },
     "website": "http://gostats.com/"
   },
+  "GoatCounter": {
+    "cats": [
+      10
+    ],
+    "description": "GoatCounter is an open source web analytics platform available as a hosted service (free for non-commercial use) or self-hosted app. It aims to offer easy to use and meaningful privacy-friendly web analytics as an alternative to Google Analytics or Matomo.",
+    "icon": "goatcounter.svg",
+    "oss": true,
+    "scriptSrc": "gc\\.zgo\\.at/count\\.js",
+    "website": "https://www.goatcounter.com/"
+  },
+  "Goftino": {
+    "cats": [
+      52
+    ],
+    "description": "Goftino is an online chat service for web users.",
+    "icon": "Goftino.svg",
+    "js": {
+      "Goftino.setWidget": "",
+      "goftinoRemoveLoad": "",
+      "goftino_1": "",
+      "goftino_getUrl": ""
+    },
+    "pricing": [
+      "freemium",
+      "low",
+      "recurring"
+    ],
+    "saas": true,
+    "scriptSrc": "\\.goftino\\.com/",
+    "website": "https://www.goftino.com"
+  },
   "Gogs": {
     "cats": [
       47
@@ -657,10 +1115,15 @@
       "<button class=\"ui basic clone button\" id=\"repo-clone-ssh\" data-link=\"gogs@"
     ],
     "icon": "gogs.png",
+    "implies": [
+      "Go",
+      "Macaron"
+    ],
     "meta": {
       "keywords": "go, git, self-hosted, gogs"
     },
-    "scripts": "js/gogs\\.js",
+    "oss": true,
+    "scriptSrc": "js/gogs\\.js",
     "website": "http://gogs.io"
   },
   "Google AdSense": {
@@ -676,7 +1139,7 @@
       "google_ad_": ""
     },
     "saas": true,
-    "scripts": [
+    "scriptSrc": [
       "googlesyndication\\.com/",
       "ad\\.ca\\.doubleclick\\.net",
       "2mdn\\.net",
@@ -709,7 +1172,7 @@
       "freemium"
     ],
     "saas": true,
-    "scripts": "\\.googleadservices\\.com/pagead/conversion_async\\.js",
+    "scriptSrc": "\\.googleadservices\\.com/pagead/conversion_async\\.js",
     "website": "https://support.google.com/google-ads/answer/1722022"
   },
   "Google Analytics": {
@@ -728,7 +1191,7 @@
       "GoogleAnalyticsObject": "",
       "gaGlobal": ""
     },
-    "scripts": [
+    "scriptSrc": [
       "google-analytics\\.com/(?:ga|urchin|analytics)\\.js",
       "googletagmanager\\.com/gtag/js"
     ],
@@ -747,7 +1210,7 @@
     "js": {
       "gaplugins.EC": ""
     },
-    "scripts": "google-analytics\\.com\\/plugins\\/ua\\/(?:ec|ecommerce)\\.js",
+    "scriptSrc": "google-analytics\\.com\\/plugins\\/ua\\/(?:ec|ecommerce)\\.js",
     "website": "https://developers.google.com/analytics/devguides/collection/analyticsjs/enhanced-ecommerce"
   },
   "Google App Engine": {
@@ -774,7 +1237,7 @@
       "freemium"
     ],
     "saas": true,
-    "scripts": "gstatic\\.com/call-tracking/.+\\.js",
+    "scriptSrc": "gstatic\\.com/call-tracking/.+\\.js",
     "website": "https://support.google.com/google-ads/answer/6100664"
   },
   "Google Charts": {
@@ -791,15 +1254,24 @@
   },
   "Google Cloud": {
     "cats": [
-      31
+      63
     ],
     "cpe": "cpe:/a:google:cloud_platform",
     "description": "Google Cloud is a suite of cloud computing services.",
+    "icon": "google_cloud.svg",
+    "website": "https://cloud.google.com"
+  },
+  "Google Cloud CDN": {
+    "cats": [
+      31
+    ],
+    "description": "Cloud CDN uses Google's global edge network to serve content closer to users.",
     "headers": {
       "Via": "^1\\.1 google$"
     },
-    "icon": "google_cloud.svg",
-    "website": "https://cloud.google.com"
+    "icon": "google-cloud-cdn.svg",
+    "implies": "Google Cloud",
+    "website": "https://cloud.google.com/cdn"
   },
   "Google Cloud Storage": {
     "cats": [
@@ -813,6 +1285,18 @@
     "implies": "Google Cloud",
     "website": "https://cloud.google.com/storage"
   },
+  "Google Cloud Trace": {
+    "cats": [
+      92
+    ],
+    "description": "Google Cloud Trace is a distributed tracing system that collects latency data from applications and displays it in the Google Cloud Console.",
+    "headers": {
+      "x-cloud-trace-context": ""
+    },
+    "icon": "google-cloud-trace.svg",
+    "implies": "Google Cloud",
+    "website": "https://cloud.google.com/trace"
+  },
   "Google Code Prettify": {
     "cats": [
       19
@@ -823,18 +1307,17 @@
     },
     "website": "http://code.google.com/p/google-code-prettify"
   },
-  "Google Core Web Vitals": {
+  "Google Customer Reviews": {
     "cats": [
-      78
+      90
     ],
-    "description": "Google Core Web Vitals is a tiny, modular library for measuring all the web vitals metrics on real users.",
-    "icon": "Google Core Web Vitals.svg",
-    "js": {
-      "webVitals.getCLS": ""
-    },
-    "oss": true,
-    "scripts": "web-vitals@([\\d.]+)/dist/web-vitals.*\\.js\\;version:\\1",
-    "website": "https://github.com/GoogleChrome/web-vitals"
+    "description": "Google Customer Reviews is a badge on your site that can help users identify your site with the Google brand and can be placed on any page of your site.",
+    "dom": "iframe[src*='.google.com/shopping/customerreviews/'], a[href*='.google.com/shopping/customerreviews/'][target='_blank']",
+    "icon": "Google.svg",
+    "pricing": [
+      "freemium"
+    ],
+    "website": "https://support.google.com/merchants/answer/7105655?hl=en"
   },
   "Google Font API": {
     "cats": [
@@ -846,8 +1329,18 @@
     "js": {
       "WebFonts": ""
     },
-    "scripts": "googleapis\\.com/.+webfont",
+    "scriptSrc": "googleapis\\.com/.+webfont",
     "website": "http://google.com/fonts"
+  },
+  "Google Hosted Libraries": {
+    "cats": [
+      31
+    ],
+    "description": "Google Hosted Libraries is a stable, reliable, high-speed, globally available content distribution network for the most popular, open-source JavaScript libraries.",
+    "dom": "link[href*='ajax.googleapis.com/ajax/libs']",
+    "icon": "Google Developers.svg",
+    "scriptSrc": "ajax\\.googleapis\\.com/ajax/libs/",
+    "website": "https://developers.google.com/speed/libraries"
   },
   "Google Maps": {
     "cats": [
@@ -855,7 +1348,7 @@
     ],
     "description": "Google Maps is a web mapping service. It offers satellite imagery, aerial photography, street maps, 360° interactive panoramic views of streets, real-time traffic conditions, and route planning for traveling by foot, car, bicycle and air, or public transportation.",
     "icon": "Google Maps.svg",
-    "scripts": [
+    "scriptSrc": [
       "(?:maps\\.google\\.com/maps\\?file=api(?:&v=([\\d.]+))?|maps\\.google\\.com/maps/api/staticmap)\\;version:API v\\1",
       "//maps\\.google(?:apis)?\\.com/maps/api/js"
     ],
@@ -878,13 +1371,14 @@
     "js": {
       "google_optimize": ""
     },
-    "scripts": "googleoptimize\\.com/optimize\\.js",
+    "scriptSrc": "googleoptimize\\.com/optimize\\.js",
     "website": "https://optimize.google.com"
   },
   "Google PageSpeed": {
     "cats": [
       23,
-      33
+      33,
+      92
     ],
     "description": "Google PageSpeed is a family of tools designed to help websites performance optimisations.",
     "headers": {
@@ -901,7 +1395,7 @@
     "description": "Google Pay is a digital wallet platform and online payment system developed by Google to power in-app and tap-to-pay purchases on mobile devices, enabling users to make payments with Android phones, tablets or watches.",
     "dom": "[aria-labelledby='pi-google_pay'], ul[data-shopify-buttoncontainer] li",
     "icon": "Google.svg",
-    "scripts": [
+    "scriptSrc": [
       "pay\\.google\\.com/([a-z/]+)/pay\\.js"
     ],
     "website": "https://pay.google.com"
@@ -911,8 +1405,8 @@
       36
     ],
     "description": "Google Publisher Tag (GPT) is an ad tagging library for Google Ad Manager which is used to dynamically build ad requests.",
-    "icon": "Google Publisher Tag.svg",
-    "scripts": [
+    "icon": "Google Developers.svg",
+    "scriptSrc": [
       "googletagservices\\.com/tag/js/gpt\\.js",
       "securepubads\\.g\\.doubleclick\\.net/gpt"
     ],
@@ -941,13 +1435,14 @@
       "google-signin-client_id": "",
       "google-signin-scope": ""
     },
-    "scripts": "accounts\\.google\\.com/gsi/client",
+    "scriptSrc": "accounts\\.google\\.com/gsi/client",
     "website": "https://developers.google.com/identity/sign-in/web"
   },
   "Google Sites": {
     "cats": [
       1
     ],
+    "dom": "[data-abuse-proto*='https://sites.google.com/']",
     "icon": "Google Sites.png",
     "url": "^https?://sites\\.google\\.com",
     "website": "http://sites.google.com"
@@ -967,8 +1462,21 @@
       "googletag": ""
     },
     "saas": true,
-    "scripts": "googletagmanager\\.com/gtm\\.js",
+    "scriptSrc": "googletagmanager\\.com/gtm\\.js",
     "website": "http://www.google.com/tagmanager"
+  },
+  "Google Tag Manager for WordPress": {
+    "cats": [
+      87
+    ],
+    "description": "Google Tag Manager for WordPress plugin places the GTM container code snippets onto your wordpress website so that you do not need to add this manually.",
+    "dom": "link[href*='/wp-content/plugins/duracelltomi-google-tag-manager/']",
+    "icon": "Google Tag Manager for WordPress.png",
+    "implies": "Google Tag Manager",
+    "oss": true,
+    "requires": "WordPress",
+    "scriptSrc": "/wp-content/plugins/duracelltomi-google-tag-manager/.+\\.js(?:\\?ver=(\\d+(?:\\.\\d+)+))?\\;version:\\1",
+    "website": "https://gtm4wp.com"
   },
   "Google Wallet": {
     "cats": [
@@ -976,7 +1484,7 @@
     ],
     "icon": "Google Wallet.png",
     "saas": true,
-    "scripts": [
+    "scriptSrc": [
       "checkout\\.google\\.com",
       "wallet\\.google\\.com"
     ],
@@ -1050,10 +1558,14 @@
       41,
       91
     ],
-    "description": "Grab Pay Later is a Buy now pay later solution offered by Grab.",
+    "description": "Grab Pay Later is a buy now pay later solution offered by Grab.",
     "icon": "Grab.svg",
+    "js": {
+      "GrabWidget": "",
+      "grab_widget_money_format": ""
+    },
     "saas": true,
-    "scripts": "grab-paylater\\.js",
+    "scriptSrc": "grab-paylater\\.js",
     "website": "https://www.grab.com/sg/finance/pay-later/"
   },
   "Grafana": {
@@ -1062,12 +1574,16 @@
     ],
     "description": "Grafana is a multi-platform open source analytics and interactive visualisation web application.",
     "icon": "Grafana.svg",
+    "implies": [
+      "Go",
+      "Macaron"
+    ],
     "js": {
-      "__grafana_public_path__": "",
-      "grafanaBootData.settings.buildInfo['version']": "([\\d.]+)\\;version:\\1"
+      "__grafana_public_path__": ""
     },
     "oss": true,
-    "scripts": "grafana\\..+\\.com/public/build/",
+    "scriptSrc": "grafana\\..+\\.com/public/build/",
+    "scripts": ".+latestVersion\":\"[\\d\\.\\w\\-]+\"\\,\"version\":\"([\\d\\.]+)\\;version:\\1\\;confidence:75",
     "website": "https://grafana.com"
   },
   "Graffiti CMS": {
@@ -1082,7 +1598,7 @@
     "meta": {
       "generator": "Graffiti CMS ([^\"]+)\\;version:\\1"
     },
-    "scripts": "/graffiti\\.js",
+    "scriptSrc": "/graffiti\\.js",
     "website": "http://graffiticms.codeplex.com"
   },
   "GrandNode": {
@@ -1134,8 +1650,29 @@
     ],
     "description": "GraphQL is a query language for APIs and a runtime for fulfilling those queries with your existing data.",
     "icon": "GraphQL.svg",
+    "meta": {
+      "store-config": "graphqlMethod"
+    },
     "oss": true,
     "website": "https://graphql.org"
+  },
+  "Graphene": {
+    "cats": [
+      80
+    ],
+    "description": "Graphene is a WordPress theme created by Graphene Themes.",
+    "icon": "Graphene Themes.png",
+    "js": {
+      "grapheneGetInfScrollBtnLbl": "",
+      "grapheneJS.templateUrl": ""
+    },
+    "pricing": [
+      "freemium",
+      "onetime"
+    ],
+    "requires": "WordPress",
+    "scriptSrc": "/wp-content/themes/graphene(?:-plus)?/.+graphene\\.js(?:\\?ver=(\\d+(?:\\.\\d+)+))?\\;version:\\1",
+    "website": "https://www.graphene-theme.com/graphene-theme"
   },
   "Grav": {
     "cats": [
@@ -1176,7 +1713,7 @@
       "recurring"
     ],
     "saas": true,
-    "scripts": "(?:cdn|id)\\.gravitec\\.(?:media|net)",
+    "scriptSrc": "(?:cdn|id)\\.gravitec\\.(?:media|net)",
     "website": "https://gravitec.net"
   },
   "Gravity Forms": {
@@ -1192,7 +1729,7 @@
     ],
     "icon": "gravityforms.svg",
     "requires": "WordPress",
-    "scripts": "/wp-content/plugins/gravityforms/js/[^/]+\\.js\\?ver=([\\d.]+)$\\;version:\\1",
+    "scriptSrc": "/wp-content/plugins/gravityforms/js/[^/]+\\.js\\?ver=([\\d.]+)$\\;version:\\1",
     "website": "http://gravityforms.com"
   },
   "Green Valley CMS": {
@@ -1206,6 +1743,23 @@
       "DC.identifier": "/content\\.jsp\\?objectid="
     },
     "website": "http://www.greenvalley.nl/Public/Producten/Content_Management/CMS"
+  },
+  "Greenhouse": {
+    "cats": [
+      101
+    ],
+    "description": "Greenhouse is an applicant tracking and hiring tool. Greenhouse features automated workflow, recruitment analytics, CRM, and onboarding.",
+    "icon": "Greenhouse.svg",
+    "js": {
+      "populateGreenhouseJobs": ""
+    },
+    "pricing": [
+      "mid",
+      "recurring"
+    ],
+    "saas": true,
+    "scriptSrc": "\\.greenhouse\\.io/",
+    "website": "https://www.greenhouse.io"
   },
   "Griddo": {
     "cats": [
@@ -1249,8 +1803,24 @@
       "Grin": ""
     },
     "saas": true,
-    "scripts": "grin-sdk\\.js",
+    "scriptSrc": "grin-sdk\\.js",
     "website": "https://grin.co/"
+  },
+  "GrocerKey": {
+    "cats": [
+      6
+    ],
+    "description": "GrocerKey is an ecommerce platform that helps grocery stores build an online store.",
+    "icon": "GrocerKey.png",
+    "pricing": [
+      "poa"
+    ],
+    "saas": true,
+    "scriptSrc": [
+      "\\.grocerywebsite\\.com/",
+      "grocerkey-widget\\.s3\\.amazonaws\\.com/"
+    ],
+    "website": "https://grocerkey.com"
   },
   "GroupBy": {
     "cats": [
@@ -1259,8 +1829,24 @@
     "description": "GroupBy is a search enging for eCommerce sites.",
     "icon": "Groupby.svg",
     "saas": true,
-    "scripts": "cdn\\.groupbycloud\\.com",
+    "scriptSrc": "cdn\\.groupbycloud\\.com",
     "website": "https://groupbyinc.com/"
+  },
+  "Growave": {
+    "cats": [
+      32,
+      69
+    ],
+    "description": "Growave is the all-in-one app: social login and sharing, reviews, wishlists, instagram feed, automated emails and more.",
+    "icon": "Growave.svg",
+    "pricing": [
+      "low",
+      "recurring"
+    ],
+    "requires": "Shopify",
+    "saas": true,
+    "scriptSrc": "\\.socialshopwave\\.com/",
+    "website": "https://growave.io"
   },
   "GrowingIO": {
     "cats": [
@@ -1271,7 +1857,7 @@
       "grwng_uid": ""
     },
     "icon": "GrowingIO.png",
-    "scripts": "assets\\.growingio\\.com/([\\d.]+)/gio\\.js\\;version:\\1",
+    "scriptSrc": "assets\\.growingio\\.com/([\\d.]+)/gio\\.js\\;version:\\1",
     "website": "https://www.growingio.com/"
   },
   "Guestonline": {
@@ -1286,7 +1872,7 @@
       "recurring"
     ],
     "saas": true,
-    "scripts": "ib\\.guestonline\\.\\w+",
+    "scriptSrc": "ib\\.guestonline\\.\\w+",
     "website": "https://www.guestonline.io"
   },
   "GumGum": {
@@ -1314,7 +1900,7 @@
       "gumlet": ""
     },
     "saas": true,
-    "scripts": "cdn\\.gumlet\\.com",
+    "scriptSrc": "cdn\\.gumlet\\.com",
     "website": "https://www.gumlet.com/"
   },
   "Gumstack": {
@@ -1327,8 +1913,38 @@
       "Gumstack": ""
     },
     "saas": true,
-    "scripts": "w\\.gumstack\\.com",
+    "scriptSrc": "w\\.gumstack\\.com",
     "website": "https://gumstack.com/"
+  },
+  "Gutenberg": {
+    "cats": [
+      87,
+      20
+    ],
+    "description": "Gutenberg is the code name for the new block based editor introduced in WordPress 5.",
+    "dom": {
+      "link[href*='/wp-content/plugins/gutenberg/']": {
+        "attributes": {
+          "href": "/wp-content/plugins/gutenberg/.+\\.css(?:\\?ver=(\\d+(?:\\.\\d+)+))?\\;version:\\1"
+        }
+      }
+    },
+    "icon": "Gutenberg.png",
+    "oss": true,
+    "requires": "WordPress",
+    "scriptSrc": "/wp-content/plugins/gutenberg/",
+    "website": "https://github.com/WordPress/gutenberg"
+  },
+  "Gutenberg Blocks": {
+    "cats": [
+      87
+    ],
+    "description": "Gutenberg Blocks are the editor blocks that are used to create content layouts in the new WordPress block editor aka Gutenberg by Brainstorm Force.",
+    "dom": "link[href*='/wp-content/plugins/ultimate-addons-for-gutenberg/']",
+    "icon": "Gutenberg Blocks.png",
+    "requires": "WordPress",
+    "scriptSrc": "/wp-content/plugins/ultimate-addons-for-gutenberg/.+\\.js(?:\\?ver=(\\d+(?:\\.\\d+)+))?\\;version:\\1",
+    "website": "https://ultimategutenberg.com"
   },
   "git": {
     "cats": [
@@ -1366,7 +1982,7 @@
     "meta": {
       "generator": "gitweb(?:/([\\d.]+\\d))?\\;version:\\1"
     },
-    "scripts": "static/gitweb\\.js$",
+    "scriptSrc": "static/gitweb\\.js$",
     "website": "http://git-scm.com"
   },
   "govCMS": {
@@ -1388,6 +2004,7 @@
       "Server": "gunicorn(?:/([\\d.]+))?\\;version:\\1"
     },
     "icon": "gunicorn.png",
+    "implies": "Python",
     "website": "http://gunicorn.org"
   }
 }

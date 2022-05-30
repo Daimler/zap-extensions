@@ -79,6 +79,11 @@ public class ExtensionHttpFuzzer extends ExtensionAdaptor {
     }
 
     @Override
+    public String getUIName() {
+        return Constant.messages.getString("fuzz.httpfuzzer.name");
+    }
+
+    @Override
     public String getDescription() {
         return Constant.messages.getString("fuzz.httpfuzzer.description");
     }

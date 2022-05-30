@@ -27,7 +27,6 @@ import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.core.scanner.Alert;
 import org.parosproxy.paros.network.HttpMessage;
 import org.zaproxy.addon.commonlib.CommonAlertTag;
-import org.zaproxy.zap.extension.pscan.PassiveScanThread;
 import org.zaproxy.zap.extension.pscan.PluginPassiveScanner;
 
 /**
@@ -42,18 +41,14 @@ public class XAspNetVersionScanRule extends PluginPassiveScanner {
     private static final Map<String, String> ALERT_TAGS =
             CommonAlertTag.toMap(
                     CommonAlertTag.OWASP_2021_A05_SEC_MISCONFIG,
-                    CommonAlertTag.OWASP_2017_A06_SEC_MISCONFIG);
+                    CommonAlertTag.OWASP_2017_A06_SEC_MISCONFIG,
+                    CommonAlertTag.WSTG_V42_INFO_08_FINGERPRINT_APP_FRAMEWORK);
 
     private final List<String> xAspNetHeaders = new ArrayList<>();
 
     public XAspNetVersionScanRule() {
         xAspNetHeaders.add("X-AspNet-Version");
         xAspNetHeaders.add("X-AspNetMvc-Version");
-    }
-
-    @Override
-    public void setParent(PassiveScanThread parent) {
-        // Nothing to do.
     }
 
     @Override

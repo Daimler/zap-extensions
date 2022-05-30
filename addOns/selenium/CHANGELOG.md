@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 
+## [15.9.0] - 2022-05-06
+### Changed
+- Use Network add-on to obtain main proxy address/port.
+
+### Fixed
+- Restore usage of bundled ChromeDriver ([Issue #7272](https://github.com/zaproxy/zaproxy/issues/7272)).
+
+## [15.8.0] - 2022-03-29
+### Added
+- Support aarch64/arm64 WebDrivers.
+- Allow to choose the location of Chrome binary (Issue 7166).
+
+## [15.7.0] - 2022-02-17
+### Added
+- Statistics, number of browsers launched.
+
+### Fixed
+- Quit all browsers when ZAP shuts down ([Issue #6643](https://github.com/zaproxy/zaproxy/issues/6643)).
+
+## [15.6.0] - 2021-12-13
+### Changed
+- Update minimum ZAP version to 2.11.1.
+- Maintenance changes (Issue 6963).
+
+## [15.5.1] - 2021-11-28
+### Fixed
+- Address exception when saving the options (Issue 6951).
+
+## [15.5.0] - 2021-11-25
+### Added
+- Support for browser extensions.
+### Changed
+- Dependency updates.
+
 ## [15.4.0] - 2021-10-06
 ### Changed
 - Now using 2.10 logging infrastructure (Log4j 2.x).
@@ -112,6 +146,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated to Selenium 2.45 and moved to release
 
+[15.9.0]: https://github.com/zaproxy/zap-extensions/releases/selenium-v15.9.0
+[15.8.0]: https://github.com/zaproxy/zap-extensions/releases/selenium-v15.8.0
+[15.7.0]: https://github.com/zaproxy/zap-extensions/releases/selenium-v15.7.0
+[15.6.0]: https://github.com/zaproxy/zap-extensions/releases/selenium-v15.6.0
+[15.5.1]: https://github.com/zaproxy/zap-extensions/releases/selenium-v15.5.1
+[15.5.0]: https://github.com/zaproxy/zap-extensions/releases/selenium-v15.5.0
 [15.4.0]: https://github.com/zaproxy/zap-extensions/releases/selenium-v15.4.0
 [15.3.0]: https://github.com/zaproxy/zap-extensions/releases/selenium-v15.3.0
 [15.2.0]: https://github.com/zaproxy/zap-extensions/releases/selenium-v15.2.0

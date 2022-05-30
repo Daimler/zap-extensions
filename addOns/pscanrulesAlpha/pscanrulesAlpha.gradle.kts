@@ -1,15 +1,15 @@
-description = "The alpha quality Passive Scanner rules"
+description = "The alpha status Passive Scanner rules"
 
 zapAddOn {
     addOnName.set("Passive scanner rules (alpha)")
-    zapVersion.set("2.11.0")
+    zapVersion.set("2.11.1")
 
     manifest {
         author.set("ZAP Dev Team")
         dependencies {
             addOns {
                 register("commonlib") {
-                    version.set(">= 1.5.0 & < 2.0.0")
+                    version.set(">= 1.7.0 & < 2.0.0")
                 }
             }
         }

@@ -5,6 +5,45 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 
+### Fixed
+- Threading issue - only reproducible with currently unreleased core changes.
+
+## [21.10.0] - 2022-05-03
+### Changed
+- Updated with upstream Wappalyzer icon and pattern changes.
+- Updated the pattern parser to deal with Confidence or Version fields extending DOM patterns (for the time being they're ignored).
+- Updated the passive scan rule to be thread safe.
+
+### Fixed
+- Address error when generating the report with Java 17 (Issue 6880).
+
+## [21.9.0] - 2022-02-03
+### Changed
+- Updated with upstream Wappalyzer icon and pattern changes.
+
+## [21.8.0] - 2022-02-02
+### Added
+- API help content.
+- Maintenance changes.
+
+### Changed
+- Further support for DOM selector patterns (Issue 6607).
+
+## [21.7.0] - 2022-01-03
+### Changed
+- Updated with upstream Wappalyzer icon and pattern changes.
+- Update minimum ZAP version to 2.11.1.
+
+## [21.6.0] - 2021-12-07
+### Changed
+- Updated with upstream Wappalyzer icon and pattern changes.
+- Dependency updates.
+
+## [21.5.0] - 2021-10-25
+### Changed
+- Updated with upstream Wappalyzer icon and pattern changes.
+- Adapt script source handling to upstream changes.
+
 
 ## [21.4.0] - 2021-10-07
 ### Changed
@@ -188,6 +227,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - First version
 
 
+[21.10.0]: https://github.com/zaproxy/zap-extensions/releases/wappalyzer-v21.10.0
+[21.9.0]: https://github.com/zaproxy/zap-extensions/releases/wappalyzer-v21.9.0
+[21.8.0]: https://github.com/zaproxy/zap-extensions/releases/wappalyzer-v21.8.0
+[21.7.0]: https://github.com/zaproxy/zap-extensions/releases/wappalyzer-v21.7.0
+[21.6.0]: https://github.com/zaproxy/zap-extensions/releases/wappalyzer-v21.6.0
+[21.5.0]: https://github.com/zaproxy/zap-extensions/releases/wappalyzer-v21.5.0
 [21.4.0]: https://github.com/zaproxy/zap-extensions/releases/wappalyzer-v21.4.0
 [21.3.0]: https://github.com/zaproxy/zap-extensions/releases/wappalyzer-v21.3.0
 [21.2.0]: https://github.com/zaproxy/zap-extensions/releases/wappalyzer-v21.2.0

@@ -4,7 +4,17 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
+### Added
+- Automation ScriptJob - Enable or Disable any script and run a targeted script (Issue 7025).
 
+
+## [30] - 2022-02-25
+### Added
+- Automation ScriptJob - Add or remove any script and run a standalone script
+
+### Changed
+- Update minimum ZAP version to 2.11.1.
+- Maintenance changes.
 
 ## [29] - 2021-10-06
 ### Added
@@ -181,6 +191,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
 
+[30]: https://github.com/zaproxy/zap-extensions/releases/scripts-v30
 [29]: https://github.com/zaproxy/zap-extensions/releases/scripts-v29
 [28]: https://github.com/zaproxy/zap-extensions/releases/scripts-v28
 [27]: https://github.com/zaproxy/zap-extensions/releases/scripts-v27

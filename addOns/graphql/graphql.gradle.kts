@@ -2,7 +2,7 @@ description = "Inspect and attack GraphQL endpoints."
 
 zapAddOn {
     addOnName.set("GraphQL Support")
-    zapVersion.set("2.11.0")
+    zapVersion.set("2.11.1")
 
     manifest {
         author.set("ZAP Dev Team")
@@ -15,7 +15,7 @@ zapAddOn {
                 dependencies {
                     addOns {
                         register("automation") {
-                            version.set(">=0.6.0")
+                            version.set(">=0.12.0")
                         }
                     }
                 }
@@ -40,8 +40,8 @@ crowdin {
 
 dependencies {
     compileOnly(parent!!.childProjects.get("automation")!!)
-    implementation("com.google.code.gson:gson:2.8.6")
-    implementation("com.graphql-java:graphql-java:15.0")
+    implementation("com.google.code.gson:gson:2.8.8")
+    implementation("com.graphql-java:graphql-java:17.3")
 
     testImplementation(parent!!.childProjects.get("automation")!!)
     testImplementation(project(":testutils"))

@@ -42,6 +42,7 @@ public class RequestorJobDialog extends StandardFieldsDialog {
 
     private static final String TITLE = "automation.dialog.requestor.title";
     private static final String NAME_PARAM = "automation.dialog.all.name";
+    private static final String USER_PARAM = "automation.dialog.all.user";
 
     private RequestorJob job;
 
@@ -66,6 +67,12 @@ public class RequestorJobDialog extends StandardFieldsDialog {
         buttons.add(getRemoveButton());
 
         this.addTextField(0, NAME_PARAM, this.job.getData().getName());
+
+        List<String> users = job.getEnv().getAllUserNames();
+        // Add blank option
+        users.add(0, "");
+        this.addComboField(0, USER_PARAM, users, this.job.getData().getParameters().getUser());
+
         this.addPadding(0);
 
         this.addTableField(1, getRulesTable(), buttons);
@@ -74,8 +81,9 @@ public class RequestorJobDialog extends StandardFieldsDialog {
     @Override
     public void save() {
         this.job.getData().setName(this.getStringValue(NAME_PARAM));
+        this.job.getData().getParameters().setUser(this.getStringValue(USER_PARAM));
         job.getData().setRequests(this.getRulesModel().getRules());
-        this.job.setChanged();
+        this.job.resetAndSetChanged();
     }
 
     @Override
@@ -166,6 +174,9 @@ public class RequestorJobDialog extends StandardFieldsDialog {
                         public void mouseClicked(MouseEvent me) {
                             if (me.getClickCount() == 2) {
                                 int row = getRulesTable().getSelectedRow();
+                                if (row == -1) {
+                                    return;
+                                }
                                 AddRequestDialog dialog =
                                         new AddRequestDialog(
                                                 getRulesModel(),

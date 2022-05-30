@@ -22,6 +22,7 @@ package org.zaproxy.addon.retire;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,8 +33,8 @@ import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.core.scanner.Alert;
 import org.parosproxy.paros.network.HttpMessage;
 import org.zaproxy.addon.commonlib.CommonAlertTag;
+import org.zaproxy.addon.commonlib.ResourceIdentificationUtils;
 import org.zaproxy.addon.retire.model.Repo;
-import org.zaproxy.zap.extension.pscan.PassiveScanThread;
 import org.zaproxy.zap.extension.pscan.PluginPassiveScanner;
 
 public class RetireScanRule extends PluginPassiveScanner {
@@ -64,9 +65,7 @@ public class RetireScanRule extends PluginPassiveScanner {
             return;
         }
         String uri = msg.getRequestHeader().getURI().toString();
-        if (!msg.getResponseHeader().isImage()
-                && !msg.getRequestHeader().isCss()
-                && !msg.getResponseHeader().isCss()) {
+        if (!ResourceIdentificationUtils.isImage(msg) && !ResourceIdentificationUtils.isCss(msg)) {
             Repo scanRepo = getRepo();
             if (scanRepo == null) {
                 LOGGER.error("\tThe Retire.js repository was null.");
@@ -103,6 +102,7 @@ public class RetireScanRule extends PluginPassiveScanner {
                         Constant.messages.getString(
                                 "retire.rule.desc", result.getFilename(), result.getVersion()))
                 .setOtherInfo(otherInfo)
+                .setTags(getAllAlertTags(result))
                 .setReference(getDetails(Result.INFO, result.getInformation()))
                 .setSolution(Constant.messages.getString("retire.rule.soln", result.getFilename()))
                 .setEvidence(result.getEvidence().trim())
@@ -129,14 +129,16 @@ public class RetireScanRule extends PluginPassiveScanner {
         return sb.toString();
     }
 
-    @Override
-    public Map<String, String> getAlertTags() {
-        return ALERT_TAGS;
+    private Map<String, String> getAllAlertTags(Result result) {
+        Map<String, String> alertTags = new HashMap<>();
+        result.getCves().forEach(value -> alertTags.put(value, ""));
+        alertTags.putAll(getAlertTags());
+        return alertTags;
     }
 
     @Override
-    public void setParent(PassiveScanThread parent) {
-        // Nothing to do.
+    public Map<String, String> getAlertTags() {
+        return ALERT_TAGS;
     }
 
     private Repo getRepo() {

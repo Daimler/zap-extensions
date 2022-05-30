@@ -29,7 +29,6 @@ import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.core.scanner.Alert;
 import org.parosproxy.paros.network.HttpMessage;
 import org.zaproxy.addon.commonlib.CommonAlertTag;
-import org.zaproxy.zap.extension.pscan.PassiveScanThread;
 import org.zaproxy.zap.extension.pscan.PluginPassiveScanner;
 
 public class MixedContentScanRule extends PluginPassiveScanner {
@@ -40,14 +39,10 @@ public class MixedContentScanRule extends PluginPassiveScanner {
     private static final Map<String, String> ALERT_TAGS =
             CommonAlertTag.toMap(
                     CommonAlertTag.OWASP_2021_A05_SEC_MISCONFIG,
-                    CommonAlertTag.OWASP_2017_A06_SEC_MISCONFIG);
+                    CommonAlertTag.OWASP_2017_A06_SEC_MISCONFIG,
+                    CommonAlertTag.WSTG_V42_CRYP_03_CRYPTO_FAIL);
 
     private static final int PLUGIN_ID = 10040;
-
-    @Override
-    public void setParent(PassiveScanThread parent) {
-        // Nothing to do.
-    }
 
     @Override
     public void scanHttpResponseReceive(HttpMessage msg, int id, Source source) {

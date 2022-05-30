@@ -41,7 +41,7 @@ import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.core.scanner.Alert;
 import org.parosproxy.paros.network.HttpMessage;
 import org.zaproxy.addon.commonlib.CommonAlertTag;
-import org.zaproxy.zap.extension.pscan.PassiveScanThread;
+import org.zaproxy.addon.commonlib.ResourceIdentificationUtils;
 import org.zaproxy.zap.extension.pscan.PluginPassiveScanner;
 
 public class InformationDisclosureSuspiciousCommentsScanRule extends PluginPassiveScanner {
@@ -72,7 +72,7 @@ public class InformationDisclosureSuspiciousCommentsScanRule extends PluginPassi
 
         if (msg.getResponseBody().length() > 0 && msg.getResponseHeader().isText()) {
 
-            if (msg.getResponseHeader().isJavaScript()) {
+            if (ResourceIdentificationUtils.isJavaScript(msg)) {
                 // Just treat as text
                 String[] lines = msg.getResponseBody().toString().split("\n");
                 for (String line : lines) {
@@ -220,11 +220,6 @@ public class InformationDisclosureSuspiciousCommentsScanRule extends PluginPassi
             }
         }
         return patterns;
-    }
-
-    @Override
-    public void setParent(PassiveScanThread parent) {
-        // Nothing to do.
     }
 
     public int getRisk() {

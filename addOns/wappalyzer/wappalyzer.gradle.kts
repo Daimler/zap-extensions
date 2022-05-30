@@ -5,7 +5,7 @@ description = "Technology detection using Wappalyzer: wappalyzer.com"
 zapAddOn {
     addOnName.set("Wappalyzer - Technology Detection")
     addOnStatus.set(AddOnStatus.RELEASE)
-    zapVersion.set("2.11.0")
+    zapVersion.set("2.11.1")
 
     manifest {
         author.set("ZAP Dev Team")
@@ -24,6 +24,13 @@ zapAddOn {
                 }
             }
         }
+        dependencies {
+            addOns {
+                register("commonlib") {
+                    version.set(">= 1.7.0 & < 2.0.0")
+                }
+            }
+        }
     }
 
     apiClientGen {
@@ -34,6 +41,8 @@ zapAddOn {
 
 dependencies {
     compileOnly(parent!!.childProjects.get("automation")!!)
+    compileOnly(parent!!.childProjects.get("commonlib")!!)
+
     implementation("com.google.re2j:re2j:1.6")
 
     val batikVersion = "1.14"
@@ -43,7 +52,8 @@ dependencies {
     implementation("org.apache.xmlgraphics:batik-gvt:$batikVersion")
     implementation("org.apache.xmlgraphics:batik-util:$batikVersion")
 
-    implementation("org.jsoup:jsoup:1.13.1")
+    implementation("org.jsoup:jsoup:1.14.3")
 
+    testImplementation(parent!!.childProjects.get("commonlib")!!)
     testImplementation(project(":testutils"))
 }

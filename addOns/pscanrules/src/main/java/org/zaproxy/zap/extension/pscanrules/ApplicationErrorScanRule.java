@@ -37,7 +37,6 @@ import org.parosproxy.paros.core.scanner.Alert;
 import org.parosproxy.paros.core.scanner.Plugin.AlertThreshold;
 import org.parosproxy.paros.network.HttpMessage;
 import org.zaproxy.addon.commonlib.CommonAlertTag;
-import org.zaproxy.zap.extension.pscan.PassiveScanThread;
 import org.zaproxy.zap.extension.pscan.PluginPassiveScanner;
 import org.zaproxy.zap.utils.ContentMatcher;
 
@@ -56,7 +55,9 @@ public class ApplicationErrorScanRule extends PluginPassiveScanner {
     private static final Map<String, String> ALERT_TAGS =
             CommonAlertTag.toMap(
                     CommonAlertTag.OWASP_2021_A05_SEC_MISCONFIG,
-                    CommonAlertTag.OWASP_2017_A06_SEC_MISCONFIG);
+                    CommonAlertTag.OWASP_2017_A06_SEC_MISCONFIG,
+                    CommonAlertTag.WSTG_V42_ERRH_01_ERR,
+                    CommonAlertTag.WSTG_V42_ERRH_02_STACK);
 
     private static final Logger LOGGER = LogManager.getLogger(ApplicationErrorScanRule.class);
 
@@ -143,16 +144,6 @@ public class ApplicationErrorScanRule extends PluginPassiveScanner {
 
     public int getWascId() {
         return 13;
-    }
-
-    /**
-     * Set the Scanner thread parent object
-     *
-     * @param parent the PassiveScanThread parent object
-     */
-    @Override
-    public void setParent(PassiveScanThread parent) {
-        // Nothing to do.
     }
 
     /**

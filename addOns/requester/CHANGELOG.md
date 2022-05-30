@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## Unreleased
 
 
+## [6] - 2022-05-10
+### Added
+- Support for renaming tabs.
+- More help.
+
+### Changed
+- Update minimum ZAP version to 2.11.1.
+- Maintenance changes.
+- Moved Help button to the Response tab.
+
 ## [5] - 2021-10-07
 ### Changed
 - Warn when unable to save (malformed) HTTP message (Issue 4235).
@@ -41,5 +51,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
 
+[6]: https://github.com/zaproxy/zap-extensions/releases/requester-v6
 [5]: https://github.com/zaproxy/zap-extensions/releases/requester-v5
 [4]: https://github.com/zaproxy/zap-extensions/releases/requester-v4

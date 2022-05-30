@@ -57,6 +57,7 @@ public class WappalyzerJsonParser {
 
     private static final String FIELD_CONFIDENCE = "confidence:";
     private static final String FIELD_VERSION = "version:";
+    private static final String FIELD_SEPARATOR = "\\\\;";
     private static final int SIZE = 16;
 
     private static final Logger logger = LogManager.getLogger(WappalyzerJsonParser.class);
@@ -75,6 +76,7 @@ public class WappalyzerJsonParser {
     }
 
     WappalyzerData parse(String categories, List<String> technologies) {
+        logger.info("Starting to parse Wappalyzer technologies.");
         WappalyzerData wappalyzerData = new WappalyzerData();
         parseCategories(wappalyzerData, getStringResource(categories));
         technologies.forEach(path -> parseJson(wappalyzerData, getStringResource(path)));
@@ -139,10 +141,11 @@ public class WappalyzerJsonParser {
                     app.setCookies(this.jsonToAppPatternMapList("COOKIE", appData.get("cookies")));
                     app.setUrl(this.jsonToPatternList("URL", appData.get("url")));
                     app.setHtml(this.jsonToPatternList("HTML", appData.get("html")));
-                    app.setScript(this.jsonToPatternList("SCRIPT", appData.get("scripts")));
+                    app.setScript(this.jsonToPatternList("SCRIPT", appData.get("scriptSrc")));
                     app.setMetas(this.jsonToAppPatternMapList("META", appData.get("meta")));
                     app.setCss(this.jsonToPatternList("CSS", appData.get("css")));
                     app.setDom(this.jsonToAppPatternNestedMapList("DOM", appData.get("dom")));
+                    app.setSimpleDom(this.jsonToDomStringList(appData.get("dom")));
                     app.setImplies(this.jsonToStringList(appData.get("implies")));
                     app.setCpe(appData.optString("cpe"));
 
@@ -227,6 +230,33 @@ public class WappalyzerJsonParser {
         svgIcon.paint(g2d);
         g2d.dispose();
         return new ImageIcon(image);
+    }
+
+    private List<String> jsonToDomStringList(Object json) {
+        if (json instanceof JSONObject) {
+            // Objects are handled elsewhere
+            return Collections.emptyList();
+        }
+        List<String> list = new ArrayList<>();
+        if (json instanceof JSONArray) {
+            for (Object obj : (JSONArray) json) {
+                String selector = strToDomSelector(obj.toString());
+                if (isValidQuery(selector)) {
+                    list.add(selector);
+                }
+            }
+        } else if (json != null) {
+            String selector = strToDomSelector(json.toString());
+            if (isValidQuery(selector)) {
+                list.add(selector);
+            }
+        }
+        return list;
+    }
+
+    private String strToDomSelector(String json) {
+        String[] parts = json.split(FIELD_SEPARATOR);
+        return parts[0];
     }
 
     private List<String> jsonToStringList(Object json) {
@@ -405,7 +435,7 @@ public class WappalyzerJsonParser {
     private AppPattern strToAppPattern(String type, String str) {
         AppPattern ap = new AppPattern();
         ap.setType(type);
-        String[] values = str.split("\\\\;");
+        String[] values = str.split(FIELD_SEPARATOR);
         String pattern = values[0];
         for (int i = 1; i < values.length; i++) {
             try {

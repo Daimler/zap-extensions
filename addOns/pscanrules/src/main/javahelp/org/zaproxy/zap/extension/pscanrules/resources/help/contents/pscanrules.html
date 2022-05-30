@@ -8,7 +8,23 @@ Passive Scan Rules
 </HEAD>
 <BODY>
 <H1>Passive Scan Rules</H1>
-The following release quality passive scan rules are included in this add-on:
+The following release status passive scan rules are included in this add-on:
+
+<H2>Anti-clickjacking Header</H2>
+This scan rule checks for the existence and validity of the X-Frame-Options header, or Content-Security-Policy 'frame-ancestors' directive.<br> 
+At MEDIUM and HIGH thresholds this only looks at non-error or non-redirect HTML responses.<br>
+At LOW threshold it looks at all text responses including errors and redirects.<br>
+The following conditions may result in an alert:
+<ul> 
+ <li><b>Missing Anti-clickjacking Header: </b> If the X-Frame-Options header is missing from the response completely.</li>
+ <li><b>Multiple X-Frame-Options Header Entries: </b> When more than one X-Frame-Options header is detected on the response.</li>
+ <li><b>X-Frame-Options Defined via META (Non-compliant with Spec): </b> A "http-equiv" entry was found in the response that attempts to define X-Frame-Options, which is not supported by the specification.</li>
+ <li><b>X-Frame-Options Setting Malformed: </b> The header is present with no value, or the value is not as expected (i.e.: other than "DENY", or "SAMEORIGIN").</li>
+</ul>
+By default no alerts will be raised in the response includes a Content-Security-Policy 'frame-ancestors' element as this take precedence over the X-Frame-Options header.
+However at LOW threshold the above issues will still be reported but at a LOW risk. 
+<p>
+Latest code: <a href="https://github.com/zaproxy/zap-extensions/blob/main/addOns/pscanrules/src/main/java/org/zaproxy/zap/extension/pscanrules/AntiClickjackingScanRule.java">AntiClickjackingScanRule.java</a>
 
 <H2>Application Errors</H2>
 Check server responses for HTTP 500 - Internal Server Error type responses or those that contain a known error string. <br>
@@ -52,6 +68,17 @@ Further reference:<br>
 <a href="http://www.w3.org/TR/html5/document-metadata.html#charset">http://www.w3.org/TR/html5/document-metadata.html#charset</a>
 <p>
 Latest code: <a href="https://github.com/zaproxy/zap-extensions/blob/main/addOns/pscanrules/src/main/java/org/zaproxy/zap/extension/pscanrules/CharsetMismatchScanRule.java">CharsetMismatchScanRule.java</a>
+
+<H2>Content Security Policy (CSP) Header Not Set</H2>
+This checks HTML response headers for the presence of a Content Security Policy header.<br>
+By default this rule checks for the presence of the "Content-Security-Policy" header, 
+and at the Low threshold also checks for the "X-Content-Security-Policy" and "X-WebKit-CSP" headers.<br>
+Redirects and non HTML responses are ignored except at the Low threshold.
+<p>
+If a "Content-Security-Policy-Report-Only" header is found on a response an INFO alert is raised. This may represent an enforcement effort 
+that is actively being refined or developed, or one which is only partially implemented.
+<p>
+Latest code: <a href="https://github.com/zaproxy/zap-extensions/blob/main/addOns/pscanrules/src/main/java/org/zaproxy/zap/extension/pscanrules/ContentSecurityPolicyMissingScanRule.java">ContentSecurityPolicyMissingScanRule.java</a>
 
 <H2>Content Type Missing</H2>
 Raises an alert if the response is lacking a Content-Type header or if the header exists but the value is empty.
@@ -221,6 +248,7 @@ measures such as:
 	<li>Split VIEWSTATE.</li>
 	<li>VIEWSTATE containing email or IP patterns.</li>
 </ul>
+The "Viewstate without MAC Signature (Unsure)" alert will only be raised at LOW threshold.
 <p>
 Latest code: <a href="https://github.com/zaproxy/zap-extensions/blob/main/addOns/pscanrules/src/main/java/org/zaproxy/zap/extension/pscanrules/ViewstateScanRule.java">ViewstateScanRule.java</a>
 
@@ -230,22 +258,6 @@ At MEDIUM and HIGH thresholds this rule does not alert on client or server error
 At LOW threshold it will alert on all responses including errors and redirects.<br>
 <p>
 Latest code: <a href="https://github.com/zaproxy/zap-extensions/blob/main/addOns/pscanrules/src/main/java/org/zaproxy/zap/extension/pscanrules/XContentTypeOptionsScanRule.java">XContentTypeOptionsScanRule.java</a>
- 
-<H2>X-Frame-Options Header</H2>
-This scan rule checks for the existence and validity of the X-Frame-Options header.<br> 
-At MEDIUM and HIGH thresholds this only looks at non-error or non-redirect HTML responses.<br>
-At LOW threshold it looks at all text responses including errors and redirects.<br>
-The following conditions may result in an alert:
-<ul> 
- <li><b>X-Frame-Options Header Not Set: </b> If the X-Frame-Options header is missing from the response completely.</li>
- <li><b>Multiple X-Frame-Options Header Entries: </b> When more than one X-Frame-Options header is detected on the response.</li>
- <li><b>X-Frame-Options Defined via META (Non-compliant with Spec): </b> A "http-equiv" entry was found in the response that attempts to define X-Frame-Options, which is not supported by the specification.</li>
- <li><b>X-Frame-Options Setting Malformed: </b> The header is present with no value, or the value is not as expected (i.e.: other than "DENY", or "SAMEORIGIN").</li>
-</ul>
-By default no alerts will be raised in the response includes a Content-Security-Policy 'frame-ancestors' element as this take precedence over the X-Frame-Options header.
-However at LOW threshold the above issues will still be reported but at a LOW risk. 
-<p>
-Latest code: <a href="https://github.com/zaproxy/zap-extensions/blob/main/addOns/pscanrules/src/main/java/org/zaproxy/zap/extension/pscanrules/XFrameOptionScanRule.java">XFrameOptionScanRule.java</a>
 
 <H2>X-AspNet-Version Response Header</H2>
 This checks response headers for the presence of X-AspNet-Version/X-AspNetMvc-Version details.

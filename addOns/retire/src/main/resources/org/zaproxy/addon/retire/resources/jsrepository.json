@@ -246,6 +246,47 @@
 			"hashes"		: {}
 		}
 	},
+	"jquery-ui" : {
+		"bowername": [ "jquery-ui", "jquery.ui" ],
+		"vulnerabilities" : [
+			{
+				"below" : "1.13.0",
+				"severity": "medium",
+				"identifiers": {
+					"CVE": [ "CVE-2021-41184" ],
+					"summary": "XSS in the `of` option of the `.position()` util"
+				},
+				"info" : [ "https://github.com/jquery/jquery-ui/security/advisories/GHSA-gpqq-952q-5327", "https://nvd.nist.gov/vuln/detail/CVE-2021-41184" ]
+			},
+			{
+				"below" : "1.13.0",
+				"severity": "medium",
+				"identifiers": {
+					"CVE": [ "CVE-2021-41183" ],
+					"bug": "15284",
+					"summary": "XSS Vulnerability on text options of jQuery UI datepicker"
+				},
+				"info" : [ "https://bugs.jqueryui.com/ticket/15284", "https://nvd.nist.gov/vuln/detail/CVE-2021-41183" ]
+			},
+			{
+				"below" : "1.13.0",
+				"severity": "medium",
+				"identifiers": {
+					"CVE": [ "CVE-2021-41182" ],
+					"summary": "XSS in the `altField` option of the Datepicker widget"
+				},
+				"info" : [ "https://github.com/jquery/jquery-ui/security/advisories/GHSA-9gj3-hwp5-pmwc", "https://nvd.nist.gov/vuln/detail/CVE-2021-41182" ]
+			}
+		],
+		"extractors" : {
+			"func"    		: [ "jQuery.ui.version" ],
+			"filecontent"	: [
+				"/\\*!? jQuery UI - v(§§version§§)",
+				"/\\*!?[\n *]+jQuery UI (§§version§§)"
+			],
+			"hashes"		: {}
+		}
+	},
 	"jquery-ui-dialog" : {
 		"bowername": [ "jquery-ui", "jquery.ui" ],
 		"vulnerabilities" : [
@@ -926,6 +967,15 @@
 		        "severity": "medium",
 		        "identifiers": { "CVE": ["CVE-2020-5258"] },
 		        "info" : [ "https://github.com/dojo/dojo/security/advisories/GHSA-jxfh-8wgv-vfr2" ]
+		    },
+		    {
+		        "below" : "1.17.0",
+		        "severity": "medium",
+		        "identifiers": {
+					"summary": "Prototype pollution",
+					"CVE": ["CVE-2021-23450"]
+				},
+		        "info" : [ "https://github.com/dojo/dojo/pull/418" ]
 		    }
 		],
 		"extractors" : {
@@ -1240,6 +1290,32 @@
 				"severity": "medium",
 				"identifiers": { "summary": "Fixed security vulnerability by adding die calls to all php files to prevent them from being executed unless modified." },
 				"info" : [ "https://github.com/moxiecode/plupload/releases/tag/v3.1.3" ]
+			},
+			{
+				"below" : "3.1.4",
+				"atOrAbove" : "3.0.0",
+				"severity": "medium",
+				"identifiers": { "summary": "Fixed a potential security issue with not entity encoding the file names in the html in the queue/ui widgets." },
+				"info" : [ "https://github.com/moxiecode/plupload/releases/tag/v3.1.4" ]
+			},
+			{
+				"below" : "2.3.8",
+				"severity": "medium",
+				"identifiers": { "summary": "Fixed a potential security issue with not entity encoding the file names in the html in the queue/ui widgets." },
+				"info" : [ "https://github.com/moxiecode/plupload/releases/tag/v2.3.8" ]
+			},
+			{
+				"below" : "3.1.5",
+				"atOrAbove" : "3.0.0",
+				"severity": "medium",
+				"identifiers": { "summary": "Fixed another case of html entities not being encoded that could be exploded by uploading a file name with html in it." },
+				"info" : [ "https://github.com/moxiecode/plupload/releases/tag/v3.1.5" ]
+			},
+			{
+				"below" : "2.3.9",
+				"severity": "medium",
+				"identifiers": { "summary": "Fixed another case of html entities not being encoded that could be exploded by uploading a file name with html in it." },
+				"info" : [ "https://github.com/moxiecode/plupload/releases/tag/v2.3.9" ]
 			}
 		],
 		"extractors" : {
@@ -1474,6 +1550,40 @@
 				"severity": "low",
 				"identifiers": { "summary":"reDOS - regular expression denial of service" },
 				"info" : [ "https://github.com/moment/moment/issues/2936" ]
+			},
+			{
+				"below" : "2.15.2",
+				"severity": "medium",
+				"identifiers": { 
+					"summary" : "Regular Expression Denial of Service (ReDoS)"
+				},
+				"info" : [ 
+					"https://security.snyk.io/vuln/npm:moment:20161019"
+				]
+			},
+			{
+				"below" : "2.19.3",
+				"severity": "low",
+				"identifiers": { 
+					"summary" : "Regular Expression Denial of Service (ReDoS)",
+					"CVE" : [ "CVE-2017-18214" ] 
+				},
+				"info" : [ 
+					"https://security.snyk.io/vuln/npm:moment:20170905",
+					"https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2017-18214",
+					"https://github.com/moment/moment/issues/4163"
+				]
+			},
+			{
+				"below" : "2.29.2",
+				"severity": "medium",
+				"identifiers": { 
+					"summary" : "This vulnerability impacts npm (server) users of moment.js, especially if user provided locale string, eg fr is directly used to switch moment locale.",
+					"CVE" : [ "CVE-2022-24785" ] 
+				},
+				"info" : [ 
+					"https://github.com/moment/moment/security/advisories/GHSA-8hfj-j24r-96c4"
+				]
 			}
 		],
 		"extractors" : {
@@ -1567,6 +1677,26 @@
 				},
 				"severity" : "medium",
 				"info" : [ "https://github.com/twbs/bootstrap/issues/20184" ]
+			},
+			{
+				"atOrAbove" : "3.0.0",
+				"below" : "3.4.0",
+				"severity": "medium",
+				"identifiers": {
+					"summary": "XSS is possible in the data-target attribute.",
+					"CVE" : [" CVE-2016-10735"]
+				},
+				"info" : [ "https://github.com/advisories/GHSA-4p24-vmcr-4gqj" ]
+			},
+			{
+				"atOrAbove" : "4.0.0-beta",
+				"below" : "4.0.0-beta.2",
+				"severity": "medium",
+				"identifiers": {
+					"summary": "XSS is possible in the data-target attribute.",
+					"CVE" : [" CVE-2016-10735"]
+				},
+				"info" : [ "https://github.com/advisories/GHSA-4p24-vmcr-4gqj" ]
 			},
 			{
 				"below" : "2.1.0",
@@ -1697,6 +1827,29 @@
 				},
 				"severity" : "medium",
 				"info": [ "https://github.com/ckeditor/ckeditor4/security/advisories/GHSA-m94c-37g6-cjhc" ]
+			},
+			{
+				"below" : "4.17.0",
+				"identifiers" : {
+					"summary" : "XSS vulnerabilities in the core module",
+					"CVE": [ "CVE-2021-41164", "CVE-2021-41165" ]
+				},
+				"severity" : "medium",
+				"info": [ 
+					"https://github.com/ckeditor/ckeditor4/security/advisories/GHSA-pvmx-g8h5-cprj",
+					"https://github.com/ckeditor/ckeditor4/security/advisories/GHSA-7h26-63m7-qhf2"
+				]
+			},
+			{
+				"below" : "4.18.0",
+				"identifiers" : {
+					"summary" : "Inject malformed URL to bypass content sanitization for XSS",
+					"CVE": [ "CVE-2022-24728" ]
+				},
+				"severity" : "low",
+				"info": [
+					"https://github.com/ckeditor/ckeditor4/security/advisories/GHSA-f6rf-9m92-x2hh"
+				]
 			}
 		],
 		"extractors" : {
@@ -1710,8 +1863,53 @@
 			"func"			: [ "CKEDITOR.version" ]
 		}
 	},
-
-
+	"ckeditor5" : {
+		"vulnerabilities": [
+			{
+				"below" : "10.0.1",
+				"identifiers" : {
+					"summary" : "XSS in the link package",
+					"CVE": [ "CVE-2018-11093" ]
+				},
+				"severity" : "low",
+				"info": [
+					"https://ckeditor.com/blog/CKEditor-5-v10.0.1-released/"
+				]
+			},
+			{
+				"below" : "25.0.0",
+				"identifiers" : {
+					"summary" : "ReDos in several packages",
+					"CVE": [ "CVE-2021-21254" ]
+				},
+				"severity" : "low",
+				"info": [
+					"https://github.com/ckeditor/ckeditor5/security/advisories/GHSA-hgmg-hhc8-g5wr"
+				]
+			},
+			{
+				"below" : "27.0.0",
+				"identifiers" : {
+					"summary" : "ReDos in several packages",
+					"CVE": [ "CVE-2021-21391" ]
+				},
+				"severity" : "low",
+				"info": [
+					"https://github.com/ckeditor/ckeditor5/security/advisories/GHSA-3rh3-wfr4-76mj"
+				]
+			}
+		],
+		"extractors" : {
+			"uri"			: [ "/(§§version§§)/ckeditor5(\\.min)?\\.js" ],
+			"filename"		: [ "ckeditor5-(§§version§§)(\\.min)?\\.js" ],
+			"filecontent"	: [
+								"const .=\"(§§version§§)\";.{0,140}?\\.CKEDITOR_VERSION=.;",
+								"CKEDITOR_VERSION=\"(§§version§§)\""
+			],
+			"hashes"		: {},
+			"func"			: [ "CKEDITOR_VERSION" ]
+		}
+	},
 	"vue" : {
 		"vulnerabilities" : [
 			{
@@ -1821,10 +2019,167 @@
 			]
 		}
 	},
+	
+	"svelte" : {
+		"vulnerabilities" : [
 
+		],
+		"extractors" : {
+			"uri" : [
+			],
+			"filename" : [
+			],
+			"filecontent" : [
+			],
+			"func"     : []
+		}
+	},
 
+	"axios" : {
+		"vulnerabilities" : [
+			{
+				"below" : "0.21.3",
+				"severity": "high",
+				"identifiers": {
+					"summary": "Axios is vulnerable to Inefficient Regular Expression Complexity",
+					"CVE": [ "CVE-2021-3749" ]
+				},
+				"info" : [ "https://security.snyk.io/vuln/SNYK-JS-AXIOS-1579269", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-3749"]
+			},
+      		{
+				"below" : "0.21.1",
+				"severity": "medium",
+				"identifiers": {
+					"summary": "Axios NPM package 0.21.0 contains a Server-Side Request Forgery (SSRF) vulnerability",
+					"CVE": [ "CVE-2020-28168" ]
+				},
+				"info" : [ "https://security.snyk.io/vuln/SNYK-JS-AXIOS-1038255", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-28168"]
+			},
+      		{
+				"below" : "0.18.1",
+				"severity": "medium",
+				"identifiers": {
+					"summary": "Axios up to and including 0.18.0 allows attackers to cause a denial of service (application crash) by continuing to accepting content after maxContentLength is exceeded",
+					"CVE": [ "CVE-2019-10742" ]
+				},
+				"info" : [ "https://security.snyk.io/vuln/SNYK-JS-AXIOS-174505", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2019-10742"]
+			}
+		],
+		"extractors" : {
+			"uri" : [
+				"/axios/(§§version§§)/.*\\.js"
+			],
+			"filename" : [
+				"axios-(§§version§§)(\\.min)?\\.js"
+			],
+			"filecontent" : [
+				"/\\* *axios v(§§version§§) "
+			],
+			"func" : [
+				"axios && axios.VERSION"
+			]
+		}
+	},
+	"markdown-it": {
+		"vulnerabilities": [
+			{
+				"below": "12.3.2",
+				"severity": "medium",
+				"identifiers": {
+					"summary": "Regular Expression Denial of Service (ReDoS)",
+					"CVE": [ "CVE-2022-21670" ]
+				},
+				"info": [ "https://security.snyk.io/vuln/SNYK-JS-MARKDOWNIT-2331914", "https://github.com/markdown-it/markdown-it/blob/master/CHANGELOG.md", "https://nvd.nist.gov/vuln/detail/CVE-2022-21670" ]
+			},
+			{
+				"below": "10.0.0",
+				"severity": "medium",
+				"identifiers": {
+					"summary": "Regular Expression Denial of Service (ReDoS)"
+				},
+				"info": [ "https://security.snyk.io/vuln/SNYK-JS-MARKDOWNIT-459438", "https://github.com/markdown-it/markdown-it/blob/master/CHANGELOG.md" ]
+			},
+			{
+				"below": "4.3.1",
+				"atOrAbove": "4.0.0",
+				"severity":"medium",
+				"identifiers": {
+					"summary": "Cross-site Scripting (XSS)"
+				},
+				"info": [ "https://security.snyk.io/vuln/npm:markdown-it:20150702", "https://github.com/markdown-it/markdown-it/blob/master/CHANGELOG.md" ]
+			},
+			{
+				"below": "4.1.0",
+				"severity":"medium",
+				"identifiers": {
+					"summary": "Cross-site Scripting (XSS)",
+					"CVE": [ "CVE-2015-3295" ]
+				},
+				"info": [ "https://security.snyk.io/vuln/npm:markdown-it:20160912", "https://cve.mitre.org/cgi-bin/cvename.cgi?name=2015-3295", "https://github.com/markdown-it/markdown-it/blob/master/CHANGELOG.md" ]
+			}
+		],
+		"extractors": {
+			"uri": [
+				"/markdown-it[/@](§§version§§)/?.*\\.js"
+			],
+			"filename": [
+				"markdown-it-(§§version§§)(\\.min)?\\.js"
+			],
+			"filecontent": [
+				"/\\*! markdown-it(?:-ins)? (§§version§§)"
+			],
+			"func": [
+			]
+		}
+	},
+	"jszip": {
+		"vulnerabilities": [
+			{
+				"below": "3.7.0",
+				"severity": "medium",
+				"identifiers": {
+					"summary": "Denial of Service (DoS)",
+					"CVE": [ "CVE-2021-23413" ]
+				},
+				"info": [ "https://security.snyk.io/vuln/SNYK-JS-JSZIP-1251497", "https://nvd.nist.gov/vuln/detail/CVE-2021-23413" ]
+			}
+		],
+		"extractors": {
+			"uri": [
+				"/jszip[/@](§§version§§)/.*\\.js"
+			],
+			"filename": [
+				"jszip-(§§version§§)(\\.min)?\\.js"
+			],
+			"filecontent": [
+				"/\\*![ \n]+JSZip v(§§version§§) "
+			],
+			"func": [
+				"JSZip && JSZip.version"
+			]
+		}
+	},
 
-
+	"AlaSQL": {
+		"vulnerabilities" : [
+			{
+				"below" : "0.7.0",
+				"severity" : "high",
+				"identifiers" : {
+					"CVE" : [ "CVE-XXXX-XXXX" ],
+					"bug" : "SNYK-JS-ALASQL-1082932",
+					"summary" : "An arbitrary code execution exists as AlaSQL doesn't sanitize input when characters are placed between square brackets [] or preceded with a backtik (accent grave) ` character. Versions older that 0.7.0 were deprecated in March of 2021 and should no longer be used."
+				},
+				"info" : [ "https://security.snyk.io/vuln/SNYK-JS-ALASQL-1082932" ]
+			}
+		],
+		"extractors" : {
+			"uri": [ "/alasql[/@](§§version§§)/.*\\.js" ],
+			"filename" : [ "alasql-(§§version§§)(\\.min)?\\.js" ],
+			"filecontent"	: [ "/\\*!?[ \n]*AlaSQL v(§§version§§)" ],
+			"func" : [ "alasql && alasql.version" ]
+		}
+	},
 
 
 	"dont check" : {

@@ -1,4 +1,65 @@
 {
+  "Q4": {
+    "cats": [
+      53
+    ],
+    "description": "Q4 is a SaaS platform that provides communication and intelligence solutions to investor relations professionals.",
+    "icon": "Q4.png",
+    "js": {
+      "q4App.a11yAnnouncement": "",
+      "q4Defaults.fancySignup": ""
+    },
+    "pricing": [
+      "poa"
+    ],
+    "saas": true,
+    "website": "https://www.q4inc.com/products/investor-relations-websites/default.aspx"
+  },
+  "Q4 Cookie Monster": {
+    "cats": [
+      5,
+      67
+    ],
+    "description": "Q4 Cookie Monster is an cookie compliance widget built by Q4.",
+    "icon": "Q4.png",
+    "scriptSrc": "widgets\\.q4app\\.com/widgets/q4\\.cookiemonster\\.([\\d\\.]+)\\.min\\.js\\;version:\\1",
+    "website": "https://q4mobile.github.io/q4widgets-jquery-ui/doc_html/q4.cookieMonster.html"
+  },
+  "Qikify": {
+    "cats": [
+      100
+    ],
+    "description": "Qikify is a trusted Shopify Expert providing services for over 35,000 Shopify merchants through Shopify Apps or custom modifications.",
+    "icon": "Qikify.svg",
+    "pricing": [
+      "freemium",
+      "low",
+      "recurring"
+    ],
+    "requires": "Shopify",
+    "saas": true,
+    "scriptSrc": "sdk\\.qikify\\.com/",
+    "website": "https://qikify.com"
+  },
+  "Qualaroo": {
+    "cats": [
+      73
+    ],
+    "description": "Qualaroo provides surveys on websites and apps to get user feedback.",
+    "dom": "link[href*='.qualaroo.com']",
+    "icon": "Qualaroo.svg",
+    "js": {
+      "QUALAROO_DNT": ""
+    },
+    "pricing": [
+      "recurring",
+      "mid",
+      "payg"
+    ],
+    "saas": true,
+    "scriptSrc": "\\.qualaroo\\.com",
+    "website": "https://qualaroo.com"
+  },
   "Qualtrics": {
     "cats": [
       73
@@ -13,7 +74,7 @@
       "recurring"
     ],
     "saas": true,
-    "scripts": "\\.qualtrics\\.com/",
+    "scriptSrc": "\\.qualtrics\\.com/",
     "website": "https://www.qualtrics.com"
   },
   "Quantcast Choice": {
@@ -27,7 +88,7 @@
       "poa"
     ],
     "saas": true,
-    "scripts": "quantcast\\.mgr\\.consensu\\.org",
+    "scriptSrc": "quantcast\\.mgr\\.consensu\\.org",
     "website": "https://www.quantcast.com/products/choice-consent-management-platform"
   },
   "Quantcast Measure": {
@@ -35,6 +96,7 @@
       10
     ],
     "description": "Quantcast Measure is an audience insights and analytics tool.",
+    "dom": "link[href*='.quantserve.com']",
     "icon": "Quantcast.png",
     "js": {
       "quantserve": ""
@@ -44,7 +106,7 @@
       "poa"
     ],
     "saas": true,
-    "scripts": "\\.quantserve\\.com/quant\\.js",
+    "scriptSrc": "\\.quantserve\\.com/quant\\.js",
     "website": "https://www.quantcast.com/products/measure-audience-insights"
   },
   "Quantum Metric": {
@@ -54,8 +116,30 @@
     "description": "Quantum Metric is a continuous product design platform that helps organizations build better products faster.",
     "icon": "Quantummetric.png",
     "saas": true,
-    "scripts": "cdn\\.quantummetric\\.com",
+    "scriptSrc": "cdn\\.quantummetric\\.com",
     "website": "https://www.quantummetric.com/"
+  },
+  "Quasar": {
+    "cats": [
+      12
+    ],
+    "description": "Quasar is an open-source Vue.js based framework.",
+    "dom": {
+      "div#q-app": {
+        "attributes": {
+          "id": "\\;confidence:50"
+        }
+      },
+      "div.q-page-container": {
+        "attributes": {
+          "class": "\\;confidence:50"
+        }
+      }
+    },
+    "icon": "Quasar.svg",
+    "oss": true,
+    "requires": "Vue.js",
+    "website": "https://quasar.dev"
   },
   "Qubit": {
     "cats": [
@@ -72,7 +156,7 @@
       "poa"
     ],
     "saas": true,
-    "scripts": "static\\.goqubit\\.com",
+    "scriptSrc": "static\\.goqubit\\.com",
     "website": "https://www.qubit.com"
   },
   "Question2Answer": {
@@ -83,7 +167,7 @@
     "html": "<!-- Powered by Question2Answer",
     "icon": "question2answer.png",
     "implies": "PHP",
-    "scripts": "\\./qa-content/qa-page\\.js\\?([0-9.]+)\\;version:\\1",
+    "scriptSrc": "\\./qa-content/qa-page\\.js\\?([0-9.]+)\\;version:\\1",
     "website": "http://www.question2answer.org"
   },
   "Queue-it": {
@@ -100,7 +184,7 @@
       "poa"
     ],
     "saas": true,
-    "scripts": "\\.queue-it\\.net/",
+    "scriptSrc": "\\.queue-it\\.net/",
     "website": "https://queue-it.com"
   },
   "Quick.CMS": {
@@ -137,8 +221,21 @@
       "drupalSettings.quicklink": "",
       "quicklink": ""
     },
-    "scripts": "quicklink@([\\d.]+)/dist/quicklink.*\\.js\\;version:\\1",
+    "scriptSrc": "quicklink@([\\d.]+)/dist/quicklink.*\\.js\\;version:\\1",
     "website": "https://getquick.link/"
+  },
+  "Quicq": {
+    "cats": [
+      92
+    ],
+    "description": "Quicq is an image optimisation tool by Afosto.",
+    "dom": "img[src*='.qcqcdn.com/'], img[data-src*='.qcqcdn.com/'], img[src*='cdn.quicq.io/'], img[data-src*='cdn.quicq.io/']",
+    "icon": "Quicq.svg",
+    "pricing": [
+      "freemium",
+      "payg"
+    ],
+    "website": "https://afosto.com/apps/quicq"
   },
   "Quill": {
     "cats": [
@@ -150,5 +247,33 @@
       "Quill": ""
     },
     "website": "http://quilljs.com"
+  },
+  "Quora Pixel": {
+    "cats": [
+      10
+    ],
+    "description": "Quora Pixel is a tool that is placed in your website code to track traffic and conversions.",
+    "icon": "Quora.svg",
+    "js": {
+      "qp.qp": ""
+    },
+    "scriptSrc": "\\.quora\\.com/",
+    "website": "https://quoraadsupport.zendesk.com/hc/en-us/categories/115001573928-Pixels-Tracking"
+  },
+  "Qwik": {
+    "cats": [
+      18
+    ],
+    "description": "Qwik is designed for the fastest possible page load time, by delivering pure HTML with near 0 JavaScript.",
+    "dom": {
+      "*": {
+        "attributes": {
+          "q:version": "^([\\d\\.]+(?:-\\d+)?)\\;version:\\1"
+        }
+      }
+    },
+    "icon": "Qwik.svg",
+    "oss": true,
+    "website": "https://qwik.builder.io"
   }
 }

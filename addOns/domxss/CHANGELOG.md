@@ -4,7 +4,22 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
+### Added
+- OWASP Web Security Testing Guide v4.2 mappings.
 
+### Changed
+- Update minimum ZAP version to 2.11.1.
+- Use Network add-on to proxy browser requests.
+
+### Fixed
+- Stop the proxy when ZAP shuts down.
+
+## [12] - 2021-12-06
+### Changed
+- Dependency updates.
+
+### Added
+- Functionality for example alert handling in order to assist in documentation efforts.
 
 ## [11] - 2021-10-06
 ### Added
@@ -69,6 +84,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## 1 - 2015-08-24
 
 
+[12]: https://github.com/zaproxy/zap-extensions/releases/domxss-v12
 [11]: https://github.com/zaproxy/zap-extensions/releases/domxss-v11
 [10]: https://github.com/zaproxy/zap-extensions/releases/domxss-v10
 [9]: https://github.com/zaproxy/zap-extensions/releases/domxss-v9

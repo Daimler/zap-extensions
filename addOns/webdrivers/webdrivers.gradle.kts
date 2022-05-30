@@ -5,8 +5,8 @@ import org.zaproxy.gradle.tasks.DownloadWebDriver
 
 description = "Common configuration of the WebDriver add-ons."
 
-val geckodriverVersion = "0.30.0"
-val chromeDriverVersion = "93.0.4577.15"
+val geckodriverVersion = "0.31.0"
+val chromeDriverVersion = "102.0.5005.61"
 
 fun configureDownloadTask(outputDir: File, targetOs: DownloadWebDriver.OS, task: DownloadWebDriver) {
     val geckodriver = task.browser.get() == DownloadWebDriver.Browser.FIREFOX
@@ -17,7 +17,7 @@ fun configureDownloadTask(outputDir: File, targetOs: DownloadWebDriver.OS, task:
         DownloadWebDriver.OS.WIN -> "windows"
     }
     path += "/"
-    path += if (task.arch.get() == DownloadWebDriver.Arch.X32) "32" else "64"
+    path += getArchPath(task)
     path += "/"
     path += if (geckodriver) "geckodriver" else "chromedriver"
     if (targetOs == DownloadWebDriver.OS.WIN) {
@@ -31,11 +31,33 @@ fun configureDownloadTask(outputDir: File, targetOs: DownloadWebDriver.OS, task:
     }
 }
 
+fun getArchPath(task: DownloadWebDriver): String {
+    return when (task.arch.get()) {
+        DownloadWebDriver.Arch.X32 -> "32"
+        DownloadWebDriver.Arch.ARM64 -> "arm64"
+        else -> "64"
+    }
+}
+
 subprojects {
+
+    val wdm by configurations.creating {
+        attributes {
+            attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage.JAVA_RUNTIME))
+        }
+        isVisible = false
+        isCanBeConsumed = false
+        isCanBeResolved = true
+    }
+
     crowdin {
         configuration {
             file.set(file("$rootDir/gradle/crowdin-help-only.yml"))
         }
+    }
+
+    dependencies {
+        wdm("org.seleniumhq.selenium:selenium-java:4.1.2")
     }
 
     afterEvaluate {
@@ -45,6 +67,7 @@ subprojects {
         val downloadTasks = tasks.withType<DownloadWebDriver>().also {
             it.configureEach {
                 configureDownloadTask(webdriversDir, targetOs, this)
+                webdriverClasspath.from(wdm)
             }
         }
 

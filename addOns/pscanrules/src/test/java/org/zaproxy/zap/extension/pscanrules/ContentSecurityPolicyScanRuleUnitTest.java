@@ -20,12 +20,15 @@
 package org.zaproxy.zap.extension.pscanrules;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.parosproxy.paros.core.scanner.Alert;
 import org.parosproxy.paros.core.scanner.Plugin.AlertThreshold;
@@ -94,7 +97,7 @@ class ContentSecurityPolicyScanRuleUnitTest
         rule.setAlertThreshold(AlertThreshold.LOW);
         scanHttpResponseReceive(msg);
         // Then
-        assertThat(alertsRaised.size(), equalTo(2));
+        assertThat(alertsRaised.size(), equalTo(4));
     }
 
     @Test
@@ -104,11 +107,11 @@ class ContentSecurityPolicyScanRuleUnitTest
         // When
         scanHttpResponseReceive(msg);
         // Then
-        assertThat(alertsRaised.size(), equalTo(2));
+        assertThat(alertsRaised.size(), equalTo(4));
 
         assertThat(alertsRaised.get(0).getName(), equalTo("CSP: Notices"));
         assertThat(
-                alertsRaised.get(0).getDescription(),
+                alertsRaised.get(0).getOtherInfo(),
                 equalTo(
                         "Warnings:\nUnrecognized directive default-src:\nUnrecognized directive report_uri\n"));
         assertThat(
@@ -119,11 +122,11 @@ class ContentSecurityPolicyScanRuleUnitTest
 
         assertThat(alertsRaised.get(1).getName(), equalTo("CSP: Wildcard Directive"));
         assertThat(
-                alertsRaised.get(1).getDescription(),
+                alertsRaised.get(1).getOtherInfo(),
                 equalTo(
                         "The following directives either allow wildcard sources (or ancestors), are not "
                                 + "defined, or are overly broadly defined: \nscript-src, style-src, img-src, "
-                                + "connects-src, frame-src, frame-ancestors, font-src, media-src, object-src, "
+                                + "connect-src, frame-src, frame-ancestors, font-src, media-src, object-src, "
                                 + "manifest-src, worker-src, prefetch-src, form-action\n\nThe directive(s): "
                                 + "frame-ancestors, form-action are among the directives that do not fallback "
                                 + "to default-src, missing/excluding them is the same as allowing anything."));
@@ -132,6 +135,27 @@ class ContentSecurityPolicyScanRuleUnitTest
                 equalTo("default-src: 'none'; report_uri /__cspreport__"));
         assertThat(alertsRaised.get(1).getRisk(), equalTo(Alert.RISK_MEDIUM));
         assertThat(alertsRaised.get(1).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
+        assertThat(alertsRaised.get(1).getAlertRef(), equalTo("10055-4"));
+    }
+
+    @Test
+    void shouldNotAlertOnValidSyntaxWhenCspContainsSyntaxIssues() {
+        // Given
+        HttpMessage msg =
+                createHttpMessage(
+                        "default-src: 'none'; report_uri /__cspreport__; frame-ancestors 'none'");
+        // When
+        scanHttpResponseReceive(msg);
+        // Then
+        assertThat(alertsRaised.size(), equalTo(4));
+        assertThat(alertsRaised.get(1).getName(), equalTo("CSP: Wildcard Directive"));
+        assertThat(alertsRaised.get(1).getOtherInfo(), not(containsString("frame-ancestors")));
+        assertThat(
+                alertsRaised.get(1).getEvidence(),
+                equalTo("default-src: 'none'; report_uri /__cspreport__; frame-ancestors 'none'"));
+        assertThat(alertsRaised.get(1).getRisk(), equalTo(Alert.RISK_MEDIUM));
+        assertThat(alertsRaised.get(1).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
+        assertThat(alertsRaised.get(1).getAlertRef(), equalTo("10055-4"));
     }
 
     @Test
@@ -145,7 +169,7 @@ class ContentSecurityPolicyScanRuleUnitTest
 
         assertThat(alertsRaised.get(0).getName(), equalTo("CSP: Notices"));
         assertThat(
-                alertsRaised.get(0).getDescription(),
+                alertsRaised.get(0).getOtherInfo(),
                 equalTo(
                         "Warnings:\nThis host name is unusual, and likely meant to be a keyword that is missing the required quotes: 'none'.\n"));
 
@@ -154,6 +178,7 @@ class ContentSecurityPolicyScanRuleUnitTest
                 equalTo("default-src none; report-to csp-endpoint"));
         assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_LOW));
         assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
+        assertThat(alertsRaised.get(0).getAlertRef(), equalTo("10055-3"));
     }
 
     @Test
@@ -168,7 +193,7 @@ class ContentSecurityPolicyScanRuleUnitTest
 
         assertThat(alertsRaised.get(0).getName(), equalTo("CSP: Wildcard Directive"));
         assertThat(
-                alertsRaised.get(0).getDescription(),
+                alertsRaised.get(0).getOtherInfo(),
                 equalTo(
                         "The following directives either allow wildcard sources (or ancestors), are not "
                                 + "defined, or are overly broadly defined: \nframe-ancestors"
@@ -179,6 +204,33 @@ class ContentSecurityPolicyScanRuleUnitTest
                 equalTo("frame-ancestors *; default-src 'self'; form-action 'none'"));
         assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_MEDIUM));
         assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
+        assertThat(alertsRaised.get(0).getAlertRef(), equalTo("10055-4"));
+    }
+
+    @Test
+    void shouldAlertOnWildcardConnectSourceDirective() {
+        // Given
+        HttpMessage msg =
+                createHttpMessage(
+                        "connect-src *; default-src 'self'; form-action 'none'; frame-ancestors 'self'");
+        // When
+        scanHttpResponseReceive(msg);
+        // Then
+        assertThat(alertsRaised.size(), equalTo(1));
+
+        assertThat(alertsRaised.get(0).getName(), equalTo("CSP: Wildcard Directive"));
+        assertThat(
+                alertsRaised.get(0).getOtherInfo(),
+                equalTo(
+                        "The following directives either allow wildcard sources (or ancestors), are not "
+                                + "defined, or are overly broadly defined: \nconnect-src"));
+        assertThat(
+                alertsRaised.get(0).getEvidence(),
+                equalTo(
+                        "connect-src *; default-src 'self'; form-action 'none'; frame-ancestors 'self'"));
+        assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_MEDIUM));
+        assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
+        assertThat(alertsRaised.get(0).getAlertRef(), equalTo("10055-4"));
     }
 
     @Test
@@ -192,8 +244,39 @@ class ContentSecurityPolicyScanRuleUnitTest
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"X-Content-Security-Policy", "X-WebKit-CSP"})
-    void shouldRaiseAlertOnLegacyCspHeader(String input) {
+    @ValueSource(strings = {"; require-trusted-types-for 'script'", "; trusted-types 'none'"})
+    void shouldNotAlertOnReasonableCspWithTrustedTypes(String policyAddition) {
+        // Given
+        HttpMessage msg = createHttpMessage("", REASONABLE_POLICY + policyAddition);
+        // When
+        scanHttpResponseReceive(msg);
+        // Then
+        assertThat(alertsRaised.size(), equalTo(0));
+    }
+
+    @Test
+    void shouldAlertWithCspWarningNoticesWhenApplicableAndIgnoreTrustedTypes() {
+        // Given
+        String policy = "default-src none; report-to csp-endpoint; require-trusted-types 'script'";
+        HttpMessage msg = createHttpMessage(policy);
+        // When
+        scanHttpResponseReceive(msg);
+        // Then
+        assertThat(alertsRaised.size(), equalTo(2));
+        assertThat(alertsRaised.get(0).getName(), equalTo("CSP: Notices"));
+        assertThat(
+                alertsRaised.get(0).getOtherInfo(),
+                equalTo(
+                        "Warnings:\nThis host name is unusual, and likely meant to be a keyword that is missing the required quotes: 'none'.\n"));
+        assertThat(alertsRaised.get(0).getEvidence(), equalTo(policy));
+        assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_LOW));
+        assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
+        assertThat(alertsRaised.get(0).getAlertRef(), equalTo("10055-3"));
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {"X-Content-Security-Policy, 1", "X-WebKit-CSP, 2"})
+    void shouldRaiseAlertOnLegacyCspHeader(String input, String alertRef) {
         // Given
         HttpMessage msg = createHttpMessageWithReasonableCsp(input);
         // When
@@ -203,6 +286,7 @@ class ContentSecurityPolicyScanRuleUnitTest
         assertThat(alertsRaised.get(0).getName(), equalTo("CSP: " + input));
         assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_LOW));
         assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
+        assertThat(alertsRaised.get(0).getAlertRef(), equalTo("10055-" + alertRef));
     }
 
     @Test
@@ -212,11 +296,14 @@ class ContentSecurityPolicyScanRuleUnitTest
         // When
         scanHttpResponseReceive(msg);
         // Then
-        assertThat(alertsRaised.size(), equalTo(2));
-        // Verify the specific alert
+        assertThat(alertsRaised.size(), equalTo(3));
+        // Verify the specific alerts
         assertThat(alertsRaised.get(1).getName(), equalTo("CSP: script-src unsafe-inline"));
         assertThat(alertsRaised.get(1).getRisk(), equalTo(Alert.RISK_MEDIUM));
         assertThat(alertsRaised.get(1).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
+        assertThat(alertsRaised.get(1).getAlertRef(), equalTo("10055-5"));
+
+        assertThat(alertsRaised.get(2).getName(), equalTo("CSP: style-src unsafe-inline"));
     }
 
     @Test
@@ -226,11 +313,14 @@ class ContentSecurityPolicyScanRuleUnitTest
         // When
         scanHttpResponseReceive(msg);
         // Then
-        assertThat(alertsRaised.size(), equalTo(2));
-        // Verify the specific alert
-        assertThat(alertsRaised.get(1).getName(), equalTo("CSP: style-src unsafe-inline"));
+        assertThat(alertsRaised.size(), equalTo(3));
+        // Verify the specific alerts
+        assertThat(alertsRaised.get(1).getName(), equalTo("CSP: script-src unsafe-inline"));
         assertThat(alertsRaised.get(1).getRisk(), equalTo(Alert.RISK_MEDIUM));
         assertThat(alertsRaised.get(1).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
+        assertThat(alertsRaised.get(1).getAlertRef(), equalTo("10055-5"));
+
+        assertThat(alertsRaised.get(2).getName(), equalTo("CSP: style-src unsafe-inline"));
     }
 
     @Test
@@ -241,15 +331,50 @@ class ContentSecurityPolicyScanRuleUnitTest
         // When
         scanHttpResponseReceive(msg);
         // Then
-        assertThat(alertsRaised.size(), equalTo(2));
+        assertThat(alertsRaised.size(), equalTo(3));
         // Verify the specific alerts
         assertThat(alertsRaised.get(0).getName(), equalTo("CSP: Wildcard Directive"));
         assertThat(alertsRaised.get(0).getEvidence(), equalTo("style-src 'unsafe-inline'"));
+        assertThat(alertsRaised.get(0).getAlertRef(), equalTo("10055-4"));
 
-        assertThat(alertsRaised.get(1).getName(), equalTo("CSP: style-src unsafe-inline"));
+        assertThat(alertsRaised.get(1).getName(), equalTo("CSP: script-src unsafe-inline"));
         assertThat(alertsRaised.get(1).getRisk(), equalTo(Alert.RISK_MEDIUM));
         assertThat(alertsRaised.get(1).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
         assertThat(alertsRaised.get(1).getEvidence(), equalTo("style-src 'unsafe-inline'"));
+        assertThat(alertsRaised.get(1).getAlertRef(), equalTo("10055-5"));
+
+        assertThat(alertsRaised.get(2).getName(), equalTo("CSP: style-src unsafe-inline"));
+        assertThat(alertsRaised.get(2).getRisk(), equalTo(Alert.RISK_MEDIUM));
+        assertThat(alertsRaised.get(2).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
+        assertThat(alertsRaised.get(2).getEvidence(), equalTo("style-src 'unsafe-inline'"));
+        assertThat(alertsRaised.get(2).getAlertRef(), equalTo("10055-6"));
+    }
+
+    @Test
+    void shouldRaiseAlertOnUnsafeInDefaultSrc() {
+        // Given
+        HttpMessage msg = createHttpMessageWithReasonableCsp(HTTP_HEADER_CSP);
+        msg.getResponseHeader().addHeader(HTTP_HEADER_CSP, "default-src 'unsafe-inline'");
+        // When
+        scanHttpResponseReceive(msg);
+        // Then
+        assertThat(alertsRaised.size(), equalTo(3));
+        // Verify the specific alerts
+        assertThat(alertsRaised.get(0).getName(), equalTo("CSP: Wildcard Directive"));
+        assertThat(alertsRaised.get(0).getEvidence(), equalTo("default-src 'unsafe-inline'"));
+        assertThat(alertsRaised.get(0).getAlertRef(), equalTo("10055-4"));
+
+        assertThat(alertsRaised.get(1).getName(), equalTo("CSP: script-src unsafe-inline"));
+        assertThat(alertsRaised.get(1).getRisk(), equalTo(Alert.RISK_MEDIUM));
+        assertThat(alertsRaised.get(1).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
+        assertThat(alertsRaised.get(1).getEvidence(), equalTo("default-src 'unsafe-inline'"));
+        assertThat(alertsRaised.get(1).getAlertRef(), equalTo("10055-5"));
+
+        assertThat(alertsRaised.get(2).getName(), equalTo("CSP: style-src unsafe-inline"));
+        assertThat(alertsRaised.get(2).getRisk(), equalTo(Alert.RISK_MEDIUM));
+        assertThat(alertsRaised.get(2).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
+        assertThat(alertsRaised.get(2).getEvidence(), equalTo("default-src 'unsafe-inline'"));
+        assertThat(alertsRaised.get(2).getAlertRef(), equalTo("10055-6"));
     }
 
     private HttpMessage createHttpMessageWithReasonableCsp(String cspHeaderName) {

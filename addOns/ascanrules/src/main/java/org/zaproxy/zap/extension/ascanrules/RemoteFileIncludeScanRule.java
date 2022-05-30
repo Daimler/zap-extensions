@@ -45,7 +45,8 @@ public class RemoteFileIncludeScanRule extends AbstractAppParamPlugin {
     private static final Map<String, String> ALERT_TAGS =
             CommonAlertTag.toMap(
                     CommonAlertTag.OWASP_2021_A03_INJECTION,
-                    CommonAlertTag.OWASP_2017_A01_INJECTION);
+                    CommonAlertTag.OWASP_2017_A01_INJECTION,
+                    CommonAlertTag.WSTG_V42_INPV_11_CODE_INJ);
 
     /** the various prefixes to try, for each of the remote file targets below */
     private static final String[] REMOTE_FILE_TARGET_PREFIXES = {
@@ -210,7 +211,7 @@ public class RemoteFileIncludeScanRule extends AbstractAppParamPlugin {
 
                     // send the modified request, and see what we get back
                     try {
-                        sendAndReceive(msg);
+                        sendAndReceive(msg, false);
                     } catch (IllegalStateException | UnknownHostException ex) {
                         log.debug(
                                 "Caught {} {} when accessing: {}",

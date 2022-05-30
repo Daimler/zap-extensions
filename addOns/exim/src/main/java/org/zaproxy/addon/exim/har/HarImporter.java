@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.control.Control;
 import org.parosproxy.paros.extension.history.ExtensionHistory;
 import org.parosproxy.paros.model.HistoryReference;
@@ -39,20 +40,35 @@ import org.parosproxy.paros.model.Model;
 import org.parosproxy.paros.network.HttpMalformedHeaderException;
 import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.network.HttpResponseHeader;
+import org.zaproxy.addon.commonlib.ui.ProgressPaneListener;
+import org.zaproxy.addon.exim.ExtensionExim;
 import org.zaproxy.zap.network.HttpResponseBody;
 import org.zaproxy.zap.utils.HarUtils;
+import org.zaproxy.zap.utils.Stats;
 import org.zaproxy.zap.utils.ThreadUtils;
 
-public final class HarImporter {
+public class HarImporter {
 
     private static final Logger LOG = LogManager.getLogger(HarImporter.class);
-
+    private static final String STATS_HAR_FILE = "import.har.file";
+    private static final String STATS_HAR_FILE_ERROR = "import.har.file.errors";
+    private static final String STATS_HAR_FILE_MSG = "import.har.file.message";
+    private static final String STATS_HAR_FILE_MSG_ERROR = "import.har.file.message.errors";
+    private ProgressPaneListener progressListener;
+    private boolean success;
     private static ExtensionHistory extHistory;
 
-    private HarImporter() {}
+    public HarImporter(File file) {
+        this(file, null);
+    }
 
-    public static List<HttpMessage> getHttpMessages(HarLog log)
-            throws HttpMalformedHeaderException {
+    public HarImporter(File file, ProgressPaneListener listener) {
+        this.progressListener = listener;
+        importHarFile(file);
+        completed();
+    }
+
+    static List<HttpMessage> getHttpMessages(HarLog log) throws HttpMalformedHeaderException {
         List<HttpMessage> result = new ArrayList<>();
         HarEntries entries = log.getEntries();
         for (HarEntry entry : entries.getEntries()) {
@@ -101,20 +117,29 @@ public final class HarImporter {
         }
     }
 
-    public static boolean importHarFile(File file) {
+    private void importHarFile(File file) {
         try {
             processMessages(file);
-            return true;
+            Stats.incCounter(ExtensionExim.STATS_PREFIX + STATS_HAR_FILE);
+            success = true;
         } catch (IOException e) {
-            LOG.error(e);
-            return false;
+            LOG.warn(
+                    Constant.messages.getString(
+                            ExtensionExim.EXIM_OUTPUT_ERROR, file.getAbsolutePath()));
+            Stats.incCounter(ExtensionExim.STATS_PREFIX + STATS_HAR_FILE_ERROR);
+            success = false;
         }
     }
 
-    public static void processMessages(File file) throws IOException {
+    private void processMessages(File file) throws IOException {
         List<HttpMessage> messages =
                 HarImporter.getHttpMessages(new HarFileReader().readHarFile(file));
-        messages.forEach(HarImporter::persistMessage);
+        int count = 1;
+        for (HttpMessage msg : messages) {
+            persistMessage(msg);
+            updateProgress(count, msg.getRequestHeader().getURI().toString());
+            count++;
+        }
     }
 
     private static void persistMessage(HttpMessage message) {
@@ -126,8 +151,10 @@ public final class HarImporter {
                             Model.getSingleton().getSession(),
                             HistoryReference.TYPE_ZAP_USER,
                             message);
+            Stats.incCounter(ExtensionExim.STATS_PREFIX + STATS_HAR_FILE_MSG);
         } catch (Exception e) {
-            LOG.warn(e.getMessage(), e);
+            LOG.warn(e.getMessage());
+            Stats.incCounter(ExtensionExim.STATS_PREFIX + STATS_HAR_FILE_MSG_ERROR);
             return;
         }
 
@@ -149,5 +176,23 @@ public final class HarImporter {
     private static void addMessage(HistoryReference historyRef, HttpMessage message) {
         getExtensionHistory().addHistory(historyRef);
         Model.getSingleton().getSession().getSiteTree().addPath(historyRef, message);
+    }
+
+    public boolean isSuccess() {
+        return success;
+    }
+
+    private void updateProgress(int count, String line) {
+        if (progressListener != null) {
+            progressListener.setTasksDone(count);
+            progressListener.setCurrentTask(
+                    Constant.messages.getString("exim.progress.currentimport", line));
+        }
+    }
+
+    private void completed() {
+        if (progressListener != null) {
+            progressListener.completed();
+        }
     }
 }

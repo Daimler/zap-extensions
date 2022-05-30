@@ -454,7 +454,7 @@ public class ExtensionWebSocket extends ExtensionAdaptor
                             getView() != null ? getScriptPassiveScanIcon() : null,
                             true);
             this.extensionScript.registerScriptType(websocketPassiveScanScriptType);
-            webSocketScriptPassiveScanner = new ScriptsWebSocketPassiveScanner();
+            webSocketScriptPassiveScanner = new ScriptsWebSocketPassiveScanner(extensionScript);
 
             webSocketPassiveScannerManager.add(webSocketScriptPassiveScanner);
             webSocketPassiveScannerManager.setAllEnable(true);
@@ -490,12 +490,6 @@ public class ExtensionWebSocket extends ExtensionAdaptor
         super.unload();
 
         HttpSender.removeListener(httpSenderListener);
-
-        // close all existing connections
-        for (Entry<Integer, WebSocketProxy> wsEntry : wsProxies.entrySet()) {
-            WebSocketProxy wsProxy = wsEntry.getValue();
-            wsProxy.shutdown();
-        }
 
         Control control = Control.getSingleton();
         ExtensionLoader extLoader = control.getExtensionLoader();
@@ -549,6 +543,15 @@ public class ExtensionWebSocket extends ExtensionAdaptor
             removeAllChannelSenderListener(webSocketSenderScriptListener);
             extensionScript.removeScriptType(websocketSenderSciptType);
         }
+    }
+
+    @Override
+    public void stop() {
+        // close all existing connections
+        for (Entry<Integer, WebSocketProxy> wsEntry : wsProxies.entrySet()) {
+            WebSocketProxy wsProxy = wsEntry.getValue();
+            wsProxy.shutdown();
+        }
 
         // shut down Passive Scanner & unregister the WebSocket Passive Scan script type
         if (webSocketPassiveScannerManager != null) {
@@ -557,6 +560,11 @@ public class ExtensionWebSocket extends ExtensionAdaptor
         }
 
         eventPublisher.shutdown();
+    }
+
+    @Override
+    public String getUIName() {
+        return Constant.messages.getString("websocket.name");
     }
 
     @Override

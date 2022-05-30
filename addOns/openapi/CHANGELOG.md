@@ -4,8 +4,44 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
+### Fixed
+- JSON body examples specified under `schema` were being enclosed in quotes.
+
+### Changed
+- Maintenance changes.
+
+## [27] - 2022-03-29
+### Added
+- Support content field (JSON) in parameters (Issue 6166).
+
+### Changed
+- Now depends on commonlib for display of import progress (Issue 6783).
+- Dependency updates.
+
+### Fixed
+- Properly generate Content-Type header when in presence of more than one supported content (Issue 7082).
+- Quote provided string values in JSON content (Issue 7128).
+- Properly handle empty default values in server variables.
+
+## [26] - 2022-02-01
+
+### Fixed
+- Do not report "Unrecognised parameter" for valid parameters.
+
+## [25] - 2022-01-18
+### Changed
+- Update minimum ZAP version to 2.11.1.
+- Dependency updates.
+- When the automation Job is edited via UI Dialog then the status will be set to Not started
+
+### Fixed
+- Parameter examples specified as part of the schema were not being used.
+
+## [24] - 2021-12-06
 ### Changed
 - Use examples defined in parameters ([Issue #6870](https://github.com/zaproxy/zaproxy/issues/6870)).
+- Tweak error message shown when content type is not supported.
+- Dependency updates.
 
 ### Fixed
 - Fixed ClassCastException when using nested map properties with mixed definition styles. 
@@ -18,7 +54,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Use path and operation servers ([Issue #6754](https://github.com/zaproxy/zaproxy/issues/6754)).
 
 ### Changed
-- Warn when request has content `application/xml`, not supported (Related to [Issue #6767](https://github.com/zaproxy/zaproxy/issues/6767)).
+- Warn when request has content type `application/xml`, not supported (Related to [Issue #6767](https://github.com/zaproxy/zaproxy/issues/6767)).
 - Maintenance changes.
 - Update minimum ZAP version to 2.11.0.
 
@@ -179,6 +215,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - First Version
 
+[27]: https://github.com/zaproxy/zap-extensions/releases/openapi-v27
+[26]: https://github.com/zaproxy/zap-extensions/releases/openapi-v26
+[25]: https://github.com/zaproxy/zap-extensions/releases/openapi-v25
+[24]: https://github.com/zaproxy/zap-extensions/releases/openapi-v24
 [23]: https://github.com/zaproxy/zap-extensions/releases/openapi-v23
 [22]: https://github.com/zaproxy/zap-extensions/releases/openapi-v22
 [21]: https://github.com/zaproxy/zap-extensions/releases/openapi-v21

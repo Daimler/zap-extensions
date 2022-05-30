@@ -34,6 +34,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.parosproxy.paros.core.scanner.Alert;
 import org.parosproxy.paros.core.scanner.Plugin;
 import org.parosproxy.paros.core.scanner.Plugin.AlertThreshold;
@@ -80,7 +81,7 @@ class PathTraversalScanRuleUnitTest extends ActiveScannerTest<PathTraversalScanR
         // Then
         assertThat(cwe, is(equalTo(22)));
         assertThat(wasc, is(equalTo(33)));
-        assertThat(tags.size(), is(equalTo(2)));
+        assertThat(tags.size(), is(equalTo(3)));
         assertThat(
                 tags.containsKey(CommonAlertTag.OWASP_2021_A01_BROKEN_AC.getTag()),
                 is(equalTo(true)));
@@ -88,11 +89,17 @@ class PathTraversalScanRuleUnitTest extends ActiveScannerTest<PathTraversalScanR
                 tags.containsKey(CommonAlertTag.OWASP_2017_A05_BROKEN_AC.getTag()),
                 is(equalTo(true)));
         assertThat(
+                tags.containsKey(CommonAlertTag.WSTG_V42_ATHZ_01_DIR_TRAVERSAL.getTag()),
+                is(equalTo(true)));
+        assertThat(
                 tags.get(CommonAlertTag.OWASP_2021_A01_BROKEN_AC.getTag()),
                 is(equalTo(CommonAlertTag.OWASP_2021_A01_BROKEN_AC.getValue())));
         assertThat(
                 tags.get(CommonAlertTag.OWASP_2017_A05_BROKEN_AC.getTag()),
                 is(equalTo(CommonAlertTag.OWASP_2017_A05_BROKEN_AC.getValue())));
+        assertThat(
+                tags.get(CommonAlertTag.WSTG_V42_ATHZ_01_DIR_TRAVERSAL.getTag()),
+                is(equalTo(CommonAlertTag.WSTG_V42_ATHZ_01_DIR_TRAVERSAL.getValue())));
     }
 
     @Test
@@ -268,14 +275,15 @@ class PathTraversalScanRuleUnitTest extends ActiveScannerTest<PathTraversalScanR
         assertThat(alertsRaised, hasSize(0));
     }
 
-    @Test
-    void shouldNotAlertOnCheckFiveAtLowThresholdUnderInvalidConditions()
+    @ParameterizedTest
+    @ValueSource(strings = {"error", "Error"})
+    void shouldNotAlertOnCheckFiveAtLowThresholdUnderInvalidConditions(String errorText)
             throws HttpMalformedHeaderException {
         // Given
         String path = "/file.ext";
         HttpMessage msg = getHttpMessage(path + "?p=a");
         rule.init(msg, parent);
-        nano.addHandler(new Check5Handler(path, "p", "Error", true));
+        nano.addHandler(new Check5Handler(path, "p", errorText, true));
         rule.setAlertThreshold(AlertThreshold.LOW);
         // When
         rule.scan();

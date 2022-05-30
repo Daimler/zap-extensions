@@ -2,11 +2,19 @@ description = "Allows you to exploit out-of-band vulnerabilities"
 
 zapAddOn {
     addOnName.set("OAST Support")
-    zapVersion.set("2.11.0")
+    zapVersion.set("2.11.1")
 
     manifest {
         author.set("ZAP Dev Team")
         url.set("https://www.zaproxy.org/docs/desktop/addons/oast-support/")
+
+        dependencies {
+            addOns {
+                register("network") {
+                    version.set(">= 0.1.0")
+                }
+            }
+        }
 
         extensions {
             register("org.zaproxy.addon.oast.scripts.ExtensionOastScripts") {
@@ -39,6 +47,8 @@ crowdin {
 
 dependencies {
     compileOnly(parent!!.childProjects["graaljs"]!!)
+    compileOnly(parent!!.childProjects["network"]!!)
 
     testImplementation(project(":testutils"))
+    testImplementation(parent!!.childProjects["network"]!!)
 }

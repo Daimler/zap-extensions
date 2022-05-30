@@ -19,96 +19,68 @@
  */
 package org.zaproxy.addon.oast.services.callback;
 
-import java.util.Date;
-import java.util.Map;
+import java.util.Objects;
 import org.apache.commons.httpclient.URIException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
-import org.parosproxy.paros.core.proxy.OverrideMessageProxyListener;
 import org.parosproxy.paros.db.DatabaseException;
 import org.parosproxy.paros.network.HttpHeader;
 import org.parosproxy.paros.network.HttpMalformedHeaderException;
 import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.network.HttpStatusCode;
-import org.parosproxy.paros.view.View;
+import org.zaproxy.addon.network.server.HttpMessageHandler;
+import org.zaproxy.addon.network.server.HttpMessageHandlerContext;
 import org.zaproxy.addon.oast.OastRequest;
+import org.zaproxy.zap.utils.Stats;
 import org.zaproxy.zap.utils.ThreadUtils;
 
-class CallbackProxyListener implements OverrideMessageProxyListener {
+class CallbackProxyListener implements HttpMessageHandler {
 
     private static final Logger LOGGER = LogManager.getLogger(CallbackProxyListener.class);
+    private static final String RESPONSE_HEADER =
+            HttpHeader.HTTP11
+                    + " "
+                    + HttpStatusCode.OK
+                    + "\r\nContent-Length: 0\r\nConnection: close";
 
     private final CallbackService callbackService;
+    private final OastRequestFactory oastRequestFactory;
 
-    public CallbackProxyListener(CallbackService callbackService) {
-        this.callbackService = callbackService;
+    public CallbackProxyListener(
+            CallbackService callbackService, OastRequestFactory oastRequestFactory) {
+        this.callbackService = Objects.requireNonNull(callbackService);
+        this.oastRequestFactory = Objects.requireNonNull(oastRequestFactory);
     }
 
     @Override
-    public int getArrangeableListenerOrder() {
-        return 0;
-    }
+    public void handleMessage(HttpMessageHandlerContext ctx, HttpMessage msg) {
+        if (!ctx.isFromClient()) {
+            return;
+        }
+        ctx.overridden();
 
-    @Override
-    public boolean onHttpResponseReceived(HttpMessage msg) {
-        return true;
-    }
-
-    @Override
-    public boolean onHttpRequestSend(HttpMessage msg) {
         try {
-            msg.setTimeSentMillis(new Date().getTime());
-            String url = msg.getRequestHeader().getURI().toString();
+            Stats.incCounter("stats.oast.callback.interactions");
+            msg.setTimeSentMillis(System.currentTimeMillis());
             String path = msg.getRequestHeader().getURI().getPath();
             LOGGER.debug(
                     "Callback received for URL : {} path : {} from {}",
-                    url,
+                    msg.getRequestHeader().getURI(),
                     path,
                     msg.getRequestHeader().getSenderAddress());
-
-            msg.setResponseHeader(HttpHeader.HTTP11 + " " + HttpStatusCode.OK);
-
-            if (path.startsWith("/" + CallbackService.TEST_PREFIX)) {
-                String str =
-                        Constant.messages.getString(
-                                "oast.callback.test.msg",
-                                url,
-                                msg.getRequestHeader().getSenderAddress().toString());
-                if (View.isInitialised()) {
-                    View.getSingleton().getOutputPanel().appendAsync(str + "\n");
-                }
-                LOGGER.info(str);
+            msg.setResponseHeader(RESPONSE_HEADER);
+            String uuid = path.substring(1);
+            String handler = callbackService.getHandlers().get(uuid);
+            if (handler != null) {
+                callbackReceived(handler, msg);
+            } else {
                 callbackReceived(
-                        Constant.messages.getString("oast.callback.handler.test.name"), msg);
-                return true;
-            } else if (path.startsWith("/favicon.ico")) {
-                // Just ignore - it's automatically requested by browsers
-                // e.g. when trying the test URL
-                return true;
+                        Constant.messages.getString("oast.callback.handler.none.name"), msg);
             }
-
-            for (Map.Entry<String, CallbackImplementor> callback :
-                    callbackService.getCallbacks().entrySet()) {
-                if (path.startsWith(callback.getKey())) {
-                    // Copy the message so that CallbackImplementors can't
-                    // return anything to the sender
-                    CallbackImplementor implementor = callback.getValue();
-                    implementor.handleCallBack(msg.cloneAll());
-                    callbackReceived(implementor.getClass().getSimpleName(), msg);
-                    return true;
-                }
-            }
-
-            callbackReceived(Constant.messages.getString("oast.callback.handler.none.name"), msg);
-            LOGGER.error(
-                    "No callback handler for URL : {} from {}",
-                    url,
-                    msg.getRequestHeader().getSenderAddress());
         } catch (URIException | HttpMalformedHeaderException e) {
             LOGGER.error(e.getMessage(), e);
         }
-        return true;
     }
 
     private void callbackReceived(String handler, HttpMessage httpMessage) {
@@ -118,7 +90,7 @@ class CallbackProxyListener implements OverrideMessageProxyListener {
     private void callbackReceivedHandler(String handler, HttpMessage httpMessage) {
         try {
             OastRequest request =
-                    OastRequest.create(
+                    oastRequestFactory.create(
                             httpMessage,
                             httpMessage.getRequestHeader().getSenderAddress().getHostAddress(),
                             handler);

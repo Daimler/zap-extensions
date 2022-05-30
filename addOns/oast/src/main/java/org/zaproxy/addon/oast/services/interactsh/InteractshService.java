@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -62,8 +63,11 @@ import org.parosproxy.paros.network.HttpMalformedHeaderException;
 import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.network.HttpRequestHeader;
 import org.parosproxy.paros.network.HttpSender;
+import org.zaproxy.addon.oast.ExtensionOast;
 import org.zaproxy.addon.oast.OastService;
+import org.zaproxy.addon.oast.OastState;
 import org.zaproxy.zap.network.HttpRequestBody;
+import org.zaproxy.zap.utils.Stats;
 
 public class InteractshService extends OastService implements OptionsChangedListener {
 
@@ -85,6 +89,7 @@ public class InteractshService extends OastService implements OptionsChangedList
     private PublicKey publicKey;
     private HttpMessage pollMsg;
     private boolean isRegistered;
+    private String currentServerUrl;
     private int currentPollingFrequency;
     private ScheduledFuture<?> pollingSchedule;
 
@@ -97,7 +102,8 @@ public class InteractshService extends OastService implements OptionsChangedList
                 new HttpSender(
                         Model.getSingleton().getOptionsParam().getConnectionParam(),
                         true,
-                        HttpSender.MANUAL_REQUEST_INITIATOR);
+                        // TODO: Replace on next ZAP release with HttpSender.OAST_INITIATOR
+                        ExtensionOast.HTTP_SENDER_OAST_INITIATOR);
         secretKey = UUID.randomUUID();
         correlationId = RandomStringUtils.randomAlphanumeric(20).toLowerCase(Locale.ROOT);
         this.param = param;
@@ -125,27 +131,57 @@ public class InteractshService extends OastService implements OptionsChangedList
     @Override
     public void sessionChanged() {
         if (isRegistered) {
-            stopPoller();
             deregister();
         }
     }
 
     public void optionsLoaded() {
+        currentServerUrl = param.getServerUrl();
         currentPollingFrequency = param.getPollingFrequency();
     }
 
     @Override
     public void optionsChanged(OptionsParam optionsParam) {
-        if (currentPollingFrequency != param.getPollingFrequency()) {
-            stopPoller();
-            startService();
-            currentPollingFrequency = param.getPollingFrequency();
-            LOGGER.debug(
-                    "Updated Interactsh Polling frequency to {} seconds.", currentPollingFrequency);
+        if (!Objects.equals(currentServerUrl, param.getServerUrl())) {
+            try {
+                deregister();
+                register();
+                LOGGER.debug(
+                        "Updated Interactsh params - server URL: {} and polling frequency: {} seconds.",
+                        param.getServerUrl(),
+                        param.getPollingFrequency());
+            } catch (Exception e) {
+                LOGGER.error(
+                        "Error during applying Interactsh config changes - server URL: {} and polling frequency: {} seconds. {}",
+                        param.getServerUrl(),
+                        param.getPollingFrequency(),
+                        e.getMessage(),
+                        e);
+            }
+        } else if (currentPollingFrequency != param.getPollingFrequency()) {
+            try {
+                stopPoller();
+                startService();
+                LOGGER.debug(
+                        "Updated Interactsh polling frequency: {} seconds.",
+                        param.getPollingFrequency());
+            } catch (Exception e) {
+                LOGGER.error(
+                        "Error during applying Interactsh polling frequency: {} seconds. {}",
+                        param.getPollingFrequency(),
+                        e.getMessage(),
+                        e);
+            }
         }
+
+        optionsLoaded();
     }
 
-    public void register() throws InteractshException {
+    public synchronized void register() throws InteractshException {
+        register(true);
+    }
+
+    synchronized void register(boolean startPolling) throws InteractshException {
         try {
             if (isRegistered) {
                 return;
@@ -176,13 +212,28 @@ public class InteractshService extends OastService implements OptionsChangedList
             HttpMessage reqMsg = new HttpMessage(reqHeader, reqBody);
             httpSender.sendAndReceive(reqMsg);
             if (reqMsg.getResponseHeader().getStatusCode() != 200) {
+                LOGGER.warn(
+                        "Error during interactsh register, due to bad HTTP code {}. Content: {}",
+                        reqMsg.getResponseHeader().getStatusCode(),
+                        reqMsg.getResponseBody());
+
                 throw new InteractshException(
                         Constant.messages.getString(
                                 "oast.interactsh.error.register",
-                                Constant.messages.getString("oast.interactsh.error.httpCode")));
+                                Constant.messages.getString("oast.interactsh.error.badHttpCode")));
             }
+
+            LOGGER.debug(
+                    "Registered correlationId {}. StatusCode: {}, Content {}",
+                    correlationId,
+                    reqMsg.getResponseHeader().getStatusCode(),
+                    reqMsg.getResponseBody());
             isRegistered = true;
+            if (startPolling) {
+                schedulePoller(0);
+            }
         } catch (IOException | CloneNotSupportedException | NoSuchAlgorithmException e) {
+            LOGGER.error("Error during interactsh register: {}", e.getMessage(), e);
             throw new InteractshException(
                     Constant.messages.getString(
                             "oast.interactsh.error.register", e.getLocalizedMessage()));
@@ -194,7 +245,7 @@ public class InteractshService extends OastService implements OptionsChangedList
         generator.initialize(2048);
 
         KeyPair keyPair = generator.generateKeyPair();
-        LOGGER.info("OAST Interactsh: RSA key pair generated.");
+        LOGGER.debug("OAST Interactsh: RSA key pair generated.");
         return keyPair;
     }
 
@@ -203,32 +254,34 @@ public class InteractshService extends OastService implements OptionsChangedList
         return publicKey;
     }
 
-    public void deregister() {
+    public synchronized void deregister() {
         try {
             if (!isRegistered) {
                 return;
             }
+            stopPoller();
             URI deregistrationUri = (URI) serverUrl.clone();
             deregistrationUri.setPath("/deregister");
             JSONObject reqBodyJson = new JSONObject();
             reqBodyJson.put("correlation-id", correlationId);
+            reqBodyJson.put("secret-key", secretKey.toString());
             HttpRequestBody reqBody = new HttpRequestBody(reqBodyJson.toString());
             HttpRequestHeader reqHeader =
                     createRequestHeader(deregistrationUri, reqBody.getBytes().length);
             HttpMessage deregisterMsg = new HttpMessage(reqHeader, reqBody);
             httpSender.sendAndReceive(deregisterMsg);
             if (deregisterMsg.getResponseHeader().getStatusCode() != 200) {
-                LOGGER.info(
-                        Constant.messages.getString(
-                                "oast.interactsh.error.deregister",
-                                Constant.messages.getString("oast.interactsh.error.badHttpCode")));
+                LOGGER.warn(
+                        "Error during interactsh deregister, due to bad HTTP code {}. Content: {}",
+                        deregisterMsg.getResponseHeader().getStatusCode(),
+                        deregisterMsg.getResponseBody());
                 return;
             }
+            LOGGER.debug("Deregistered correlationId: {}", correlationId);
             isRegistered = false;
+            fireOastStateChanged(new OastState(getName(), false, null));
         } catch (Exception e) {
-            LOGGER.info(
-                    Constant.messages.getString(
-                            "oast.interactsh.error.deregister", e.getLocalizedMessage()));
+            LOGGER.error("Error during interactsh deregister: {}", e.getMessage(), e);
         }
     }
 
@@ -244,12 +297,15 @@ public class InteractshService extends OastService implements OptionsChangedList
         return reqHeader;
     }
 
-    /** @return a new URL that can be used for external interaction requests. */
+    @Override
     public String getNewPayload() throws URIException, InteractshException {
         if (!isRegistered) {
             register();
         }
-        return correlationId
+        Stats.incCounter("stats.oast.interactsh.payloadsGenerated");
+        return RandomStringUtils.randomAlphanumeric(1).toLowerCase(Locale.ROOT)
+                + '.'
+                + correlationId
                 + RandomStringUtils.randomAlphanumeric(13).toLowerCase(Locale.ROOT)
                 + '.'
                 + serverUrl.getHost();
@@ -261,16 +317,17 @@ public class InteractshService extends OastService implements OptionsChangedList
         schedulePoller(0);
     }
 
-    private void stopPoller() {
+    private synchronized void stopPoller() {
         if (pollingSchedule != null) {
             pollingSchedule.cancel(false);
         }
     }
 
-    private void schedulePoller(int initialDelay) {
+    private synchronized void schedulePoller(int initialDelay) {
         if (!isRegistered) {
             return;
         }
+        LOGGER.debug("Start Polling the Interactsh Server ...");
         pollingSchedule =
                 executorService.scheduleAtFixedRate(
                         new InteractshPoller(this),
@@ -280,7 +337,7 @@ public class InteractshService extends OastService implements OptionsChangedList
     }
 
     /** @return new interactions from the server. */
-    public List<InteractshEvent> getInteractions() {
+    public synchronized List<InteractshEvent> getInteractions() {
         try {
             if (!isRegistered) {
                 LOGGER.warn(Constant.messages.getString("oast.interactsh.error.poll.unregistered"));
@@ -300,17 +357,27 @@ public class InteractshService extends OastService implements OptionsChangedList
             httpSender.sendAndReceive(pollMsg);
             if (pollMsg.getResponseHeader().getStatusCode() != 200) {
                 LOGGER.warn(
-                        Constant.messages.getString(
-                                "oast.interactsh.error.poll",
-                                Constant.messages.getString("oast.interactsh.error.badHttpCode")));
+                        "Error during interactsh poll, due to bad HTTP code {}. Content: {}",
+                        pollMsg.getResponseHeader().getStatusCode(),
+                        pollMsg.getResponseBody());
                 return new ArrayList<>();
             }
+
             JSONObject response = JSONObject.fromObject(pollMsg.getResponseBody().toString());
             if (!response.containsKey("data") || !response.containsKey("aes_key")) {
-                LOGGER.warn(Constant.messages.getString("oast.interactsh.error.poll.badResponse"));
+                LOGGER.warn(
+                        "Bad polling response received from interactsh server. Missing data or aes_key element. HTTP code {}. Content: {}",
+                        pollMsg.getResponseHeader().getStatusCode(),
+                        pollMsg.getResponseBody());
+                return new ArrayList<>();
             }
             String aesKey = response.getString("aes_key");
             JSONArray interactions = response.getJSONArray("data");
+            LOGGER.debug(
+                    "Polled {} interactions for correlationId: {}",
+                    interactions.size(),
+                    correlationId);
+
             List<InteractshEvent> result = new ArrayList<>();
             for (int i = 0; i < interactions.size(); ++i) {
                 String interaction = interactions.getString(i);
@@ -319,11 +386,21 @@ public class InteractshService extends OastService implements OptionsChangedList
                                 JSONObject.fromObject(
                                         new String(decryptMessage(aesKey, interaction)))));
             }
+            if (LOGGER.isDebugEnabled()) {
+                for (InteractshEvent event : result) {
+                    LOGGER.debug(
+                            "Returned interaction for correlationId: {}. Time: {}, Protocol:{}, UniqueId:{}, RemoteAddress:{}",
+                            correlationId,
+                            event.getTimestamp(),
+                            event.getProtocol(),
+                            event.getUniqueId(),
+                            event.getRemoteAddress());
+                }
+            }
+            Stats.incCounter("stats.oast.interactsh.interactions", result.size());
             return result;
         } catch (Exception e) {
-            LOGGER.warn(
-                    Constant.messages.getString(
-                            "oast.interactsh.error.poll", e.getLocalizedMessage()));
+            LOGGER.error("Error during interactsh poll: {}", e.getMessage(), e);
             return new ArrayList<>();
         }
     }
@@ -365,6 +442,7 @@ public class InteractshService extends OastService implements OptionsChangedList
         return param;
     }
 
+    @Override
     public boolean isRegistered() {
         return isRegistered;
     }

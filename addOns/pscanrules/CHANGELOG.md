@@ -4,11 +4,47 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
+### Changed
+- Maintenance changes.
+- The "Viewstate without MAC Signature (Unsure)" alert will now only be raised at Low Alert Threshold (Issue 7230).
+
+## [40] - 2022-04-05
+### Changed
+- Clarify the alert solution for the Cache Control scan rule.
+
 ### Added
-- OWASP Top Ten 2021/2017 mappings for Insecure Authentication scan rule.
+- Content Security Policy (CSP) Header Not Set scan rule promoted to release.
+
+## [39] - 2022-03-07
+### Added
+- Alert refs for the alerts which use them (10020 and 10032).
 
 ### Changed
-- Timestamp Disclosure scan rule now excludes values in "Expect-CT" headers (Issue 6725).
+- Moved the detail information in Content Security Policy Rule to the otherInfo field and added alertRef ids.
+- Address false positive condition for Timestamp Disclosure scan rule when values are percentages (Issue 7057).
+- Update Cache-control scan rule name, description, and solution to make it more clear that there are cases in which caching is reasonable. Reduced risk to Info (Issue 6462).
+- Maintenance changes.
+- The CSRF Token scan rule will now raise alerts as Medium risk and Low confidence (Issue 7021).
+
+### Fixed
+- CSP scan rule will now alert in situations where default-src contains 'unsafe-inline' or is not defined (Issue 7120). In certain situations this may mean a marked increase in CSP related Alerts.
+- A typo was corrected in the CSP scan rule which was causing invalid assessment of "connect-src" directives.
+
+## [38] - 2022-01-07
+### Changed
+- Update minimum ZAP version to 2.11.1.
+- Renamed 'X-Frame-Options Header Not Set' alert to 'Missing Anti-clickjacking Header', and associated scan rule 'X-Frame-Options Header' to 'Anti-clickjacking Header'. The rule already considered Content-Security-Policy 'frame-ancestors' which is a more modern solution to the same concern. Updated associated solution text. (Issue 6937)
+- Content Security Policy scan rule will no longer classify "require-trusted-types-for" or "trusted-types" directives as unknown (Issue 6602).
+
+## [37] - 2021-12-01
+### Added
+- OWASP Top Ten 2021/2017 mappings for Insecure Authentication scan rule.
+- OWASP Web Security Testing Guide v4.2 mappings where applicable.
+
+### Changed
+- Timestamp Disclosure scan rule now excludes values in "Expect-CT" headers (Issue 6725), as well as zero strings (Issue 6761).
+- Dependency updates.
+- Maintenance changes.
 
 ## [36] - 2021-10-06
 ### Added
@@ -268,6 +304,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
 
+[40]: https://github.com/zaproxy/zap-extensions/releases/pscanrules-v40
+[39]: https://github.com/zaproxy/zap-extensions/releases/pscanrules-v39
+[38]: https://github.com/zaproxy/zap-extensions/releases/pscanrules-v38
+[37]: https://github.com/zaproxy/zap-extensions/releases/pscanrules-v37
 [36]: https://github.com/zaproxy/zap-extensions/releases/pscanrules-v36
 [35]: https://github.com/zaproxy/zap-extensions/releases/pscanrules-v35
 [34]: https://github.com/zaproxy/zap-extensions/releases/pscanrules-v34

@@ -181,6 +181,9 @@ public class BodyGenerator {
                                         property.getKey(),
                                         property.getValue().getType(),
                                         generate(property.getValue()));
+                if ("string".equals(property.getValue().getType()) && !value.startsWith("\"")) {
+                    value = "\"" + value + "\"";
+                }
             }
             json.append(value);
         }
@@ -353,6 +356,7 @@ public class BodyGenerator {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     private static String extractExampleBody(MediaType mediaType) {
         return Optional.ofNullable(mediaType.getExamples())
                 .map(Map::values)
@@ -360,6 +364,10 @@ public class BodyGenerator {
                 .map(stream -> stream.map(Example::getValue).filter(Objects::nonNull).findFirst())
                 .orElse(Optional.ofNullable(mediaType.getExample()))
                 .map(Object::toString)
-                .orElse(null);
+                .orElse(
+                        Optional.ofNullable(mediaType.getSchema())
+                                .map(Schema::getExample)
+                                .map(Object::toString)
+                                .orElse(null));
     }
 }

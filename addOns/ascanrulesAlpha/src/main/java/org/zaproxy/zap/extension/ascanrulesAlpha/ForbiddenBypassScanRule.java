@@ -46,7 +46,8 @@ public class ForbiddenBypassScanRule extends AbstractAppPlugin {
     private static final Map<String, String> ALERT_TAGS =
             CommonAlertTag.toMap(
                     CommonAlertTag.OWASP_2021_A01_BROKEN_AC,
-                    CommonAlertTag.OWASP_2017_A05_BROKEN_AC);
+                    CommonAlertTag.OWASP_2017_A05_BROKEN_AC,
+                    CommonAlertTag.WSTG_V42_ATHN_04_AUTH_BYPASS);
 
     @Override
     public int getId() {
@@ -128,7 +129,7 @@ public class ForbiddenBypassScanRule extends AbstractAppPlugin {
             "X-Remote-IP: 127.0.0.1",
             "X-Client-IP: 127.0.0.1",
             "X-Host: 127.0.0.1",
-            "X-Forwared-Host: 127.0.0.1"
+            "X-Forwarded-Host: 127.0.0.1"
         };
 
         for (String header : headerPayloads) {

@@ -19,10 +19,9 @@
  */
 package org.zaproxy.zap.extension.pscanrules;
 
-import com.shapesecurity.salvation2.Directives.SourceExpressionDirective;
-import com.shapesecurity.salvation2.FetchDirectiveKind;
 import com.shapesecurity.salvation2.Policy;
 import com.shapesecurity.salvation2.Policy.PolicyErrorConsumer;
+import com.shapesecurity.salvation2.PolicyInOrigin;
 import com.shapesecurity.salvation2.URLs.URI;
 import com.shapesecurity.salvation2.URLs.URLWithScheme;
 import java.util.ArrayList;
@@ -44,7 +43,6 @@ import org.parosproxy.paros.core.scanner.Alert;
 import org.parosproxy.paros.core.scanner.Plugin.AlertThreshold;
 import org.parosproxy.paros.network.HttpMessage;
 import org.zaproxy.addon.commonlib.CommonAlertTag;
-import org.zaproxy.zap.extension.pscan.PassiveScanThread;
 import org.zaproxy.zap.extension.pscan.PluginPassiveScanner;
 
 /**
@@ -82,17 +80,17 @@ public class ContentSecurityPolicyScanRule extends PluginPassiveScanner {
                     "plugin-types",
                     "report-uri",
                     "sandbox");
+    private static final List<String> ALLOWED_DIRECTIVES =
+            Arrays.asList(
+                    // TODO: Remove once https://github.com/shapesecurity/salvation/issues/232 is
+                    // addressed
+                    "require-trusted-types-for", "trusted-types");
 
     private static final String RAND_FQDN = "7963124546083337415.owasp.org";
     private static final Optional<URLWithScheme> HTTP_URI =
             Optional.of(URI.parseURI("http://" + RAND_FQDN).get());
     private static final Optional<URLWithScheme> HTTPS_URI =
             Optional.of(URI.parseURI("https://" + RAND_FQDN).get());
-
-    @Override
-    public void setParent(PassiveScanThread parent) {
-        // Nothing to do.
-    }
 
     @Override
     public void scanHttpResponseReceive(HttpMessage msg, int id, Source source) {
@@ -122,10 +120,11 @@ public class ContentSecurityPolicyScanRule extends PluginPassiveScanner {
         if (!xcspOptions.isEmpty()) {
             raiseAlert(
                     Constant.messages.getString(MESSAGE_PREFIX + "xcsp.name"),
-                    Constant.messages.getString(MESSAGE_PREFIX + "xcsp.desc"),
+                    Constant.messages.getString(MESSAGE_PREFIX + "xcsp.otherinfo"),
                     getHeaderField(msg, HTTP_HEADER_XCSP).get(0),
                     cspHeaderFound ? Alert.RISK_INFO : Alert.RISK_LOW,
-                    xcspOptions.get(0));
+                    xcspOptions.get(0),
+                    "1");
         }
 
         // X-WebKit-CSP is supported by Chrome 14+, and Safari 6+
@@ -134,19 +133,24 @@ public class ContentSecurityPolicyScanRule extends PluginPassiveScanner {
         if (!xwkcspOptions.isEmpty()) {
             raiseAlert(
                     Constant.messages.getString(MESSAGE_PREFIX + "xwkcsp.name"),
-                    Constant.messages.getString(MESSAGE_PREFIX + "xwkcsp.desc"),
+                    Constant.messages.getString(MESSAGE_PREFIX + "xwkcsp.otherinfo"),
                     getHeaderField(msg, HTTP_HEADER_WEBKIT_CSP).get(0),
                     cspHeaderFound ? Alert.RISK_INFO : Alert.RISK_LOW,
-                    xwkcspOptions.get(0));
+                    xwkcspOptions.get(0),
+                    "2");
         }
 
         if (cspHeaderFound) {
 
             List<PolicyError> observedErrors = new ArrayList<>();
             PolicyErrorConsumer consumer =
-                    (severity, message, directiveIndex, valueIndex) ->
+                    (severity, message, directiveIndex, valueIndex) -> {
+                        // Skip notices for directives that Salvation doesn't handle
+                        if (ALLOWED_DIRECTIVES.stream().noneMatch(message::contains)) {
                             observedErrors.add(
                                     new PolicyError(severity, message, directiveIndex, valueIndex));
+                        }
+                    };
 
             for (String csp : cspOptions) {
                 Policy policy = Policy.parseSerializedCSP(csp, consumer);
@@ -167,7 +171,8 @@ public class ContentSecurityPolicyScanRule extends PluginPassiveScanner {
                             cspNoticesString,
                             "",
                             noticesRisk,
-                            csp);
+                            csp,
+                            "3");
                 }
 
                 List<String> allowedWildcardSources = getAllowedWildcardSources(csp);
@@ -178,54 +183,45 @@ public class ContentSecurityPolicyScanRule extends PluginPassiveScanner {
                                     .filter(DIRECTIVES_WITHOUT_FALLBACK::contains)
                                     .collect(Collectors.toList());
                     String allowedWildcardSrcs = String.join(", ", allowedWildcardSources);
-                    String wildcardSrcDesc =
+                    String wildcardSrcOtherInfo =
                             Constant.messages.getString(
-                                    MESSAGE_PREFIX + "wildcard.desc", allowedWildcardSrcs);
+                                    MESSAGE_PREFIX + "wildcard.otherinfo", allowedWildcardSrcs);
                     if (!allowedDirectivesWithoutFallback.isEmpty()) {
-                        wildcardSrcDesc +=
+                        wildcardSrcOtherInfo +=
                                 Constant.messages.getString(
-                                        "pscanrules.csp.desc.extended",
+                                        "pscanrules.csp.otherinfo.extended",
                                         String.join(", ", allowedDirectivesWithoutFallback));
                     }
                     raiseAlert(
                             Constant.messages.getString(MESSAGE_PREFIX + "wildcard.name"),
-                            wildcardSrcDesc,
+                            wildcardSrcOtherInfo,
                             "",
                             Alert.RISK_MEDIUM,
-                            csp);
+                            csp,
+                            "4");
                 }
 
-                Optional<SourceExpressionDirective> optDirective =
-                        policy.getFetchDirective(FetchDirectiveKind.ScriptSrc);
-                if (optDirective.isPresent()) {
-                    SourceExpressionDirective directive = optDirective.get();
-                    boolean allowed = directive.unsafeInline();
-                    if (allowed) {
-                        raiseAlert(
-                                Constant.messages.getString(
-                                        MESSAGE_PREFIX + "scriptsrc.unsafe.name"),
-                                Constant.messages.getString(
-                                        MESSAGE_PREFIX + "scriptsrc.unsafe.desc"),
-                                "",
-                                Alert.RISK_MEDIUM,
-                                csp);
-                    }
+                PolicyInOrigin p = new PolicyInOrigin(policy, URI.parseURI(RAND_FQDN).orElse(null));
+                if (p.allowsUnsafeInlineScript()) {
+                    raiseAlert(
+                            Constant.messages.getString(MESSAGE_PREFIX + "scriptsrc.unsafe.name"),
+                            Constant.messages.getString(
+                                    MESSAGE_PREFIX + "scriptsrc.unsafe.otherinfo"),
+                            "",
+                            Alert.RISK_MEDIUM,
+                            csp,
+                            "5");
                 }
 
-                optDirective = policy.getFetchDirective(FetchDirectiveKind.StyleSrc);
-                if (optDirective.isPresent()) {
-                    SourceExpressionDirective directive = optDirective.get();
-                    boolean allowed = directive.unsafeInline();
-                    if (allowed) {
-                        raiseAlert(
-                                Constant.messages.getString(
-                                        MESSAGE_PREFIX + "stylesrc.unsafe.name"),
-                                Constant.messages.getString(
-                                        MESSAGE_PREFIX + "stylesrc.unsafe.desc"),
-                                "",
-                                Alert.RISK_MEDIUM,
-                                csp);
-                    }
+                if (p.allowsUnsafeInlineStyle()) {
+                    raiseAlert(
+                            Constant.messages.getString(MESSAGE_PREFIX + "stylesrc.unsafe.name"),
+                            Constant.messages.getString(
+                                    MESSAGE_PREFIX + "stylesrc.unsafe.otherinfo"),
+                            "",
+                            Alert.RISK_MEDIUM,
+                            csp,
+                            "6");
                 }
             }
         }
@@ -318,7 +314,7 @@ public class ContentSecurityPolicyScanRule extends PluginPassiveScanner {
             allowedSources.add("img-src");
         }
         if (checkPolicy(pol::allowsConnection)) {
-            allowedSources.add("connects-src");
+            allowedSources.add("connect-src");
         }
         if (checkPolicy(pol::allowsFrame)) {
             allowedSources.add("frame-src");
@@ -415,18 +411,25 @@ public class ContentSecurityPolicyScanRule extends PluginPassiveScanner {
     }
 
     private void raiseAlert(
-            String name, String description, String param, int risk, String evidence) {
+            String name,
+            String otherInfo,
+            String param,
+            int risk,
+            String evidence,
+            String alertRef) {
         String alertName = StringUtils.isEmpty(name) ? getName() : getName() + ": " + name;
 
         newAlert()
                 .setName(alertName)
                 .setRisk(risk)
                 .setConfidence(Alert.CONFIDENCE_MEDIUM)
-                .setDescription(description)
+                .setDescription(Constant.messages.getString(MESSAGE_PREFIX + "desc"))
+                .setOtherInfo(otherInfo)
                 .setParam(param)
                 .setSolution(getSolution())
                 .setReference(getReference())
                 .setEvidence(evidence)
+                .setAlertRef(PLUGIN_ID + "-" + alertRef)
                 .setCweId(getCweId())
                 .setWascId(getWascId())
                 .raise();

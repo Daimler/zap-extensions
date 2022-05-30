@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 ## Unreleased
 
 
+## [0.9.0] - 2022-04-05
+### Changed
+- Replace variables present in `schemaFile` when running the automation job.
+
+## [0.8.0] - 2022-02-02
+### Changed
+- Update minimum ZAP version to 2.11.1.
+- Reduce printed errors messages in the script Input Vector.
+- When the automation Job is edited via UI Dialog then the status will be set to Not started
+
+## [0.7.0] - 2021-11-01
+### Fixed
+- A message is displayed if the "data" object in an introspection response
+  is `null` ([Issue 6890](https://github.com/zaproxy/zaproxy/issues/6890)).
+
+### Changed
+- Dependency updates.
+
 ## [0.6.0] - 2021-10-06
 ### Changed
 - Update minimum ZAP version to 2.11.0.
@@ -53,6 +71,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
   - Import a GraphQL Schema
   - Generate Queries from an imported Schema
 
+[0.9.0]: https://github.com/zaproxy/zap-extensions/releases/graphql-v0.9.0
+[0.8.0]: https://github.com/zaproxy/zap-extensions/releases/graphql-v0.8.0
+[0.7.0]: https://github.com/zaproxy/zap-extensions/releases/graphql-v0.7.0
 [0.6.0]: https://github.com/zaproxy/zap-extensions/releases/graphql-v0.6.0
 [0.5.0]: https://github.com/zaproxy/zap-extensions/releases/graphql-v0.5.0
 [0.4.0]: https://github.com/zaproxy/zap-extensions/releases/graphql-v0.4.0

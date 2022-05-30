@@ -4,7 +4,26 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
+### Changed
+- Spider checkboxes in Automated Scan will be disabled when scan is running. (Issue 7072)
+- Use Network add-on to obtain main proxy address/port.
+- Maintenance changes.
 
+### Fixed
+- Accept any 2xx result code instead of just 200.
+
+## [33] - 2021-12-13
+### Changed
+- Update minimum ZAP version to 2.11.1.
+- Browser Launch/Manual Explore will now display a warning dialog if the selected browser executable cannot be found (Issue 6963).
+
+## [32] - 2021-12-06
+### Changed
+- Use the Network add-on to export the Root CA certificate.
+
+## [31] - 2021-11-23
+### Changed
+- Use callhome add-on for getting the news
 
 ## [30] - 2021-10-06
 ### Added
@@ -152,6 +171,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
 
+[33]: https://github.com/zaproxy/zap-extensions/releases/quickstart-v33
+[32]: https://github.com/zaproxy/zap-extensions/releases/quickstart-v32
+[31]: https://github.com/zaproxy/zap-extensions/releases/quickstart-v31
 [30]: https://github.com/zaproxy/zap-extensions/releases/quickstart-v30
 [29]: https://github.com/zaproxy/zap-extensions/releases/quickstart-v29
 [28]: https://github.com/zaproxy/zap-extensions/releases/quickstart-v28

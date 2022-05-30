@@ -2,7 +2,7 @@ description = "Imports and scans WSDL files containing SOAP endpoints."
 
 zapAddOn {
     addOnName.set("SOAP Support")
-    zapVersion.set("2.11.0")
+    zapVersion.set("2.11.1")
 
     manifest {
         author.set("Alberto (albertov91) + ZAP Dev Team")
@@ -24,7 +24,7 @@ zapAddOn {
                 dependencies {
                     addOns {
                         register("automation") {
-                            version.set(">=0.6.0")
+                            version.set(">=0.12.0")
                         }
                     }
                 }
@@ -42,14 +42,14 @@ dependencies {
     compileOnly(parent!!.childProjects.get("automation")!!)
     compileOnly(parent!!.childProjects.get("commonlib")!!)
     implementation("com.predic8:soa-model-core:1.6.3")
-    implementation("com.sun.xml.messaging.saaj:saaj-impl:1.5.3")
-    implementation("jakarta.xml.soap:jakarta.xml.soap-api:1.4.2")
-    implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.14.1") {
+    implementation("com.sun.xml.messaging.saaj:saaj-impl:2.0.1")
+    implementation("jakarta.xml.soap:jakarta.xml.soap-api:2.0.1")
+    implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.17.2") {
         // Provided by ZAP.
         exclude(group = "org.apache.logging.log4j")
     }
     // Dependency of "com.predic8:soa-model-core:1.6.3".
-    implementation("org.codehaus.groovy:groovy:3.0.8")
+    implementation("org.codehaus.groovy:groovy:3.0.9")
 
     testImplementation(parent!!.childProjects.get("automation")!!)
     testImplementation(parent!!.childProjects.get("commonlib")!!)

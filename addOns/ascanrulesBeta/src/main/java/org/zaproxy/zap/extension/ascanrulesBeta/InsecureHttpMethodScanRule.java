@@ -39,8 +39,8 @@ import org.apache.commons.httpclient.ProxyClient;
 import org.apache.commons.httpclient.ProxyClient.ConnectResponse;
 import org.apache.commons.httpclient.StatusLine;
 import org.apache.commons.httpclient.URI;
-import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
@@ -96,7 +96,8 @@ public class InsecureHttpMethodScanRule extends AbstractAppPlugin {
     private static final Map<String, String> ALERT_TAGS =
             CommonAlertTag.toMap(
                     CommonAlertTag.OWASP_2021_A05_SEC_MISCONFIG,
-                    CommonAlertTag.OWASP_2017_A06_SEC_MISCONFIG);
+                    CommonAlertTag.OWASP_2017_A06_SEC_MISCONFIG,
+                    CommonAlertTag.WSTG_V42_CONF_06_HTTP_METHODS);
 
     @Override
     public int getId() {
@@ -365,12 +366,8 @@ public class InsecureHttpMethodScanRule extends AbstractAppPlugin {
         // TRACE is supported in 1.0. TRACK is presumably the same, since it is
         // a alias for TRACE. Typical Microsoft.
         msg.getRequestHeader().setVersion(HttpRequestHeader.HTTP10);
-        String randomcookiename =
-                RandomStringUtils.random(
-                        15, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
-        String randomcookievalue =
-                RandomStringUtils.random(
-                        40, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
+        String randomcookiename = RandomStringUtils.randomAlphanumeric(15);
+        String randomcookievalue = RandomStringUtils.randomAlphanumeric(40);
         TreeSet<HtmlParameter> cookies = msg.getCookieParams();
         cookies.add(
                 new HtmlParameter(HtmlParameter.Type.cookie, randomcookiename, randomcookievalue));
@@ -519,12 +516,8 @@ public class InsecureHttpMethodScanRule extends AbstractAppPlugin {
 
         if (httpMethod.equals(HttpRequestHeader.PUT)
                 || httpMethod.equals(HttpRequestHeader.PATCH)) {
-            String randomKey =
-                    RandomStringUtils.random(
-                            15, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
-            String randomValue =
-                    RandomStringUtils.random(
-                            15, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
+            String randomKey = RandomStringUtils.randomAlphanumeric(15);
+            String randomValue = RandomStringUtils.randomAlphanumeric(15);
             String randomResource =
                     RandomStringUtils.random(10, "abcdefghijklmnopqrstuvwxyz0123456789");
             String requestBody = '"' + randomKey + "\":\"" + randomValue + '"';

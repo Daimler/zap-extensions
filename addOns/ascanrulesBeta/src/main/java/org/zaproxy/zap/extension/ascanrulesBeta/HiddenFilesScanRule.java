@@ -67,7 +67,8 @@ public class HiddenFilesScanRule extends AbstractHostPlugin {
     private static final Map<String, String> ALERT_TAGS =
             CommonAlertTag.toMap(
                     CommonAlertTag.OWASP_2021_A05_SEC_MISCONFIG,
-                    CommonAlertTag.OWASP_2017_A06_SEC_MISCONFIG);
+                    CommonAlertTag.OWASP_2017_A06_SEC_MISCONFIG,
+                    CommonAlertTag.WSTG_V42_CONF_05_ENUMERATE_INFRASTRUCTURE);
     static final String PAYLOADS_FILE_PATH = "json/hidden_files.json";
 
     private static final List<String> HIDDEN_FILES = new ArrayList<>();
@@ -164,7 +165,7 @@ public class HiddenFilesScanRule extends AbstractHostPlugin {
             testMsg.getRequestHeader().setMethod(HttpRequestHeader.GET);
             testMsg.getRequestHeader().setHeader(HttpHeader.CONTENT_TYPE, null);
             testMsg.setRequestBody("");
-            sendAndReceive(testMsg);
+            sendAndReceive(testMsg, false);
             return testMsg;
         } catch (URIException uEx) {
             LOG.debug(

@@ -36,7 +36,6 @@ import org.parosproxy.paros.core.scanner.Plugin.AlertThreshold;
 import org.parosproxy.paros.model.Model;
 import org.parosproxy.paros.network.HttpMessage;
 import org.zaproxy.addon.commonlib.CommonAlertTag;
-import org.zaproxy.zap.extension.pscan.PassiveScanThread;
 import org.zaproxy.zap.extension.pscan.PluginPassiveScanner;
 import org.zaproxy.zap.extension.ruleconfig.RuleConfigParam;
 import org.zaproxy.zap.model.Context;
@@ -62,11 +61,6 @@ public class LinkTargetScanRule extends PluginPassiveScanner {
     private Model model = null;
 
     private static final Logger LOG = LogManager.getLogger(LinkTargetScanRule.class);
-
-    @Override
-    public void setParent(PassiveScanThread parent) {
-        // Nothing to do.
-    }
 
     @Override
     public int getPluginId() {
@@ -158,23 +152,18 @@ public class LinkTargetScanRule extends PluginPassiveScanner {
             String relAtt = link.getAttributeValue(REL_ATTRIBUTE);
             if (relAtt != null) {
                 relAtt = relAtt.toLowerCase();
-                if (!relAtt.contains(OPENER)) {
-                    // Its ok
-                    return false;
-                } else if (relAtt.contains(NOOPENER)) {
-                    return false;
+                if (relAtt.contains(OPENER) && !relAtt.contains(NOOPENER)) {
+                    newAlert()
+                            .setRisk(Alert.RISK_MEDIUM)
+                            .setConfidence(Alert.CONFIDENCE_MEDIUM)
+                            .setDescription(getDescription())
+                            .setSolution(getSolution())
+                            .setReference(getReference())
+                            .setEvidence(link.toString())
+                            .raise();
+                    return true;
                 }
             }
-            // Its bad
-            newAlert()
-                    .setRisk(Alert.RISK_MEDIUM)
-                    .setConfidence(Alert.CONFIDENCE_MEDIUM)
-                    .setDescription(getDescription())
-                    .setSolution(getSolution())
-                    .setReference(getReference())
-                    .setEvidence(link.toString())
-                    .raise();
-            return true;
         }
         return false;
     }

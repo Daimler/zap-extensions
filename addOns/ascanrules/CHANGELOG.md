@@ -4,7 +4,47 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
+### Added
+- Cross Site Scripting header splitting attacks.
 
+### Changed
+- Maintenance changes.
+
+### Fixed
+- The Remote File Inclusion scan rule no longer follows redirects before checking the response for content indicating a vulnerability (Issue 5887).
+- False positive where Cross Site Scripting payloads are safely rendered in a textarea tag.
+
+## [46] - 2022-03-21
+### Changed
+- Maintenance changes.
+
+### Fixed
+- Fix Cross Site Scripting (Reflected) scan rule false negatives introduced in previous version.
+
+## [45] - 2022-03-15
+### Changed 
+- Remote OS Command Injection rule now has more information in the Other Info field to differentiate feedback-based or time-based tests
+- Path Traversal scan rule, updated the regex for case 5 to be case-insensitive when searching for Error or Exception in content body.
+- Maintenance changes.
+
+### Fixed
+- Server Side Code Injection scan rule, prevent use of zero when injecting ASP multiplication to avoid false positives (Issue 7107).
+- External Redirect scan rule to detect redirects with dots deny listed.
+- Cross Site Scripting (Reflected) scan rule will no longer raise an alert for unsuccessful JavaScript string injections (Issue 1641).
+
+## [44] - 2022-01-13
+### Changed
+- Update minimum ZAP version to 2.11.1.
+- The XSS scan rule will try several different payloads if the payload is being reflected outside of any HTML tags (for example in a JSON response body).
+
+## [43] - 2021-12-06
+### Added
+- OWASP Web Security Testing Guide v4.2 mappings where applicable.
+
+## [42] - 2021-11-29
+### Changed
+- Command Injection scan rule will now initially attempt a simple injection without the original parameter value (Issue 6538).
+- Reflected XSS rule: added a generic 'onerror' attack and tweaked the case of the script attack
 
 ## [41] - 2021-10-06
 ### Changed
@@ -275,6 +315,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
 
+[46]: https://github.com/zaproxy/zap-extensions/releases/ascanrules-v46
+[45]: https://github.com/zaproxy/zap-extensions/releases/ascanrules-v45
+[44]: https://github.com/zaproxy/zap-extensions/releases/ascanrules-v44
+[43]: https://github.com/zaproxy/zap-extensions/releases/ascanrules-v43
+[42]: https://github.com/zaproxy/zap-extensions/releases/ascanrules-v42
 [41]: https://github.com/zaproxy/zap-extensions/releases/ascanrules-v41
 [40]: https://github.com/zaproxy/zap-extensions/releases/ascanrules-v40
 [39]: https://github.com/zaproxy/zap-extensions/releases/ascanrules-v39

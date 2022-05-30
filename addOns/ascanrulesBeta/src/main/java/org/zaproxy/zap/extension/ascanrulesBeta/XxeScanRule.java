@@ -20,7 +20,6 @@
 package org.zaproxy.zap.extension.ascanrulesBeta;
 
 import java.io.IOException;
-import java.security.SecureRandom;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -28,13 +27,14 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
+import org.parosproxy.paros.control.Control;
 import org.parosproxy.paros.core.scanner.AbstractAppPlugin;
 import org.parosproxy.paros.core.scanner.Alert;
 import org.parosproxy.paros.core.scanner.Category;
 import org.parosproxy.paros.network.HttpHeader;
 import org.parosproxy.paros.network.HttpMessage;
 import org.zaproxy.addon.commonlib.CommonAlertTag;
-import org.zaproxy.addon.oast.services.callback.CallbackService;
+import org.zaproxy.addon.oast.ExtensionOast;
 import org.zaproxy.zap.model.Vulnerabilities;
 import org.zaproxy.zap.model.Vulnerability;
 
@@ -43,21 +43,21 @@ import org.zaproxy.zap.model.Vulnerability;
  *
  * @author yhawke (2104)
  */
-public class XxeScanRule extends AbstractAppPlugin implements ChallengeCallbackPlugin {
+public class XxeScanRule extends AbstractAppPlugin {
 
     private static final String MESSAGE_PREFIX = "ascanbeta.xxe.";
     private static final int PLUGIN_ID = 90023;
 
     // Get the correct vulnerability description from WASC
     private static final Vulnerability vuln = Vulnerabilities.getVulnerability("wasc_43");
-    private static final int CHALLENGE_LENGTH = 16;
     private static final Map<String, String> ALERT_TAGS =
             CommonAlertTag.toMap(
-                    CommonAlertTag.OWASP_2021_A03_INJECTION, CommonAlertTag.OWASP_2017_A04_XXE);
+                    CommonAlertTag.OWASP_2021_A03_INJECTION,
+                    CommonAlertTag.OWASP_2017_A04_XXE,
+                    CommonAlertTag.WSTG_V42_INPV_07_XMLI);
 
     // Payload built on examples retrieved in:
     // https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing
-    //
     private static final String ATTACK_ENTITY = "&zapxxe;";
 
     static final String ATTACK_HEADER =
@@ -68,6 +68,8 @@ public class XxeScanRule extends AbstractAppPlugin implements ChallengeCallbackP
                     + "]>\n";
 
     protected static final String ATTACK_BODY = "<foo>" + ATTACK_ENTITY + "</foo>";
+
+    protected static final String ATTACK_MESSAGE = ATTACK_HEADER + ATTACK_BODY;
 
     // XML standard from W3C Consortium
     // ---------------------------------------------
@@ -100,10 +102,6 @@ public class XxeScanRule extends AbstractAppPlugin implements ChallengeCallbackP
     private static final String xmlHeaderRegex = "<\\?xml.*?\\?>";
     private static final Pattern xmlHeaderPattern =
             Pattern.compile(xmlHeaderRegex, Pattern.CASE_INSENSITIVE);
-
-    // API for the specific challenge/response model
-    // Should be a common object for all this scan rule's instances
-    private static XxeCallbackImplementor callbackImplementor = new XxeCallbackImplementor();
 
     // Logger instance
     private static final Logger log = LogManager.getLogger(XxeScanRule.class);
@@ -187,51 +185,22 @@ public class XxeScanRule extends AbstractAppPlugin implements ChallengeCallbackP
         // Prepare the message
         HttpMessage msg = getBaseMsg();
         String contentType = msg.getRequestHeader().getHeader(HttpHeader.CONTENT_TYPE);
-        String payload = null;
 
         // first check if it's an XML otherwise it's useless...
         if ((contentType != null) && (contentType.contains("xml"))) {
 
             // Check #1 : XXE Remote File Inclusion Attack
-            // ------------------------------------------------------
-            // This attack is described in
-            // https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing
-            // using an external bouncing site, in this case we use
-            // the ZAP API as a server for the vulnerability check
-            // using a challenge/response model based on a random string
+            remoteFileInclusionAttack();
 
-            // Skip XXE Remote File Inclusion Attack when callback extension is not available.
-            if (ChallengeCallbackImplementor.getCallbackService() != null) {
-                String challenge = randomString(CHALLENGE_LENGTH);
-
-                try {
-                    // Prepare the attack message
-                    msg = getNewMsg();
-                    payload = getCallbackAttackPayload(challenge);
-                    msg.setRequestBody(payload);
-
-                    // Register the callback for future actions
-                    callbackImplementor.registerCallback(challenge, this, msg);
-
-                    // All we need has been done...
-                    sendAndReceive(msg);
-
-                } catch (IOException ex) {
-                    // Do not try to internationalise this.. we need an error message in any event..
-                    // if it's in English, it's still better than not having it at all.
-                    log.warn(
-                            "XXE Injection vulnerability check failed for payload [{}] due to an I/O error",
-                            payload,
-                            ex);
-                }
-            }
+            // Check #2 : Out-of-band XXE Attack
+            outOfBandFileInclusionAttack();
 
             // Check if we've to do only basic analysis (only remote should be done)...
             if (this.getAttackStrength() == AttackStrength.LOW) {
                 return;
             }
 
-            // Check #2 : XXE Local File Reflection Attack
+            // Check #3 : XXE Local File Reflection Attack
             localFileReflectionAttack(getNewMsg());
 
             // Check if we've to do only medium sized analysis
@@ -245,8 +214,67 @@ public class XxeScanRule extends AbstractAppPlugin implements ChallengeCallbackP
                 return;
             }
 
-            // Check #3 : XXE Local File Inclusion Attack
+            // Check #4 : XXE Local File Inclusion Attack
             localFileInclusionAttack(getNewMsg());
+        }
+    }
+
+    /**
+     * This attack is described in
+     * https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing using an
+     * external bouncing site, in this case we use the ZAP API as a server for the vulnerability
+     * check using a challenge/response model based on a random string
+     */
+    private void remoteFileInclusionAttack() {
+        try {
+            ExtensionOast extOast =
+                    Control.getSingleton().getExtensionLoader().getExtension(ExtensionOast.class);
+            if (extOast != null && extOast.getCallbackService() != null) {
+                HttpMessage msg = getNewMsg();
+                Alert alert =
+                        newAlert()
+                                .setConfidence(Alert.CONFIDENCE_MEDIUM)
+                                .setMessage(msg)
+                                .setSource(Alert.Source.ACTIVE)
+                                .build();
+                String callbackPayload =
+                        extOast.registerAlertAndGetPayloadForCallbackService(
+                                alert, XxeScanRule.class.getSimpleName());
+                String payload = MessageFormat.format(ATTACK_MESSAGE, callbackPayload);
+                alert.setAttack(payload);
+                msg.setRequestBody(payload);
+                sendAndReceive(msg);
+            }
+        } catch (Exception e) {
+            log.warn("Could not perform Remote File Inclusion Attack.", e);
+        }
+    }
+
+    private void outOfBandFileInclusionAttack() {
+        try {
+            ExtensionOast extOast =
+                    Control.getSingleton().getExtensionLoader().getExtension(ExtensionOast.class);
+            if (extOast != null && extOast.getActiveScanOastService() != null) {
+                HttpMessage msg = getNewMsg();
+                Alert alert =
+                        newAlert()
+                                .setConfidence(Alert.CONFIDENCE_MEDIUM)
+                                .setMessage(msg)
+                                .setSource(Alert.Source.ACTIVE)
+                                .build();
+                String oastPayload = extOast.registerAlertAndGetPayload(alert);
+                String payload = MessageFormat.format(ATTACK_MESSAGE, "http://" + oastPayload);
+                alert.setAttack(payload);
+                msg.setRequestBody(payload);
+                sendAndReceive(msg);
+                // Try again with https
+                msg = getNewMsg();
+                payload = MessageFormat.format(ATTACK_MESSAGE, "https://" + oastPayload);
+                msg.setRequestBody(payload);
+                sendAndReceive(msg);
+            }
+        } catch (Exception e) {
+            log.warn("Could not perform OOB XXE File Inclusion Attack.", e);
         }
     }
 
@@ -311,7 +339,7 @@ public class XxeScanRule extends AbstractAppPlugin implements ChallengeCallbackP
         try {
             for (int idx = 0; idx < LOCAL_FILE_TARGETS.length; idx++) {
                 String localFile = LOCAL_FILE_TARGETS[idx];
-                payload = MessageFormat.format(ATTACK_HEADER + ATTACK_BODY, localFile);
+                payload = MessageFormat.format(ATTACK_MESSAGE, localFile);
                 msg.setRequestBody(payload);
                 sendAndReceive(msg);
                 String response = msg.getResponseBody().toString();
@@ -335,62 +363,6 @@ public class XxeScanRule extends AbstractAppPlugin implements ChallengeCallbackP
                     "XXE Injection vulnerability check failed for payload [{}] due to an I/O error",
                     payload,
                     ex);
-        }
-    }
-
-    /**
-     * Notification for a successful rule execution
-     *
-     * @param challenge the challenge callback that has been used
-     * @param targetMessage the original message sent to the target containing the callback
-     */
-    @Override
-    public void notifyCallback(String challenge, HttpMessage targetMessage) {
-        if (challenge != null) {
-
-            String evidence = callbackImplementor.getCallbackUrl(challenge);
-
-            newAlert()
-                    .setConfidence(Alert.CONFIDENCE_MEDIUM)
-                    .setAttack(getCallbackAttackPayload(challenge))
-                    .setEvidence(evidence)
-                    .setMessage(targetMessage)
-                    .raise();
-        }
-    }
-
-    private String getCallbackAttackPayload(String challenge) {
-        String message = ATTACK_HEADER + ATTACK_BODY;
-        return MessageFormat.format(message, callbackImplementor.getCallbackUrl(challenge));
-    }
-
-    /**
-     * Get a randomly built string with exactly lenght chars
-     *
-     * @param length the number of chars of this string
-     * @return a string element containing exactly "lenght" characters
-     */
-    private String randomString(int length) {
-        SecureRandom rand = new SecureRandom();
-        StringBuilder result = new StringBuilder(length);
-        String alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-
-        for (int i = 0; i < length; i++) {
-            result.append(alphabet.charAt(rand.nextInt(alphabet.length())));
-        }
-
-        return result.toString();
-    }
-
-    /** Only for use in unit tests */
-    protected void setCallbackService(CallbackService callbackService) {
-        ChallengeCallbackImplementor.setCallbackService(callbackService);
-    }
-
-    protected static void unload() {
-        if (ChallengeCallbackImplementor.getCallbackService() != null) {
-            ChallengeCallbackImplementor.getCallbackService()
-                    .removeCallbackImplementor(callbackImplementor);
         }
     }
 

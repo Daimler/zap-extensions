@@ -4,7 +4,21 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
+### Changed
+- Update minimum ZAP version to 2.11.1.
+- Maintenance changes.
 
+### Fixed
+- False positive condition from Sub Resource Integrity Attribute Missing scan rule when rel=canonical is used (Issue 7040).
+- Threading issue in Dangerous JS Functions rule - only reproducible with currently unreleased core changes.
+
+## [35] - 2021-12-01
+### Changed
+- Maintenance changes.
+
+### Added
+- OWASP Web Security Testing Guide v4.2 mappings where applicable.
+- Sub Resource Integrity Attribute Missing scan rule will now include the suggested integrity hash (Base64 encoded SHA384 hash) as part of the relevant Alert's Other Info details if the referenced script can be found in the Sites Tree (Issue 5894).
 
 ## [34] - 2021-10-07
 ### Added
@@ -289,6 +303,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Updated User Controlled Open Redirect, Cookie and Charset rules after testing with
 - http://www.testcases.org/watcher/ test pages.
 
+[35]: https://github.com/zaproxy/zap-extensions/releases/pscanrulesAlpha-v35
 [34]: https://github.com/zaproxy/zap-extensions/releases/pscanrulesAlpha-v34
 [33]: https://github.com/zaproxy/zap-extensions/releases/pscanrulesAlpha-v33
 [32]: https://github.com/zaproxy/zap-extensions/releases/pscanrulesAlpha-v32

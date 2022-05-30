@@ -23,13 +23,16 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
-import org.apache.commons.lang3.StringUtils;
 import org.jdesktop.swingx.JXTable;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.model.OptionsParam;
@@ -52,6 +55,8 @@ public class InteractshOptionsPanelTab extends OastOptionsPanelTab {
     private JXTable payloadsTable;
     private PayloadsTableModel payloadsTableModel;
     private JButton newPayloadButton;
+    private String originalServerUrl;
+    private String originalAuthToken;
 
     public InteractshOptionsPanelTab(InteractshService interactshService) {
         super(interactshService.getName());
@@ -103,6 +108,7 @@ public class InteractshOptionsPanelTab extends OastOptionsPanelTab {
     ZapTextField getServerUrl() {
         if (serverUrl == null) {
             serverUrl = new ZapTextField();
+            addChangeListenerToRefreshPayloadButtonEnabledState(serverUrl);
         }
         return serverUrl;
     }
@@ -110,6 +116,7 @@ public class InteractshOptionsPanelTab extends OastOptionsPanelTab {
     ZapTextField getAuthToken() {
         if (authToken == null) {
             authToken = new ZapTextField();
+            addChangeListenerToRefreshPayloadButtonEnabledState(authToken);
         }
         return authToken;
     }
@@ -161,9 +168,34 @@ public class InteractshOptionsPanelTab extends OastOptionsPanelTab {
         }
     }
 
+    private void addChangeListenerToRefreshPayloadButtonEnabledState(JTextField textField) {
+        textField
+                .getDocument()
+                .addDocumentListener(
+                        new DocumentListener() {
+
+                            @Override
+                            public void changedUpdate(DocumentEvent e) {
+                                refreshPayloadButtonEnabledState();
+                            }
+
+                            @Override
+                            public void removeUpdate(DocumentEvent e) {
+                                refreshPayloadButtonEnabledState();
+                            }
+
+                            @Override
+                            public void insertUpdate(DocumentEvent e) {
+                                refreshPayloadButtonEnabledState();
+                            }
+                        });
+    }
+
     @Override
     public void initParam(OptionsParam options) {
         final InteractshParam param = options.getParamSet(InteractshParam.class);
+        this.originalServerUrl = param.getServerUrl();
+        this.originalAuthToken = param.getAuthToken();
         getServerUrl().setText(param.getServerUrl());
         getAuthToken().setText(param.getAuthToken());
         getPollingFrequencySpinner().setValue(param.getPollingFrequency());
@@ -177,6 +209,16 @@ public class InteractshOptionsPanelTab extends OastOptionsPanelTab {
         param.setServerUrl(getServerUrl().getText());
         param.setAuthToken(getAuthToken().getText());
         param.setPollingFrequency(getPollingFrequencySpinner().getValue());
+    }
+
+    private void refreshPayloadButtonEnabledState() {
+        if (newPayloadButton == null) {
+            return;
+        }
+
+        newPayloadButton.setEnabled(
+                Objects.equals(getServerUrl().getText(), originalServerUrl)
+                        && Objects.equals(getAuthToken().getText(), originalAuthToken));
     }
 
     private class PayloadsTableModel extends AbstractTableModel {
@@ -219,7 +261,9 @@ public class InteractshOptionsPanelTab extends OastOptionsPanelTab {
                     return payloads.get(rowIndex);
                 case 1:
                     String payload = payloads.get(rowIndex);
-                    return StringUtils.reverse(payload.substring(0, payload.indexOf('.')));
+                    int firstDot = payload.indexOf('.');
+                    int secondDot = payload.indexOf('.', firstDot + 1);
+                    return payload.substring(firstDot + 1, secondDot);
                 default:
                     return "";
             }

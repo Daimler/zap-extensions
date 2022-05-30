@@ -38,7 +38,7 @@ import org.zaproxy.addon.commonlib.CommonAlertTag;
 public class PaddingOracleScanRule extends AbstractAppParamPlugin {
 
     // List of all possible errors
-    private static final String[] ERROR_PATTERNS = {
+    static final String[] ERROR_PATTERNS = {
         "BadPaddingException",
         "padding",
         "runtime",
@@ -50,7 +50,8 @@ public class PaddingOracleScanRule extends AbstractAppParamPlugin {
     private static final Map<String, String> ALERT_TAGS =
             CommonAlertTag.toMap(
                     CommonAlertTag.OWASP_2021_A02_CRYPO_FAIL,
-                    CommonAlertTag.OWASP_2017_A06_SEC_MISCONFIG);
+                    CommonAlertTag.OWASP_2017_A06_SEC_MISCONFIG,
+                    CommonAlertTag.WSTG_V42_CRYP_02_PADDING_ORACLE);
 
     // Logger object
     private static final Logger log = LogManager.getLogger(PaddingOracleScanRule.class);
@@ -180,13 +181,16 @@ public class PaddingOracleScanRule extends AbstractAppParamPlugin {
                     // Otherwise check the response with the last bit changed
                     String lastBitResponse = msg.getResponseBody().toString();
 
+                    String emptyValueResponse = getEmptyValueResponse(paramName);
+
                     // Check if changing the last bit produced a result that
                     // changing the first bit didn't. These results are based
                     // on a list of error strings.
                     for (String pattern : ERROR_PATTERNS) {
 
                         if (lastBitResponse.contains(pattern)
-                                && !controlResponse.contains(pattern)) {
+                                && !controlResponse.contains(pattern)
+                                && !emptyValueResponse.contains(pattern)) {
 
                             // We Found IT!
                             // First do logging
@@ -228,6 +232,13 @@ public class PaddingOracleScanRule extends AbstractAppParamPlugin {
         }
 
         return false;
+    }
+
+    private String getEmptyValueResponse(String paramName) throws IOException {
+        HttpMessage msg = getNewMsg();
+        setParameter(msg, paramName, "");
+        sendAndReceive(msg);
+        return msg.getResponseBody().toString();
     }
 
     /**

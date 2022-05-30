@@ -3,55 +3,82 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <title>
-Passive Scan Rules
+Правила Пассивного Сканирования
 </title>
 </head>
 <body>
-<h1>Passive Scan Rules</h1>
-The following release quality passive scan rules are included in this add-on:
+<h1>Правила Пассивного Сканирования</h1>
+В это дополнение включены следующие правила пассивного сканирования релизного качества: 
 
-<h2>Application Errors</h2>
-Check server responses for HTTP 500 - Internal Server Error type responses or those that contain a known error string. <br>
-<strong>Note:</strong> Matches made within script blocks or files are against the entire content not only comments.<br>
-At HIGH Threshold don’t alert on HTTP 500 (but do for other error patterns).<br>
-For Internal Server Error (HTTP 500) the Alert is set to Low risk and in other case it is set to Medium risk.
-
-<p><strong>Note:</strong> If the Custom Payloads addon is installed you can add your own Application Error strings (payloads) in the Custom Payloads options panel. 
-They will also be searched for in responses as they're passively scanned. Keep in mind that the greater the number of payloads the greater the 
-amount of time needed to passively scan.
-<p>It is also possible to add patterns to the <code>xml/application_errors.xml</code> file in ZAP's user directory.<br>
+<h2>Заголовок против кликджекинга </h2>
+Это правило сканирования проверяет наличие и действительность заголовка X-Frame-Options или директивы Content-Security-Policy 'frame-ancestors'. <br> 
+При пороговых значениях СРЕДНИЙ и ВЫСОКИЙ учитываются только ответы HTML без ошибок или без переадресации. <br>
+При НИЗКОМ пороге он просматривает все текстовые ответы, включая ошибки и перенаправления. <br>
+Следующие условия могут привести к предупреждению: 
+<ul> 
+ <li><b>Отсутствует заголовок Anti-clickjacking: </b> если заголовок X-Frame-Options полностью отсутствует в ответе. </li>
+ <li><b>Несколько записей заголовка X-Frame-Options: </b> когда в ответе обнаружено более одного заголовка X-Frame-Options. </li>
+ <li><b>Параметры X-Frame, определенные через META (не соответствует спецификации): </b> В ответе была обнаружена запись «http-equiv», которая пытается определить параметры X-Frame, что не поддерживается спецификация. </li>
+ <li><b>Неверный формат параметра X-Frame-Options: </b> в заголовке отсутствует значение или значение не соответствует ожидаемому (т. е. отличается от "DENY" или "SAMEORIGIN"). </li>
+</ul>
+По умолчанию никакие предупреждения не будут выдаваться в ответе, содержащем элемент Content-Security-Policy 'frame-ancestors', поскольку он имеет приоритет над заголовком X-Frame-Options. 
+Однако при НИЗКОМ пороге о вышеуказанных проблемах по-прежнему будет сообщаться, но с НИЗКИМ риском.  
 <p>
-Latest code: <a href="https://github.com/zaproxy/zap-extensions/blob/main/addOns/pscanrules/src/main/java/org/zaproxy/zap/extension/pscanrules/ApplicationErrorScanRule.java">ApplicationErrorScanRule.java</a>
+Последний код: <a href="https://github.com/zaproxy/zap-extensions/blob/main/addOns/pscanrules/src/main/java/org/zaproxy/zap/extension/pscanrules/AntiClickjackingScanRule.java">AntiClickjackingScanRule.java</a>
+
+<h2>Ошибки приложения</h2>
+Проверьте ответы сервера на наличие ответов типа HTTP 500 — Internal Server Error или тех, которые содержат известную строку ошибки.  <br>
+<strong>Примечание.</strong> Совпадения, сделанные в блоках сценария или файлах, относятся ко всему содержимому, а не только к комментариям.<br>
+При ВЫСОКОМ пороге не выдавать оповещения по HTTP 500 (но делать это для других шаблонов ошибок).<br>
+Для внутренней ошибки сервера (HTTP 500) для предупреждения устанавливается низкий риск, а в других случаях — средний риск. 
+
+<p><strong>Примечание.</strong> Если установлен дополнительный модуль Custom Payloads, вы можете добавить свои собственные строки ошибок приложения (полезные данные) на панели параметров Custom Payloads.  
+Их также будут искать в ответах, поскольку они пассивно сканируются.  Имейте в виду, что чем больше количество полезных нагрузок, тем больше
+количество времени, необходимое для пассивного сканирования. 
+<p>Также можно добавить шаблоны в файл <code>xml/application_errors.xml</code> в пользовательском каталоге ZAP. <br>
+<p>
+Последний код: <a href="https://github.com/zaproxy/zap-extensions/blob/main/addOns/pscanrules/src/main/java/org/zaproxy/zap/extension/pscanrules/ApplicationErrorScanRule.java">ApplicationErrorScanRule.java</a>
  
-<h2>Cache Control</h2>
-Checks "Cache-Control" response headers against general industry best practice settings for protection of sensitive content.<br>
-At MEDIUM and HIGH thresholds only non-error or non-redirect text responses (excluding JavaScript and CSS) are considered.<br>
-At LOW threshold all responses are considered including errors and redirects.
+<h2>Управление кешем</h2>
+Проверяет заголовки ответа «Cache-Control» на соответствие общим передовым отраслевым настройкам для защиты конфиденциального содержимого.<br>
+При пороговых значениях СРЕДНИЙ и ВЫСОКИЙ учитываются только текстовые ответы без ошибок или без переадресации (за исключением JavaScript и CSS).<br>
+При НИЗКОМ пороге учитываются все ответы, включая ошибки и редиректы. 
 <p>
-Latest code: <a href="https://github.com/zaproxy/zap-extensions/blob/main/addOns/pscanrules/src/main/java/org/zaproxy/zap/extension/pscanrules/CacheControlScanRule.java">CacheControlScanRule.java</a>
+Последний код: <a href="https://github.com/zaproxy/zap-extensions/blob/main/addOns/pscanrules/src/main/java/org/zaproxy/zap/extension/pscanrules/CacheControlScanRule.java">CacheControlScanRule.java</a>
 
-<h2>Charset Mismatch</h2>
-<p>This check identifies responses where the HTTP Content-Type header declares a charset different from the charset defined by the body of the HTML or XML. When there's a charset mismatch between the HTTP header and content body Web browsers can be forced into an undesirable content-sniffing mode to determine the content's correct character set.</p>
-<p>The scan rule handles various conditions depending on the Threshold set for the rule, as follows:</p>
+<h2>Несоответствие кодировки</h2> 
+<p>Эта проверка определяет ответы, в которых заголовок HTTP Content-Type объявляет кодировку, отличную от кодировки, определенной телом HTML или XML.  При несоответствии набора символов между заголовком HTTP и телом контента веб-браузеры могут быть принудительно переведены в нежелательный режим прослушивания контента, чтобы определить правильный набор символов контента. </p>
+<p>Правило сканирования обрабатывает различные условия в зависимости от порогового значения, установленного для правила, следующим образом: </p>
 <ul>
-  <li>All Thresholds:
+  <li>Все пороги: 
     <ul>
-      <li>Header Versus Meta Content-Type Charset - The declaration in the HTTP Content-Type header doesn't match what is declared in a META Content-Type tag.</li>
-      <li>Header Versus Meta Charset - The declaration in the HTTP Content-Type header doesn't match what is declared in a META Charset tag.</li>
+      <li>Заголовок и кодировка Meta Content-Type. Объявление в заголовке HTTP Content-Type не соответствует тому, что объявлено в теге META Content-Type. </li>
+      <li>Заголовок и кодировка Meta Content-Type. Объявление в заголовке HTTP Content-Type не соответствует тому, что объявлено в теге META Content-Type. </li>
     </ul>
   </li>
-  <li>Low Threshold:
+  <li>Низкий порог: 
     <ul>
-      <li>Meta Content-Type Charset Missing - The response doesn't contain a META Content-Type declaration, which may overlook older clients.</li>
-      <li>Meta Charset Versus Meta Content-Type Charset - The response contains both a META Content-Type declaration and a META Charset declaration, and they don't match.</li>
+      <li>Отсутствует кодировка Meta Content-Type — ответ не содержит объявления META Content-Type, что может не учитывать старые клиенты. </li>
+      <li>Meta Charset по сравнению с Meta Content-Type Charset — ответ содержит как объявление META Content-Type, так и объявление META Charset, и они не совпадают. </li>
     </ul>
   </li>
 </ul>
-Further reference:<br>
+Дополнительная ссылка: <br>
 <a href="http://www.w3.org/TR/html401/charset.html#h-5.2.2">http://www.w3.org/TR/html401/charset.html#h-5.2.2</a><br>
 <a href="http://www.w3.org/TR/html5/document-metadata.html#charset">http://www.w3.org/TR/html5/document-metadata.html#charset</a>
 <p>
 Latest code: <a href="https://github.com/zaproxy/zap-extensions/blob/main/addOns/pscanrules/src/main/java/org/zaproxy/zap/extension/pscanrules/CharsetMismatchScanRule.java">CharsetMismatchScanRule.java</a>
+
+<h2>Content Security Policy (CSP) Header Not Set</h2>
+This checks HTML response headers for the presence of a Content Security Policy header.<br>
+By default this rule checks for the presence of the "Content-Security-Policy" header, 
+and at the Low threshold also checks for the "X-Content-Security-Policy" and "X-WebKit-CSP" headers.<br>
+Redirects and non HTML responses are ignored except at the Low threshold.
+<p>
+If a "Content-Security-Policy-Report-Only" header is found on a response an INFO alert is raised. This may represent an enforcement effort 
+that is actively being refined or developed, or one which is only partially implemented.
+<p>
+Latest code: <a href="https://github.com/zaproxy/zap-extensions/blob/main/addOns/pscanrules/src/main/java/org/zaproxy/zap/extension/pscanrules/ContentSecurityPolicyMissingScanRule.java">ContentSecurityPolicyMissingScanRule.java</a>
 
 <h2>Content Type Missing</h2>
 Raises an alert if the response is lacking a Content-Type header or if the header exists but the value is empty.
@@ -230,22 +257,6 @@ At MEDIUM and HIGH thresholds this rule does not alert on client or server error
 At LOW threshold it will alert on all responses including errors and redirects.<br>
 <p>
 Latest code: <a href="https://github.com/zaproxy/zap-extensions/blob/main/addOns/pscanrules/src/main/java/org/zaproxy/zap/extension/pscanrules/XContentTypeOptionsScanRule.java">XContentTypeOptionsScanRule.java</a>
- 
-<h2>X-Frame-Options Header</h2>
-This scan rule checks for the existence and validity of the X-Frame-Options header.<br> 
-At MEDIUM and HIGH thresholds this only looks at non-error or non-redirect HTML responses.<br>
-At LOW threshold it looks at all text responses including errors and redirects.<br>
-The following conditions may result in an alert:
-<ul> 
- <li><b>X-Frame-Options Header Not Set: </b> If the X-Frame-Options header is missing from the response completely.</li>
- <li><b>Multiple X-Frame-Options Header Entries: </b> When more than one X-Frame-Options header is detected on the response.</li>
- <li><b>X-Frame-Options Defined via META (Non-compliant with Spec): </b> A "http-equiv" entry was found in the response that attempts to define X-Frame-Options, which is not supported by the specification.</li>
- <li><b>X-Frame-Options Setting Malformed: </b> The header is present with no value, or the value is not as expected (i.e.: other than "DENY", or "SAMEORIGIN").</li>
-</ul>
-By default no alerts will be raised in the response includes a Content-Security-Policy 'frame-ancestors' element as this take precedence over the X-Frame-Options header.
-However at LOW threshold the above issues will still be reported but at a LOW risk. 
-<p>
-Latest code: <a href="https://github.com/zaproxy/zap-extensions/blob/main/addOns/pscanrules/src/main/java/org/zaproxy/zap/extension/pscanrules/XFrameOptionScanRule.java">XFrameOptionScanRule.java</a>
 
 <h2>X-AspNet-Version Response Header</h2>
 This checks response headers for the presence of X-AspNet-Version/X-AspNetMvc-Version details.

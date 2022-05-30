@@ -59,8 +59,10 @@ import org.zaproxy.addon.automation.jobs.RequestorJob;
 import org.zaproxy.addon.automation.jobs.SpiderJob;
 import org.zaproxy.zap.extension.pscan.ExtensionPassiveScan;
 import org.zaproxy.zap.extension.spider.ExtensionSpider;
+import org.zaproxy.zap.extension.stats.InMemoryStats;
 import org.zaproxy.zap.testutils.TestUtils;
 import org.zaproxy.zap.utils.I18N;
+import org.zaproxy.zap.utils.Stats;
 import org.zaproxy.zap.utils.ZapXmlConfiguration;
 
 class ExtentionAutomationUnitTest extends TestUtils {
@@ -100,11 +102,12 @@ class ExtentionAutomationUnitTest extends TestUtils {
     }
 
     @Test
-    void shouldRegisterBuiltInJobs() {
+    void shouldRegisterBuiltInJobsOnInit() {
         // Given
         ExtensionAutomation extAuto = new ExtensionAutomation();
 
         // When
+        extAuto.init();
         Map<String, AutomationJob> jobs = extAuto.getAutomationJobs();
 
         // Then
@@ -123,49 +126,38 @@ class ExtentionAutomationUnitTest extends TestUtils {
     void shouldRegisterNewJob() {
         // Given
         ExtensionAutomation extAuto = new ExtensionAutomation();
-        String jobName = "testjob";
-
-        AutomationJob job =
-                new AutomationJobImpl() {
-                    @Override
-                    public String getType() {
-                        return jobName;
-                    }
-
-                    @Override
-                    public Order getOrder() {
-                        return Order.REPORT;
-                    }
-                };
+        AutomationJob job = new AutomationJobImpl("testjob");
 
         // When
         extAuto.registerAutomationJob(job);
         Map<String, AutomationJob> jobs = extAuto.getAutomationJobs();
 
         // Then
-        assertThat(jobs.size(), is(equalTo(9)));
-        assertThat(jobs.containsKey(jobName), is(equalTo(true)));
+        assertThat(jobs.size(), is(equalTo(1)));
+        assertThat(jobs.containsKey(job.getType()), is(equalTo(true)));
     }
 
     @Test
     void shouldUnregisterExistingJob() {
         // Given
         ExtensionAutomation extAuto = new ExtensionAutomation();
+        AutomationJob job = new AutomationJobImpl("testjob");
+        extAuto.registerAutomationJob(job);
 
         // When
-        Map<String, AutomationJob> jobs = extAuto.getAutomationJobs();
-        int origSize = jobs.size();
-        extAuto.unregisterAutomationJob(jobs.get(SpiderJob.JOB_NAME));
+        extAuto.unregisterAutomationJob(job);
 
         // Then
-        assertThat(jobs.size(), is(equalTo(origSize - 1)));
-        assertThat(jobs.containsKey(SpiderJob.JOB_NAME), is(equalTo(false)));
+        Map<String, AutomationJob> jobs = extAuto.getAutomationJobs();
+        assertThat(jobs.size(), is(equalTo(0)));
+        assertThat(jobs.containsKey(job.getType()), is(equalTo(false)));
     }
 
     @Test
     void shouldCreateMinTemplateFile() throws Exception {
         // Given
         ExtensionAutomation extAuto = new ExtensionAutomation();
+        extAuto.init();
         Path filePath = getResourcePath("resources/template-min.yaml");
         String expectedTemplate = new String(Files.readAllBytes(filePath));
 
@@ -185,6 +177,7 @@ class ExtentionAutomationUnitTest extends TestUtils {
     void shouldCreateMaxTemplateFile() throws Exception {
         // Given
         ExtensionAutomation extAuto = new ExtensionAutomation();
+        extAuto.init();
         Path filePath = getResourcePath("resources/template-max.yaml");
         String expectedTemplate = new String(Files.readAllBytes(filePath));
 
@@ -217,6 +210,7 @@ class ExtentionAutomationUnitTest extends TestUtils {
         Model.getSingleton().getOptionsParam().load(new ZapXmlConfiguration());
 
         ExtensionAutomation extAuto = new ExtensionAutomation();
+        extAuto.init();
         Path filePath = getResourcePath("resources/template-config.yaml");
         String expectedTemplate = new String(Files.readAllBytes(filePath));
 
@@ -275,6 +269,8 @@ class ExtentionAutomationUnitTest extends TestUtils {
                     }
                 };
         Path filePath = getResourcePath("resources/testplan-failonerror.yaml");
+        InMemoryStats stats = new InMemoryStats();
+        Stats.addListener(stats);
 
         // When
         extAuto.registerAutomationJob(job1);
@@ -294,6 +290,29 @@ class ExtentionAutomationUnitTest extends TestUtils {
         assertThat(((AutomationJobImpl) runJobs.get(1)).wasRun(), is(equalTo(true)));
         assertThat(runJobs.get(2).getName(), is(equalTo("job3")));
         assertThat(((AutomationJobImpl) runJobs.get(2)).wasRun(), is(equalTo(true)));
+
+        assertThat(stats.getStat(ExtensionAutomation.WARNING_COUNT_STATS), is(equalTo(0L)));
+        assertThat(stats.getStat(ExtensionAutomation.ERROR_COUNT_STATS), is(equalTo(0L)));
+        assertThat(stats.getStat(ExtensionAutomation.PLANS_RUN_STATS), is(equalTo(1L)));
+        assertThat(stats.getStat(ExtensionAutomation.TOTAL_JOBS_RUN_STATS), is(equalTo(3L)));
+        assertThat(
+                stats.getStat(
+                        ExtensionAutomation.JOBS_RUN_STATS_PREFIX
+                                + "job1"
+                                + ExtensionAutomation.JOBS_RUN_STATS_POSTFIX),
+                is(equalTo(1L)));
+        assertThat(
+                stats.getStat(
+                        ExtensionAutomation.JOBS_RUN_STATS_PREFIX
+                                + "job2"
+                                + ExtensionAutomation.JOBS_RUN_STATS_POSTFIX),
+                is(equalTo(1L)));
+        assertThat(
+                stats.getStat(
+                        ExtensionAutomation.JOBS_RUN_STATS_PREFIX
+                                + "job3"
+                                + ExtensionAutomation.JOBS_RUN_STATS_POSTFIX),
+                is(equalTo(1L)));
     }
 
     @Test
@@ -443,6 +462,8 @@ class ExtentionAutomationUnitTest extends TestUtils {
                     }
                 };
         Path filePath = getResourcePath("resources/testplan-failonerror.yaml");
+        InMemoryStats stats = new InMemoryStats();
+        Stats.addListener(stats);
 
         // When
         extAuto.registerAutomationJob(job1);
@@ -455,6 +476,11 @@ class ExtentionAutomationUnitTest extends TestUtils {
         assertThat(progress.hasErrors(), is(equalTo(true)));
         assertThat(job1.wasRun(), is(equalTo(false)));
         assertThat(job3.wasRun(), is(equalTo(false)));
+
+        assertThat(stats.getStat(ExtensionAutomation.WARNING_COUNT_STATS), is(equalTo(0L)));
+        assertThat(stats.getStat(ExtensionAutomation.ERROR_COUNT_STATS), is(equalTo(1L)));
+        assertThat(stats.getStat(ExtensionAutomation.PLANS_RUN_STATS), is(equalTo(1L)));
+        assertThat(stats.getStat(ExtensionAutomation.TOTAL_JOBS_RUN_STATS), is(nullValue()));
     }
 
     @Test
@@ -477,6 +503,8 @@ class ExtentionAutomationUnitTest extends TestUtils {
                     }
                 };
         Path filePath = getResourcePath("resources/testplan-sametype.yaml");
+        InMemoryStats stats = new InMemoryStats();
+        Stats.addListener(stats);
 
         // When
         extAuto.registerAutomationJob(job);
@@ -494,6 +522,17 @@ class ExtentionAutomationUnitTest extends TestUtils {
         assertThat(((AutomationJobImpl) runJobs.get(2)).getOptional(), is(nullValue()));
         assertThat(progress.hasWarnings(), is(equalTo(false)));
         assertThat(progress.hasErrors(), is(equalTo(false)));
+
+        assertThat(stats.getStat(ExtensionAutomation.WARNING_COUNT_STATS), is(equalTo(0L)));
+        assertThat(stats.getStat(ExtensionAutomation.ERROR_COUNT_STATS), is(equalTo(0L)));
+        assertThat(stats.getStat(ExtensionAutomation.PLANS_RUN_STATS), is(equalTo(1L)));
+        assertThat(stats.getStat(ExtensionAutomation.TOTAL_JOBS_RUN_STATS), is(equalTo(3L)));
+        assertThat(
+                stats.getStat(
+                        ExtensionAutomation.JOBS_RUN_STATS_PREFIX
+                                + "job1"
+                                + ExtensionAutomation.JOBS_RUN_STATS_POSTFIX),
+                is(equalTo(3L)));
     }
 
     @Test
@@ -561,6 +600,8 @@ class ExtentionAutomationUnitTest extends TestUtils {
                     }
                 };
         Path filePath = getResourcePath("resources/testplan-withwarnings.yaml");
+        InMemoryStats stats = new InMemoryStats();
+        Stats.addListener(stats);
 
         // When
         extAuto.registerAutomationJob(job1);
@@ -583,6 +624,29 @@ class ExtentionAutomationUnitTest extends TestUtils {
         assertThat(((AutomationJobImpl) runJobs.get(1)).wasRun(), is(equalTo(true)));
         assertThat(runJobs.get(2).getName(), is(equalTo("job3")));
         assertThat(((AutomationJobImpl) runJobs.get(2)).wasRun(), is(equalTo(true)));
+
+        assertThat(stats.getStat(ExtensionAutomation.WARNING_COUNT_STATS), is(equalTo(1L)));
+        assertThat(stats.getStat(ExtensionAutomation.ERROR_COUNT_STATS), is(equalTo(0L)));
+        assertThat(stats.getStat(ExtensionAutomation.PLANS_RUN_STATS), is(equalTo(1L)));
+        assertThat(stats.getStat(ExtensionAutomation.TOTAL_JOBS_RUN_STATS), is(equalTo(3L)));
+        assertThat(
+                stats.getStat(
+                        ExtensionAutomation.JOBS_RUN_STATS_PREFIX
+                                + "job1"
+                                + ExtensionAutomation.JOBS_RUN_STATS_POSTFIX),
+                is(equalTo(1L)));
+        assertThat(
+                stats.getStat(
+                        ExtensionAutomation.JOBS_RUN_STATS_PREFIX
+                                + "job2"
+                                + ExtensionAutomation.JOBS_RUN_STATS_POSTFIX),
+                is(equalTo(1L)));
+        assertThat(
+                stats.getStat(
+                        ExtensionAutomation.JOBS_RUN_STATS_PREFIX
+                                + "job3"
+                                + ExtensionAutomation.JOBS_RUN_STATS_POSTFIX),
+                is(equalTo(1L)));
     }
 
     @Test
@@ -781,6 +845,10 @@ class ExtentionAutomationUnitTest extends TestUtils {
         private boolean testsLogError = false;
 
         public AutomationJobImpl() {}
+
+        public AutomationJobImpl(String type) {
+            this.type = type;
+        }
 
         public AutomationJobImpl(Object paramMethodObject) {
             this.paramMethodObject = paramMethodObject;

@@ -1,11 +1,11 @@
 import org.zaproxy.gradle.addon.AddOnStatus
 
-description = "The beta quality Passive Scanner rules"
+description = "The beta status Passive Scanner rules"
 
 zapAddOn {
     addOnName.set("Passive scanner rules (beta)")
     addOnStatus.set(AddOnStatus.BETA)
-    zapVersion.set("2.11.0")
+    zapVersion.set("2.11.1")
 
     manifest {
         author.set("ZAP Dev Team")
@@ -14,7 +14,7 @@ zapAddOn {
         dependencies {
             addOns {
                 register("commonlib") {
-                    version.set(">= 1.5.0 & < 2.0.0")
+                    version.set(">= 1.7.0 & < 2.0.0")
                 }
             }
         }

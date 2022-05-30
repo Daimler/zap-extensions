@@ -6,7 +6,60 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+### Changed
+- Maintenance changes.
 
+### Added
+- Default services notes in the help documents.
+- Extension description and UI name.
+
+## [0.10.0] - 2022-02-18
+### Added
+- The following two statistics for each OAST service:
+  - `stats.oast.<service>.payloadsGenerated`
+  - `stats.oast.<service>.interactions`
+
+### Changed
+- Use Network add-on to serve callback requests.
+- Maintenance changes.
+
+## [0.9.0] - 2022-01-31
+### Added
+- Status indicators for external OAST services.
+
+### Changed
+- Close callback connections gracefully.
+- Maintenance changes.
+- Make Interactsh payloads more robust by adding a further char with a dot before the actual correlationId (Issue 7003)
+
+## [0.8.0] - 2022-01-10
+### Changed
+- Set HttpSender's initiator to `OAST_INITIATOR`, value 16.
+
+### Fixed
+- Fixed Interactsh multi threading issue during register and deregister (Issue 6997) 
+- Interactsh: server URL change in Options deregisters old server URL and registers new server URL
+- OAST Interactsh Options Dialog: If host or token config changed the 'New Payload' Button generates the Payload still with the old config. 
+Button is disabled in that case.
+
+## [0.7.0] - 2021-12-12
+### Changed
+- Update minimum ZAP version to 2.11.1.
+- Maintenance changes.
+- Add a link to the OAST help in the alert tag value.
+
+## [0.6.0] - 2021-12-06
+### Added
+- An option to allow selecting the OAST service which will be used in active scan rules.
+- An alert tag ("OUT_OF_BAND") for alerts raised by scan rules that make use of out-of-band services.
+
+### Changed
+- Depend on Network add-on.
+
+### Fixed
+- Interactsh:
+  - Polling did not start automatically when a new payload was generated.
+  - The deregistration request did not include the secret key.
 
 ## [0.5.0] - 2021-10-06
 ### Changed
@@ -57,6 +110,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.1.0] - 2021-08-04
 
+[0.10.0]: https://github.com/zaproxy/zap-extensions/releases/oast-v0.10.0
+[0.9.0]: https://github.com/zaproxy/zap-extensions/releases/oast-v0.9.0
+[0.8.0]: https://github.com/zaproxy/zap-extensions/releases/oast-v0.8.0
+[0.7.0]: https://github.com/zaproxy/zap-extensions/releases/oast-v0.7.0
+[0.6.0]: https://github.com/zaproxy/zap-extensions/releases/oast-v0.6.0
 [0.5.0]: https://github.com/zaproxy/zap-extensions/releases/oast-v0.5.0
 [0.4.0]: https://github.com/zaproxy/zap-extensions/releases/oast-v0.4.0
 [0.3.0]: https://github.com/zaproxy/zap-extensions/releases/oast-v0.3.0

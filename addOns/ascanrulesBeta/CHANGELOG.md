@@ -4,7 +4,35 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
+### Changed
+- Maintenance changes.
+- Adding more checks to Hidden File Finder scan rule.
+- The Cloud Metadata scan rule will now be attempted with a second payload.
 
+## [40] - 2022-03-15
+### Changed
+- Hidden File Finder scan rule, content checking has been added for .svn/entries as well as detection for wc.db.
+- Use Network add-on to detect/serve HttPoxy scan rule requests.
+- Maintenance changes.
+- The CSRF Token scan rule will now raise alerts as Medium risk (Issue 7021).
+
+### Fixed
+- Adapted Cloud Metadata Attack scan rule to use Custom Pages and active scan analyzer to help reduce false positives in certain cases (Issue 7033).
+- Generic Padding Oracle scan rule will no longer raise an alert for validation fields when the error response contains expected error patterns (Issue 6183).
+- Hidden File Finder no longer follows redirects when sending requests for potential hidden files which should make it less false positive prone (Issue 7036).
+
+## [39] - 2021-12-13
+### Changed
+- Update minimum ZAP version to 2.11.1.
+- Maintenance changes.
+
+## [38] - 2021-12-06
+### Changed
+- Dependency updates.
+- XxeScanRule: Use Out-of-band payloads in addition to existing attacks.
+
+### Added
+- OWASP Web Security Testing Guide v4.2 mappings where applicable.
 
 ## [37] - 2021-10-07
 ### Added
@@ -320,6 +348,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Updated to support new addon format
 
+[40]: https://github.com/zaproxy/zap-extensions/releases/ascanrulesBeta-v40
+[39]: https://github.com/zaproxy/zap-extensions/releases/ascanrulesBeta-v39
+[38]: https://github.com/zaproxy/zap-extensions/releases/ascanrulesBeta-v38
 [37]: https://github.com/zaproxy/zap-extensions/releases/ascanrulesBeta-v37
 [36]: https://github.com/zaproxy/zap-extensions/releases/ascanrulesBeta-v36
 [35]: https://github.com/zaproxy/zap-extensions/releases/ascanrulesBeta-v35

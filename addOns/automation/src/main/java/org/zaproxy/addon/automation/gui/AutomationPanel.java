@@ -28,6 +28,7 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -243,7 +244,14 @@ public class AutomationPanel extends AbstractPanel implements EventConsumer {
                                                     chooser.getSelectedFile()
                                                             .getParentFile()
                                                             .getAbsolutePath());
-                                    currentPlan.setFile(chooser.getSelectedFile());
+                                    File f = chooser.getSelectedFile();
+                                    String fileNameLc = f.getName().toLowerCase(Locale.ROOT);
+                                    if (!f.exists()
+                                            && !(fileNameLc.endsWith(".yaml")
+                                                    || fileNameLc.endsWith(".yml"))) {
+                                        f = new File(f.getAbsolutePath() + ".yaml");
+                                    }
+                                    currentPlan.setFile(f);
                                 } else {
                                     // they cancelled the dialog
                                     return;
@@ -586,6 +594,7 @@ public class AutomationPanel extends AbstractPanel implements EventConsumer {
                                 if (userObj instanceof AutomationEnvironment) {
                                     ((AutomationEnvironment) userObj).showDialog();
                                 } else if (userObj instanceof AutomationJob) {
+                                    ((AutomationJob) userObj).setJobData(null);
                                     ((AutomationJob) userObj).showDialog();
                                 } else if (userObj instanceof AbstractAutomationTest) {
                                     ((AbstractAutomationTest) userObj).showDialog();

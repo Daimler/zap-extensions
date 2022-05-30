@@ -2,7 +2,7 @@ description = "Includes request and response data in XML reports and provides th
 
 zapAddOn {
     addOnName.set("Code Dx Extension")
-    zapVersion.set("2.11.0")
+    zapVersion.set("2.11.1")
 
     manifest {
         author.set("Code Dx, Inc.")
@@ -11,7 +11,7 @@ zapAddOn {
 }
 
 dependencies {
-    implementation("org.apache.httpcomponents:httpmime:4.5.2")
+    implementation("org.apache.httpcomponents:httpmime:4.5.13")
     implementation("com.googlecode.json-simple:json-simple:1.1.1") {
         // Not needed.
         exclude(group = "junit")

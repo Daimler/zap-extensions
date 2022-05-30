@@ -21,7 +21,8 @@ package org.zaproxy.zap.extension.openapi.v3;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.Matchers.emptyString;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -701,11 +702,11 @@ class BodyGeneratorUnitTest extends TestUtils {
         // When
         String content = new RequestModelConverter().convert(operationModel, generators).getBody();
         // Then
-        assertThat(content, isEmptyString());
+        assertThat(content, is(emptyString()));
         assertThat(
                 generators.getErrorMessages(),
                 contains(
-                        "Not generating request body for operation xml, the content application/xml is not supported."));
+                        "Not generating request body for operation xml, the content type application/xml is not supported."));
     }
 
     @Test

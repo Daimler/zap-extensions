@@ -8,7 +8,7 @@ Passive Scan Rules - Beta
 </HEAD>
 <BODY>
 <H1>Passive Scan Rules - Beta</H1>
-The following beta quality passive scan rules are included in this add-on:
+The following beta status passive scan rules are included in this add-on:
 
 <H2>Big Redirect Detected (Potential Sensitive Information Leak)</H2>
 This check predicts the size of various redirect type responses and generates an alert if the response is greater than the predicted size. 
@@ -21,17 +21,6 @@ This check looks at user-supplied input in query string parameters and POST data
 This is called a cookie poisoning attack, and becomes exploitable when an attacker can manipulate the cookie in various ways. In some cases this will not be exploitable, however, allowing URL parameters to set cookie values is generally considered a bug.
 <p>
 Latest code: <a href="https://github.com/zaproxy/zap-extensions/blob/main/addOns/pscanrulesBeta/src/main/java/org/zaproxy/zap/extension/pscanrulesBeta/UserControlledCookieScanRule.java">UserControlledCookieScanRule.java</a>
-
-<H2>Content Security Policy (CSP) Header Not Set</H2>
-This checks HTML response headers for the presence of a Content Security Policy header.<br>
-By default this rule checks for the presence of the "Content-Security-Policy" header, 
-and at the Low threshold also checks for the "X-Content-Security-Policy" and "X-WebKit-CSP" headers.<br>
-Redirects and non HTML responses are ignored except at the Low threshold.
-<p>
-If a "Content-Security-Policy-Report-Only" header is found on a response an INFO alert is raised. This may represent an enforcement effort 
-that is actively being refined or developed, or one which is only partially implemented.
-<p>
-Latest code: <a href="https://github.com/zaproxy/zap-extensions/blob/main/addOns/pscanrulesBeta/src/main/java/org/zaproxy/zap/extension/pscanrulesBeta/ContentSecurityPolicyMissingScanRule.java">ContentSecurityPolicyMissingScanRule.java</a>
 
 <H2>Directory Browsing</H2>
 Passively scans responses for signatures that are indicative that Directory Browsing is possible.

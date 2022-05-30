@@ -39,7 +39,7 @@ import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.core.scanner.Alert;
 import org.parosproxy.paros.network.HttpMessage;
 import org.zaproxy.addon.commonlib.CommonAlertTag;
-import org.zaproxy.zap.extension.pscan.PassiveScanThread;
+import org.zaproxy.addon.commonlib.ResourceIdentificationUtils;
 import org.zaproxy.zap.extension.pscan.PluginPassiveScanner;
 
 /** Passive Scan Rule for Dangerous JS Functions https://github.com/zaproxy/zaproxy/issues/5673 */
@@ -60,67 +60,14 @@ public class JsFunctionScanRule extends PluginPassiveScanner {
 
     private static Supplier<Iterable<String>> payloadProvider = DEFAULT_PAYLOAD_PROVIDER;
     private static final Map<String, String> ALERT_TAGS =
-            CommonAlertTag.toMap(CommonAlertTag.OWASP_2021_A04_INSECURE_DESIGN);
+            CommonAlertTag.toMap(
+                    CommonAlertTag.OWASP_2021_A04_INSECURE_DESIGN,
+                    CommonAlertTag.WSTG_V42_CLNT_02_JS_EXEC);
 
     private static List<Pattern> defaultPatterns = null;
-    private static List<Pattern> patterns = null;
+    private List<Pattern> patterns = null;
 
-    @Override
-    public void scanHttpResponseReceive(HttpMessage msg, int id, Source source) {
-        if (msg.getResponseBody().length() <= 0
-                || (!msg.getResponseHeader().isHtml() && !msg.getResponseHeader().isJavaScript())) {
-            return;
-        }
-        if (defaultPatterns == null) {
-            createDefaultPatterns();
-        }
-        loadPayload();
-        StringBuilder evidence = new StringBuilder();
-        if (msg.getResponseHeader().isHtml()) {
-            // Check the scripts in HTML
-            Element el;
-            int offset = 0;
-            while ((el = source.getNextElement(offset, HTMLElementName.SCRIPT)) != null) {
-                String elStr = el.toString();
-                searchPatterns(evidence, elStr);
-                if (evidence.length() != 0) {
-                    break;
-                }
-                offset = el.getEnd();
-            }
-        } else if (msg.getResponseHeader().isJavaScript()) {
-            // Raw search on response body
-            String content = msg.getResponseBody().toString();
-            searchPatterns(evidence, content);
-        }
-        if (evidence.length() > 0) {
-            this.raiseAlert(evidence.toString());
-        }
-    }
-
-    private void searchPatterns(StringBuilder evidence, String data) {
-        for (Pattern pattern : patterns) {
-            Matcher matcher = pattern.matcher(data);
-            if (matcher.find()) {
-                evidence.append(matcher.group());
-                break; // Only need to record one instance of vulnerability
-            }
-        }
-    }
-
-    private void raiseAlert(String evidence) {
-        newAlert()
-                .setRisk(Alert.RISK_LOW)
-                .setConfidence(Alert.CONFIDENCE_LOW)
-                .setDescription(getDescription())
-                .setSolution(getSolution())
-                .setReference(getReference())
-                .setEvidence(evidence)
-                .setCweId(749) // CWE-749: Exposed Dangerous Method or Function
-                .raise();
-    }
-
-    private static void createDefaultPatterns() {
+    static {
         defaultPatterns = new ArrayList<>();
         try {
             File f =
@@ -153,7 +100,60 @@ public class JsFunctionScanRule extends PluginPassiveScanner {
         }
     }
 
-    private static void loadPayload() {
+    @Override
+    public void scanHttpResponseReceive(HttpMessage msg, int id, Source source) {
+        if (msg.getResponseBody().length() <= 0
+                || (!msg.getResponseHeader().isHtml()
+                        && !ResourceIdentificationUtils.isJavaScript(msg))) {
+            return;
+        }
+        loadPayload();
+        StringBuilder evidence = new StringBuilder();
+        if (msg.getResponseHeader().isHtml()) {
+            // Check the scripts in HTML
+            Element el;
+            int offset = 0;
+            while ((el = source.getNextElement(offset, HTMLElementName.SCRIPT)) != null) {
+                String elStr = el.toString();
+                searchPatterns(evidence, elStr);
+                if (evidence.length() != 0) {
+                    break;
+                }
+                offset = el.getEnd();
+            }
+        } else if (ResourceIdentificationUtils.isJavaScript(msg)) {
+            // Raw search on response body
+            String content = msg.getResponseBody().toString();
+            searchPatterns(evidence, content);
+        }
+        if (evidence.length() > 0) {
+            this.raiseAlert(evidence.toString());
+        }
+    }
+
+    private void searchPatterns(StringBuilder evidence, String data) {
+        for (Pattern pattern : patterns) {
+            Matcher matcher = pattern.matcher(data);
+            if (matcher.find()) {
+                evidence.append(matcher.group());
+                break; // Only need to record one instance of vulnerability
+            }
+        }
+    }
+
+    private void raiseAlert(String evidence) {
+        newAlert()
+                .setRisk(Alert.RISK_LOW)
+                .setConfidence(Alert.CONFIDENCE_LOW)
+                .setDescription(getDescription())
+                .setSolution(getSolution())
+                .setReference(getReference())
+                .setEvidence(evidence)
+                .setCweId(749) // CWE-749: Exposed Dangerous Method or Function
+                .raise();
+    }
+
+    private void loadPayload() {
         patterns = new ArrayList<>(defaultPatterns);
         for (String line : getJsFunctionPayloads().get()) {
             addPattern(line, patterns);
@@ -172,11 +172,6 @@ public class JsFunctionScanRule extends PluginPassiveScanner {
 
     private static Supplier<Iterable<String>> getJsFunctionPayloads() {
         return payloadProvider;
-    }
-
-    @Override
-    public void setParent(PassiveScanThread parent) {
-        // Nothing to do.
     }
 
     @Override

@@ -5,7 +5,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+### Changed
+- Maintenance changes.
 
+## [1.9.0] - 2022-03-21
+### Changed
+- Maintenance changes.
+
+## [1.8.0] - 2022-03-07
+### Added
+- A generic component for displaying progress, such as when importing an openapi definition (Issue 6783).
+
+### Changed
+- Maintenance changes.
+
+## [1.7.0] - 2022-02-02
+### Changed
+- Update minimum ZAP version to 2.11.1.
+
+### Added
+- Maintenance changes (Issue 6810).
+
+## [1.6.0] - 2021-12-01
+### Changed
+- Dependency updates.
+- Add OWASP WSTG v4.2 Alert Tags.
+
+### Fixed
+- Adjusted the tag of "OWASP_A10_LOGGING_FAIL" to match other alert tags for 2017/2021.
 
 ## [1.5.0] - 2021-10-06
 ### Added
@@ -42,6 +69,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 First version.
 
+[1.9.0]: https://github.com/zaproxy/zap-extensions/releases/commonlib-v1.9.0
+[1.8.0]: https://github.com/zaproxy/zap-extensions/releases/commonlib-v1.8.0
+[1.7.0]: https://github.com/zaproxy/zap-extensions/releases/commonlib-v1.7.0
+[1.6.0]: https://github.com/zaproxy/zap-extensions/releases/commonlib-v1.6.0
 [1.5.0]: https://github.com/zaproxy/zap-extensions/releases/commonlib-v1.5.0
 [1.4.0]: https://github.com/zaproxy/zap-extensions/releases/commonlib-v1.4.0
 [1.3.0]: https://github.com/zaproxy/zap-extensions/releases/commonlib-v1.3.0

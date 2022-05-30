@@ -50,6 +50,7 @@ import org.zaproxy.addon.automation.tests.AbstractAutomationTest;
 import org.zaproxy.addon.automation.tests.AbstractAutomationTest.OnFail;
 import org.zaproxy.addon.automation.tests.AutomationAlertTest;
 import org.zaproxy.addon.automation.tests.AutomationStatisticTest;
+import org.zaproxy.addon.automation.tests.UrlPresenceTest;
 import org.zaproxy.zap.extension.alert.ExtensionAlert;
 import org.zaproxy.zap.extension.stats.ExtensionStats;
 import org.zaproxy.zap.extension.stats.InMemoryStats;
@@ -267,6 +268,39 @@ class AutomationJobUnitTest {
     }
 
     @Test
+    void shouldAddUrlPresenceTests() {
+        // Given
+        TestParamContainer tpc = new TestParamContainer();
+        AutomationJob job = new AutomationJobImpl(tpc);
+        AutomationProgress progress = new AutomationProgress();
+        String name = "example name";
+        String type = "url";
+        String url = "http://example.com";
+        String onFail = "warn";
+        String operator = "or";
+
+        LinkedHashMap<String, Object> test = new LinkedHashMap<>();
+        test.put("name", name);
+        test.put("type", type);
+        test.put("url", url);
+        test.put("onFail", onFail);
+        test.put("operator", operator);
+        ArrayList<LinkedHashMap<String, Object>> tests = new ArrayList<>();
+        tests.add(test);
+
+        // When
+        job.addTests(tests, progress);
+
+        // Then
+        UrlPresenceTest addedTest = (UrlPresenceTest) job.getTests().get(0);
+        assertThat(progress.hasErrors(), is(equalTo(false)));
+        assertThat(progress.hasWarnings(), is(equalTo(false)));
+        assertThat(addedTest.getData().getName(), is(equalTo(name)));
+        assertThat(addedTest.getData().getUrl(), is(equalTo(url)));
+        assertThat(addedTest.getData().getOnFail(), is(equalTo(OnFail.WARN)));
+    }
+
+    @Test
     void shouldAddMultipleTestsForSameStatistic() {
         // Given
         ExtensionLoader extensionLoader = mock(ExtensionLoader.class);
@@ -279,6 +313,7 @@ class AutomationJobUnitTest {
         TestParamContainer tpc = new TestParamContainer();
         AutomationJob job = new AutomationJobImpl(tpc);
         AutomationProgress progress = new AutomationProgress();
+        job.setEnv(new AutomationEnvironment(progress));
         String key = "stats.job.something";
         long value = 10;
         String nameOne = "test one";
@@ -972,7 +1007,7 @@ class AutomationJobUnitTest {
         assertThat(progress.hasErrors(), is(equalTo(true)));
         assertThat(progress.hasWarnings(), is(equalTo(false)));
         assertThat(progress.getErrors().size(), is(equalTo(1)));
-        assertThat(progress.getErrors().get(0), is(equalTo("!automation.error.options.methods!")));
+        assertThat(progress.getErrors().get(0), is(equalTo("!automation.error.options.method!")));
     }
 
     @Test

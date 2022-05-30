@@ -8,7 +8,7 @@ extra["targetOs"] = DownloadWebDriver.OS.MAC
 zapAddOn {
     addOnName.set("MacOS WebDrivers")
     addOnStatus.set(AddOnStatus.RELEASE)
-    zapVersion.set("2.11.0")
+    zapVersion.set("2.11.1")
 
     manifest {
         author.set("ZAP Dev Team")
@@ -26,8 +26,18 @@ tasks {
         arch.set(DownloadWebDriver.Arch.X64)
     }
 
+    register<DownloadWebDriver>("downloadChromeDriverArm") {
+        browser.set(DownloadWebDriver.Browser.CHROME)
+        arch.set(DownloadWebDriver.Arch.ARM64)
+    }
+
     register<DownloadWebDriver>("downloadGeckodriver") {
         browser.set(DownloadWebDriver.Browser.FIREFOX)
         arch.set(DownloadWebDriver.Arch.X64)
+    }
+
+    register<DownloadWebDriver>("downloadGeckodriverArm") {
+        browser.set(DownloadWebDriver.Browser.FIREFOX)
+        arch.set(DownloadWebDriver.Arch.ARM64)
     }
 }

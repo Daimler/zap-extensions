@@ -4,7 +4,20 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
+### Changed
+- Update minimum ZAP version to 2.11.1.
+- Use Network add-on to proxy Crawljax/browser requests.
+- Maintenance changes.
 
+### Fixed
+- Stop the spider scans when ZAP shuts down ([Issue #6643](https://github.com/zaproxy/zaproxy/issues/6643)).
+
+## [23.7.0] - 2021-11-02
+### Added
+- Automation authentication support
+
+### Changed
+- Dependency updates.
 
 ## [23.6.0] - 2021-10-06
 ### Changed
@@ -203,6 +216,7 @@ By default it allows files with extension `.js` and `.css`.
 
 
 
+[23.7.0]: https://github.com/zaproxy/zap-extensions/releases/spiderAjax-v23.7.0
 [23.6.0]: https://github.com/zaproxy/zap-extensions/releases/spiderAjax-v23.6.0
 [23.5.0]: https://github.com/zaproxy/zap-extensions/releases/spiderAjax-v23.5.0
 [23.4.0]: https://github.com/zaproxy/zap-extensions/releases/spiderAjax-v23.4.0

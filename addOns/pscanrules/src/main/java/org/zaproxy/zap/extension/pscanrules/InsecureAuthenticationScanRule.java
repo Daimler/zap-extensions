@@ -34,7 +34,6 @@ import org.parosproxy.paros.core.scanner.Alert;
 import org.parosproxy.paros.network.HttpHeader;
 import org.parosproxy.paros.network.HttpMessage;
 import org.zaproxy.addon.commonlib.CommonAlertTag;
-import org.zaproxy.zap.extension.pscan.PassiveScanThread;
 import org.zaproxy.zap.extension.pscan.PluginPassiveScanner;
 
 /*
@@ -47,15 +46,11 @@ public class InsecureAuthenticationScanRule extends PluginPassiveScanner {
                     CommonAlertTag.OWASP_2021_A01_BROKEN_AC,
                     CommonAlertTag.OWASP_2021_A02_CRYPO_FAIL,
                     CommonAlertTag.OWASP_2017_A02_BROKEN_AUTH,
-                    CommonAlertTag.OWASP_2017_A03_DATA_EXPOSED);
+                    CommonAlertTag.OWASP_2017_A03_DATA_EXPOSED,
+                    CommonAlertTag.WSTG_V42_ATHN_01_CREDS_NO_CRYPTO);
 
     /** for logging. */
     private static Logger log = LogManager.getLogger(InsecureAuthenticationScanRule.class);
-
-    @Override
-    public void setParent(PassiveScanThread parent) {
-        // Nothing to do.
-    }
 
     @Override
     public void scanHttpRequestSend(HttpMessage msg, int id) {

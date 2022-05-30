@@ -5,7 +5,7 @@ description = "Retire.js"
 zapAddOn {
     addOnName.set("Retire.js")
     addOnStatus.set(AddOnStatus.RELEASE)
-    zapVersion.set("2.11.0")
+    zapVersion.set("2.11.1")
 
     manifest {
         author.set("Nikita Mundhada and the ZAP Dev Team")
@@ -21,7 +21,7 @@ zapAddOn {
         dependencies {
             addOns {
                 register("commonlib") {
-                    version.set(">= 1.5.0 & < 2.0.0")
+                    version.set(">= 1.7.0 & < 2.0.0")
                 }
             }
         }
@@ -39,7 +39,7 @@ crowdin {
 dependencies {
     compileOnly(parent!!.childProjects.get("commonlib")!!)
 
-    implementation("com.google.code.gson:gson:2.8.6")
+    implementation("com.google.code.gson:gson:2.8.8")
 
     testImplementation(parent!!.childProjects.get("commonlib")!!)
     testImplementation(project(":testutils"))

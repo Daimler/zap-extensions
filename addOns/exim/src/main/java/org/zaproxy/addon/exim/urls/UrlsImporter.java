@@ -26,6 +26,7 @@ import java.nio.file.Files;
 import org.apache.commons.httpclient.URI;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.control.Control;
 import org.parosproxy.paros.extension.history.ExtensionHistory;
 import org.parosproxy.paros.model.HistoryReference;
@@ -34,64 +35,89 @@ import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.network.HttpRequestHeader;
 import org.parosproxy.paros.network.HttpSender;
 import org.parosproxy.paros.view.View;
+import org.zaproxy.addon.commonlib.ui.ProgressPaneListener;
+import org.zaproxy.addon.exim.ExtensionExim;
+import org.zaproxy.zap.utils.Stats;
 
-public final class UrlsImporter {
+public class UrlsImporter {
 
     private static final Logger LOG = LogManager.getLogger(UrlsImporter.class);
+    private static final String STATS_URL_FILE = "import.url.file";
+    private static final String STATS_URL_FILE_ERROR = "import.url.file.errors";
+    private static final String STATS_URL_FILE_URL = "import.url.file.url";
+    private static final String STATS_URL_FILE_URL_ERROR = "import.url.file.url.errors";
+    private ProgressPaneListener progressListener;
+    private boolean success;
 
-    private UrlsImporter() {}
+    public UrlsImporter(File file) {
+        this(file, null);
+    }
 
-    public static boolean importUrlFile(File file) {
+    public UrlsImporter(File file, ProgressPaneListener listener) {
+        this.progressListener = listener;
+        importUrlFile(file);
+        completed();
+    }
+
+    private void importUrlFile(File file) {
         if (file == null) {
-            return false;
+            success = false;
+            return;
         }
         try (BufferedReader in = Files.newBufferedReader(file.toPath())) {
-            if (View.isInitialised()) {
-                View.getSingleton().getOutputPanel().setTabFocus();
-            }
+            Stats.incCounter(ExtensionExim.STATS_PREFIX + STATS_URL_FILE);
+            ExtensionExim.updateOutput("exim.output.start", file.toPath().toString());
 
-            HttpSender sender =
-                    new HttpSender(
-                            Model.getSingleton().getOptionsParam().getConnectionParam(),
-                            true,
-                            HttpSender.MANUAL_REQUEST_INITIATOR);
-
+            int count = 1;
             String line;
-            StringBuilder outputLine = new StringBuilder();
             while ((line = in.readLine()) != null) {
                 if (!line.startsWith("#") && line.trim().length() > 0) {
-                    try {
-                        outputLine
-                                .append(HttpRequestHeader.GET)
-                                .append('\t')
-                                .append(line)
-                                .append('\t');
-                        HttpMessage msg = new HttpMessage(new URI(line, false));
-                        sender.sendAndReceive(msg, true);
-                        persistMessage(msg);
-
-                        outputLine.append(msg.getResponseHeader().getStatusCode());
-
-                    } catch (Exception e) {
-                        outputLine.append(e.getMessage());
-                    }
-                    outputLine.append('\n');
-                    if (View.isInitialised()) {
-                        EventQueue.invokeLater(
-                                () -> {
-                                    View.getSingleton()
-                                            .getOutputPanel()
-                                            .append(outputLine.toString());
-                                    outputLine.delete(0, outputLine.length());
-                                });
-                    }
+                    updateProgress(count, line);
+                    processLine(line);
+                    count++;
                 }
             }
+            ExtensionExim.updateOutput("exim.output.end", file.toPath().toString());
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
-            return false;
+            LOG.warn(
+                    Constant.messages.getString(
+                            ExtensionExim.EXIM_OUTPUT_ERROR, file.getAbsoluteFile()));
+            Stats.incCounter(ExtensionExim.STATS_PREFIX + STATS_URL_FILE_ERROR);
+            ExtensionExim.updateOutput(ExtensionExim.EXIM_OUTPUT_ERROR, file.toPath().toString());
+            success = false;
+            return;
         }
-        return true;
+        success = true;
+    }
+
+    private void processLine(String line) {
+        HttpSender sender =
+                new HttpSender(
+                        Model.getSingleton().getOptionsParam().getConnectionParam(),
+                        true,
+                        HttpSender.MANUAL_REQUEST_INITIATOR);
+        StringBuilder outputLine = new StringBuilder();
+        try {
+            outputLine.append(HttpRequestHeader.GET).append('\t').append(line).append('\t');
+            HttpMessage msg = new HttpMessage(new URI(line, false));
+            sender.sendAndReceive(msg, true);
+            persistMessage(msg);
+
+            outputLine.append(msg.getResponseHeader().getStatusCode());
+            Stats.incCounter(ExtensionExim.STATS_PREFIX + STATS_URL_FILE_URL);
+
+        } catch (Exception e) {
+            outputLine.append(e.getMessage());
+            Stats.incCounter(ExtensionExim.STATS_PREFIX + STATS_URL_FILE_URL_ERROR);
+        }
+        outputLine.append('\n');
+        if (View.isInitialised()) {
+            EventQueue.invokeLater(
+                    () -> {
+                        View.getSingleton().getOutputPanel().append(outputLine.toString());
+                        outputLine.delete(0, outputLine.length());
+                    });
+        }
     }
 
     private static void persistMessage(HttpMessage message) {
@@ -104,7 +130,7 @@ public final class UrlsImporter {
                             HistoryReference.TYPE_ZAP_USER,
                             message);
         } catch (Exception e) {
-            LOG.warn(e.getMessage(), e);
+            LOG.warn(e.getMessage());
             return;
         }
 
@@ -119,6 +145,24 @@ public final class UrlsImporter {
                                 .getSiteTree()
                                 .addPath(historyRef, message);
                     });
+        }
+    }
+
+    public boolean isSuccess() {
+        return success;
+    }
+
+    private void updateProgress(int count, String line) {
+        if (progressListener != null) {
+            progressListener.setTasksDone(count);
+            progressListener.setCurrentTask(
+                    Constant.messages.getString("exim.progress.currentimport", line));
+        }
+    }
+
+    private void completed() {
+        if (progressListener != null) {
+            progressListener.completed();
         }
     }
 }

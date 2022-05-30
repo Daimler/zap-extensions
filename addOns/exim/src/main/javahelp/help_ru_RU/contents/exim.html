@@ -7,11 +7,36 @@ Import/Export
 </TITLE>
 </HEAD>
 <BODY>
-<H1>Save Raw Message</H1>
-Provides a context menu to save content of HTTP messages as binary.
+<H1>Сохранить выбранные записи как HAR (файл архива HTTP) </H1>
+Пункт контекстного меню для сохранения выбранных HTTP-сообщений в формате HAR. 
 
-<H1>Save XML Message</H1>
-Provides a context menu to save content of HTTP messages as XML.
+<H1>Сохранить необработанное сообщение </H1>
+Предоставляет контекстное меню для сохранения содержимого сообщений HTTP в двоичном виде. 
+
+<H1>Сохранить XML-сообщение </H1>
+Предоставляет контекстное меню для сохранения содержимого сообщений HTTP в формате XML. 
+
+<H1>Показывает контекстное меню для сохранения сообщений HTTP в формате XML. </H1>
+Возможность импорта сообщений из HTTP-архива (HAR), доступная через меню «Импорт». 
+
+<H1>Импорт файла журнала </H1>
+Позволяет импортировать файлы журналов из ModSecurity и файлы, ранее экспортированные из ZAP. 
+
+<H1>Импорт URL-адресов </H1>
+Возможность импорта файла URL-адресов доступна через меню «Импорт» («Импорт файла, содержащего URL-адреса»).  Файл должен быть обычным текстом с одним URL-адресом в строке. 
+Пустые строки и строки, начинающиеся с #, будут игнорироваться. 
+
+<br><br>
+It also supports the <a href="automation.html">Automation Framework</a>.
+
+<H1>ZAP API</H1>
+Это дополнение также предоставляет различные конечные точки API ZAP для облегчения программного использования этой функции. 
+<ul>
+  <li><code>/exim/importHar (filePath*)</code></li>
+  <li><code>/exim/importModsec2Logs (filePath*)</code></li>
+  <li><code>/exim/importUrls (filePath*)</code></li>
+  <li><code>/exim/importZapLogs (filePath*)</code></li>
+</ul>
 
 </BODY>
 </HTML>

@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## Unreleased
 
 
+## [0.12.0] - 2022-05-26
+### Changed
+- Updated with upstream retire.js pattern changes.
+- Relevant CVEs will now be added as Alert Tags when available.
+
+## [0.11.0] - 2022-05-03
+### Changed
+- Updated with upstream retire.js pattern changes.
+
+## [0.10.0] - 2022-02-02
+### Changed
+- Updated with upstream retire.js pattern changes.
+- Update minimum ZAP version to 2.11.1.
+- Maintenance changes.
+
 ## [0.9.0] - 2021-10-06
 ### Added
 - OWASP Top Ten 2021/2017 mappings.
@@ -16,6 +31,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 - Maintenance changes.
 - Update minimum ZAP version to 2.11.0.
+- Dependency updates.
 
 ## [0.8.0] - 2021-08-25
 ### Changed
@@ -60,6 +76,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 - First release.
 
+[0.12.0]: https://github.com/zaproxy/zap-extensions/releases/retire-v0.12.0
+[0.11.0]: https://github.com/zaproxy/zap-extensions/releases/retire-v0.11.0
+[0.10.0]: https://github.com/zaproxy/zap-extensions/releases/retire-v0.10.0
 [0.9.0]: https://github.com/zaproxy/zap-extensions/releases/retire-v0.9.0
 [0.8.0]: https://github.com/zaproxy/zap-extensions/releases/retire-v0.8.0
 [0.7.0]: https://github.com/zaproxy/zap-extensions/releases/retire-v0.7.0

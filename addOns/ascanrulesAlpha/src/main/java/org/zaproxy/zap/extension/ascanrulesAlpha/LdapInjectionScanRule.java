@@ -26,9 +26,8 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.httpclient.InvalidRedirectLocationException;
 import org.apache.commons.httpclient.URIException;
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
@@ -65,7 +64,8 @@ public class LdapInjectionScanRule extends AbstractAppParamPlugin {
     private static final Map<String, String> ALERT_TAGS =
             CommonAlertTag.toMap(
                     CommonAlertTag.OWASP_2021_A03_INJECTION,
-                    CommonAlertTag.OWASP_2017_A01_INJECTION);
+                    CommonAlertTag.OWASP_2017_A01_INJECTION,
+                    CommonAlertTag.WSTG_V42_INPV_06_LDAPI);
     private int matchThreshold = 0;
     private int andRequests = 0;
 
@@ -220,10 +220,7 @@ public class LdapInjectionScanRule extends AbstractAppParamPlugin {
             // to see if a placebo attack has the same effect
             // the parameter will be the same length as the actual attack, but will contain purely
             // alphanumeric characters
-            String placeboAttack =
-                    RandomStringUtils.random(
-                            errorAttack.length(),
-                            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+            String placeboAttack = RandomStringUtils.randomAlphanumeric(errorAttack.length());
             HttpMessage placeboAttackMsg = getNewMsg();
             this.setParameter(placeboAttackMsg, paramname, placeboAttack);
             sendAndReceive(placeboAttackMsg);
@@ -513,7 +510,7 @@ public class LdapInjectionScanRule extends AbstractAppParamPlugin {
             // the response.
             // but that's a task for another day.
 
-        } catch (InvalidRedirectLocationException | UnknownHostException | URIException e) {
+        } catch (UnknownHostException | URIException e) {
             log.debug("Failed to send HTTP message, cause: {}", e.getMessage());
         } catch (Exception e) {
             // Do not try to internationalise this.. we need an error message in any event..

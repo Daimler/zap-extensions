@@ -36,6 +36,7 @@ import java.net.URLDecoder;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.TreeSet;
+import org.apache.commons.text.StringEscapeUtils;
 import org.junit.jupiter.api.Test;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.core.scanner.Alert;
@@ -65,17 +66,23 @@ class CrossSiteScriptingScanRuleUnitTest extends ActiveScannerTest<CrossSiteScri
         // Then
         assertThat(cwe, is(equalTo(79)));
         assertThat(wasc, is(equalTo(8)));
-        assertThat(tags.size(), is(equalTo(2)));
+        assertThat(tags.size(), is(equalTo(3)));
         assertThat(
                 tags.containsKey(CommonAlertTag.OWASP_2021_A03_INJECTION.getTag()),
                 is(equalTo(true)));
         assertThat(tags.containsKey(CommonAlertTag.OWASP_2017_A07_XSS.getTag()), is(equalTo(true)));
+        assertThat(
+                tags.containsKey(CommonAlertTag.WSTG_V42_INPV_01_REFLECTED_XSS.getTag()),
+                is(equalTo(true)));
         assertThat(
                 tags.get(CommonAlertTag.OWASP_2021_A03_INJECTION.getTag()),
                 is(equalTo(CommonAlertTag.OWASP_2021_A03_INJECTION.getValue())));
         assertThat(
                 tags.get(CommonAlertTag.OWASP_2017_A07_XSS.getTag()),
                 is(equalTo(CommonAlertTag.OWASP_2017_A07_XSS.getValue())));
+        assertThat(
+                tags.get(CommonAlertTag.WSTG_V42_INPV_01_REFLECTED_XSS.getTag()),
+                is(equalTo(CommonAlertTag.WSTG_V42_INPV_01_REFLECTED_XSS.getValue())));
     }
 
     @Test
@@ -107,9 +114,13 @@ class CrossSiteScriptingScanRuleUnitTest extends ActiveScannerTest<CrossSiteScri
         this.rule.scan();
 
         assertThat(alertsRaised.size(), equalTo(1));
-        assertThat(alertsRaised.get(0).getEvidence(), equalTo("</p><script>alert(1);</script><p>"));
+        assertThat(
+                alertsRaised.get(0).getEvidence(),
+                equalTo("</p>" + CrossSiteScriptingScanRule.GENERIC_SCRIPT_ALERT + "<p>"));
         assertThat(alertsRaised.get(0).getParam(), equalTo("name"));
-        assertThat(alertsRaised.get(0).getAttack(), equalTo("</p><script>alert(1);</script><p>"));
+        assertThat(
+                alertsRaised.get(0).getAttack(),
+                equalTo("</p>" + CrossSiteScriptingScanRule.GENERIC_SCRIPT_ALERT + "<p>"));
         assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_HIGH));
         assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
     }
@@ -149,11 +160,19 @@ class CrossSiteScriptingScanRuleUnitTest extends ActiveScannerTest<CrossSiteScri
         assertThat(alertsRaised.size(), equalTo(1));
         assertThat(
                 alertsRaised.get(0).getEvidence(),
-                equalTo("</p>" + NULL_BYTE_CHARACTER + "<script>alert(1);</script><p>"));
+                equalTo(
+                        "</p>"
+                                + NULL_BYTE_CHARACTER
+                                + CrossSiteScriptingScanRule.GENERIC_SCRIPT_ALERT
+                                + "<p>"));
         assertThat(alertsRaised.get(0).getParam(), equalTo("name"));
         assertThat(
                 alertsRaised.get(0).getAttack(),
-                equalTo("</p>" + NULL_BYTE_CHARACTER + "<script>alert(1);</script><p>"));
+                equalTo(
+                        "</p>"
+                                + NULL_BYTE_CHARACTER
+                                + CrossSiteScriptingScanRule.GENERIC_SCRIPT_ALERT
+                                + "<p>"));
         assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_HIGH));
         assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
     }
@@ -222,9 +241,13 @@ class CrossSiteScriptingScanRuleUnitTest extends ActiveScannerTest<CrossSiteScri
         this.rule.scan();
 
         assertThat(alertsRaised.size(), equalTo(1));
-        assertThat(alertsRaised.get(0).getEvidence(), equalTo("--><script>alert(1);</script><!--"));
+        assertThat(
+                alertsRaised.get(0).getEvidence(),
+                equalTo("-->" + CrossSiteScriptingScanRule.GENERIC_SCRIPT_ALERT + "<!--"));
         assertThat(alertsRaised.get(0).getParam(), equalTo("name"));
-        assertThat(alertsRaised.get(0).getAttack(), equalTo("--><script>alert(1);</script><!--"));
+        assertThat(
+                alertsRaised.get(0).getAttack(),
+                equalTo("-->" + CrossSiteScriptingScanRule.GENERIC_SCRIPT_ALERT + "<!--"));
         assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_HIGH));
         assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
     }
@@ -262,11 +285,21 @@ class CrossSiteScriptingScanRuleUnitTest extends ActiveScannerTest<CrossSiteScri
         assertThat(alertsRaised.size(), equalTo(1));
         assertThat(
                 alertsRaised.get(0).getEvidence(),
-                equalTo("-->" + NULL_BYTE_CHARACTER + "<script>alert(1);</script><!--"));
+                equalTo(
+                        "-->"
+                                + NULL_BYTE_CHARACTER
+                                + ""
+                                + CrossSiteScriptingScanRule.GENERIC_SCRIPT_ALERT
+                                + "<!--"));
         assertThat(alertsRaised.get(0).getParam(), equalTo("name"));
         assertThat(
                 alertsRaised.get(0).getAttack(),
-                equalTo("-->" + NULL_BYTE_CHARACTER + "<script>alert(1);</script><!--"));
+                equalTo(
+                        "-->"
+                                + NULL_BYTE_CHARACTER
+                                + ""
+                                + CrossSiteScriptingScanRule.GENERIC_SCRIPT_ALERT
+                                + "<!--"));
         assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_HIGH));
         assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
     }
@@ -302,11 +335,11 @@ class CrossSiteScriptingScanRuleUnitTest extends ActiveScannerTest<CrossSiteScri
         assertThat(alertsRaised.size(), equalTo(1));
         assertThat(
                 alertsRaised.get(0).getEvidence(),
-                equalTo("--><b onMouseOver=alert(1);>test</b><!--"));
+                equalTo("-->" + CrossSiteScriptingScanRule.GENERIC_ONERROR_ALERT + "<!--"));
         assertThat(alertsRaised.get(0).getParam(), equalTo("name"));
         assertThat(
                 alertsRaised.get(0).getAttack(),
-                equalTo("--><b onMouseOver=alert(1);>test</b><!--"));
+                equalTo("-->" + CrossSiteScriptingScanRule.GENERIC_ONERROR_ALERT + "<!--"));
         assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_HIGH));
         assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
     }
@@ -372,9 +405,13 @@ class CrossSiteScriptingScanRuleUnitTest extends ActiveScannerTest<CrossSiteScri
         this.rule.scan();
 
         assertThat(alertsRaised.size(), equalTo(1));
-        assertThat(alertsRaised.get(0).getEvidence(), equalTo("<script>alert(1);</script>"));
+        assertThat(
+                alertsRaised.get(0).getEvidence(),
+                equalTo(CrossSiteScriptingScanRule.GENERIC_SCRIPT_ALERT));
         assertThat(alertsRaised.get(0).getParam(), equalTo("name"));
-        assertThat(alertsRaised.get(0).getAttack(), equalTo("<script>alert(1);</script>"));
+        assertThat(
+                alertsRaised.get(0).getAttack(),
+                equalTo(CrossSiteScriptingScanRule.GENERIC_SCRIPT_ALERT));
         assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_HIGH));
         assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
     }
@@ -410,11 +447,11 @@ class CrossSiteScriptingScanRuleUnitTest extends ActiveScannerTest<CrossSiteScri
         assertThat(alertsRaised.size(), equalTo(1));
         assertThat(
                 alertsRaised.get(0).getEvidence(),
-                equalTo(NULL_BYTE_CHARACTER + "<script>alert(1);</script>"));
+                equalTo(NULL_BYTE_CHARACTER + CrossSiteScriptingScanRule.GENERIC_SCRIPT_ALERT));
         assertThat(alertsRaised.get(0).getParam(), equalTo("name"));
         assertThat(
                 alertsRaised.get(0).getAttack(),
-                equalTo(NULL_BYTE_CHARACTER + "<script>alert(1);</script>"));
+                equalTo(NULL_BYTE_CHARACTER + CrossSiteScriptingScanRule.GENERIC_SCRIPT_ALERT));
         assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_HIGH));
         assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
     }
@@ -447,11 +484,11 @@ class CrossSiteScriptingScanRuleUnitTest extends ActiveScannerTest<CrossSiteScri
         assertThat(alertsRaised.size(), equalTo(1));
         assertThat(
                 alertsRaised.get(0).getEvidence(),
-                equalTo("</span><script>alert(1);</script><span>"));
+                equalTo("</span>" + CrossSiteScriptingScanRule.GENERIC_SCRIPT_ALERT + "<span>"));
         assertThat(alertsRaised.get(0).getParam(), equalTo("name"));
         assertThat(
                 alertsRaised.get(0).getAttack(),
-                equalTo("</span><script>alert(1);</script><span>"));
+                equalTo("</span>" + CrossSiteScriptingScanRule.GENERIC_SCRIPT_ALERT + "<span>"));
         assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_HIGH));
         assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
     }
@@ -486,11 +523,21 @@ class CrossSiteScriptingScanRuleUnitTest extends ActiveScannerTest<CrossSiteScri
         assertThat(alertsRaised.size(), equalTo(1));
         assertThat(
                 alertsRaised.get(0).getEvidence(),
-                equalTo("</span>" + NULL_BYTE_CHARACTER + "<script>alert(1);</script><span>"));
+                equalTo(
+                        "</span>"
+                                + NULL_BYTE_CHARACTER
+                                + ""
+                                + CrossSiteScriptingScanRule.GENERIC_SCRIPT_ALERT
+                                + "<span>"));
         assertThat(alertsRaised.get(0).getParam(), equalTo("name"));
         assertThat(
                 alertsRaised.get(0).getAttack(),
-                equalTo("</span>" + NULL_BYTE_CHARACTER + "<script>alert(1);</script><span>"));
+                equalTo(
+                        "</span>"
+                                + NULL_BYTE_CHARACTER
+                                + ""
+                                + CrossSiteScriptingScanRule.GENERIC_SCRIPT_ALERT
+                                + "<span>"));
         assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_HIGH));
         assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
     }
@@ -521,9 +568,13 @@ class CrossSiteScriptingScanRuleUnitTest extends ActiveScannerTest<CrossSiteScri
         this.rule.scan();
 
         assertThat(alertsRaised.size(), equalTo(1));
-        assertThat(alertsRaised.get(0).getEvidence(), equalTo("<script>alert(1);</script>"));
+        assertThat(
+                alertsRaised.get(0).getEvidence(),
+                equalTo(CrossSiteScriptingScanRule.GENERIC_SCRIPT_ALERT));
         assertThat(alertsRaised.get(0).getParam(), equalTo("name"));
-        assertThat(alertsRaised.get(0).getAttack(), equalTo("<script>alert(1);</script>"));
+        assertThat(
+                alertsRaised.get(0).getAttack(),
+                equalTo(CrossSiteScriptingScanRule.GENERIC_SCRIPT_ALERT));
         assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_HIGH));
         assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
     }
@@ -557,9 +608,13 @@ class CrossSiteScriptingScanRuleUnitTest extends ActiveScannerTest<CrossSiteScri
         this.rule.scan();
 
         assertThat(alertsRaised.size(), equalTo(1));
-        assertThat(alertsRaised.get(0).getEvidence(), equalTo("<script>alert(1);</script>"));
+        assertThat(
+                alertsRaised.get(0).getEvidence(),
+                equalTo(CrossSiteScriptingScanRule.GENERIC_SCRIPT_ALERT));
         assertThat(alertsRaised.get(0).getParam(), equalTo("name"));
-        assertThat(alertsRaised.get(0).getAttack(), equalTo("<script>alert(1);</script>"));
+        assertThat(
+                alertsRaised.get(0).getAttack(),
+                equalTo(CrossSiteScriptingScanRule.GENERIC_SCRIPT_ALERT));
         assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_HIGH));
         assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
     }
@@ -597,9 +652,13 @@ class CrossSiteScriptingScanRuleUnitTest extends ActiveScannerTest<CrossSiteScri
         this.rule.scan();
         // Then
         assertThat(alertsRaised.size(), equalTo(1));
-        assertThat(alertsRaised.get(0).getEvidence(), equalTo("<script>alert(1);</script>"));
+        assertThat(
+                alertsRaised.get(0).getEvidence(),
+                equalTo(CrossSiteScriptingScanRule.GENERIC_SCRIPT_ALERT));
         assertThat(alertsRaised.get(0).getParam(), equalTo("name"));
-        assertThat(alertsRaised.get(0).getAttack(), equalTo("<script>alert(1);</script>"));
+        assertThat(
+                alertsRaised.get(0).getAttack(),
+                equalTo(CrossSiteScriptingScanRule.GENERIC_SCRIPT_ALERT));
         assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_HIGH));
         assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
     }
@@ -632,9 +691,13 @@ class CrossSiteScriptingScanRuleUnitTest extends ActiveScannerTest<CrossSiteScri
         this.rule.scan();
 
         assertThat(alertsRaised.size(), equalTo(1));
-        assertThat(alertsRaised.get(0).getEvidence(), equalTo("<b onMouseOver=alert(1);>test</b>"));
+        assertThat(
+                alertsRaised.get(0).getEvidence(),
+                equalTo(CrossSiteScriptingScanRule.GENERIC_ONERROR_ALERT));
         assertThat(alertsRaised.get(0).getParam(), equalTo("name"));
-        assertThat(alertsRaised.get(0).getAttack(), equalTo("<b onMouseOver=alert(1);>test</b>"));
+        assertThat(
+                alertsRaised.get(0).getAttack(),
+                equalTo(CrossSiteScriptingScanRule.GENERIC_ONERROR_ALERT));
         assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_HIGH));
         assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
     }
@@ -901,9 +964,13 @@ class CrossSiteScriptingScanRuleUnitTest extends ActiveScannerTest<CrossSiteScri
         this.rule.scan();
 
         assertThat(alertsRaised.size(), equalTo(1));
-        assertThat(alertsRaised.get(0).getEvidence(), equalTo("</p><script>alert(1);</script><p>"));
+        assertThat(
+                alertsRaised.get(0).getEvidence(),
+                equalTo("</p>" + CrossSiteScriptingScanRule.GENERIC_SCRIPT_ALERT + "<p>"));
         assertThat(alertsRaised.get(0).getParam(), equalTo("query"));
-        assertThat(alertsRaised.get(0).getAttack(), equalTo("</p><script>alert(1);</script><p>"));
+        assertThat(
+                alertsRaised.get(0).getAttack(),
+                equalTo("</p>" + CrossSiteScriptingScanRule.GENERIC_SCRIPT_ALERT + "<p>"));
         assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_HIGH));
         assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
     }
@@ -1020,13 +1087,58 @@ class CrossSiteScriptingScanRuleUnitTest extends ActiveScannerTest<CrossSiteScri
         assertThat(alertsRaised.size(), equalTo(1));
         assertThat(alertsRaised.get(0).getName(), containsString("JSON"));
         assertThat(alertsRaised.get(0).getParam(), equalTo("name"));
-        assertThat(alertsRaised.get(0).getAttack(), equalTo("<script>alert(1);</script>"));
+        assertThat(
+                alertsRaised.get(0).getAttack(),
+                equalTo(CrossSiteScriptingScanRule.GENERIC_SCRIPT_ALERT));
         assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_LOW));
         assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_LOW));
     }
 
     @Test
-    void shouldReportXssInsideDivWithFilteredScript() throws NullPointerException, IOException {
+    void shouldReportXssInsideDivWithFilteredSameCaseScript()
+            throws NullPointerException, IOException {
+        String test = "/shouldReportXssInBodyWithFilteredScript/";
+
+        this.nano.addHandler(
+                new NanoServerHandler(test) {
+                    @Override
+                    protected Response serve(IHTTPSession session) {
+                        String name = getFirstParamValue(session, "name");
+                        String response;
+                        if (name != null) {
+                            // Strip out 'script' ignoring the case
+                            name = name.replaceAll("script", "").replaceAll("SCRIPT", "");
+                            response =
+                                    getHtml("InputInsideDiv.html", new String[][] {{"name", name}});
+                        } else {
+                            response = getHtml("NoInput.html");
+                        }
+                        return newFixedLengthResponse(response);
+                    }
+                });
+
+        HttpMessage msg = this.getHttpMessage(test + "?name=test");
+
+        this.rule.init(msg, this.parent);
+
+        this.rule.scan();
+
+        assertThat(httpMessagesSent, hasSize(equalTo(2)));
+        assertThat(alertsRaised.size(), equalTo(1));
+        assertThat(
+                alertsRaised.get(0).getEvidence(),
+                equalTo("</div>" + CrossSiteScriptingScanRule.GENERIC_SCRIPT_ALERT + "<div>"));
+        assertThat(alertsRaised.get(0).getParam(), equalTo("name"));
+        assertThat(
+                alertsRaised.get(0).getAttack(),
+                equalTo("</div>" + CrossSiteScriptingScanRule.GENERIC_SCRIPT_ALERT + "<div>"));
+        assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_HIGH));
+        assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
+    }
+
+    @Test
+    void shouldReportXssInsideDivWithFilteredAnyCaseScript()
+            throws NullPointerException, IOException {
         String test = "/shouldReportXssInBodyWithFilteredScript/";
 
         this.nano.addHandler(
@@ -1055,9 +1167,13 @@ class CrossSiteScriptingScanRuleUnitTest extends ActiveScannerTest<CrossSiteScri
 
         assertThat(httpMessagesSent, hasSize(equalTo(4)));
         assertThat(alertsRaised.size(), equalTo(1));
-        assertThat(alertsRaised.get(0).getEvidence(), equalTo("<img src=x onerror=alert(1);>"));
+        assertThat(
+                alertsRaised.get(0).getEvidence(),
+                equalTo("</div>" + CrossSiteScriptingScanRule.GENERIC_ONERROR_ALERT + "<div>"));
         assertThat(alertsRaised.get(0).getParam(), equalTo("name"));
-        assertThat(alertsRaised.get(0).getAttack(), equalTo("<img src=x onerror=alert(1);>"));
+        assertThat(
+                alertsRaised.get(0).getAttack(),
+                equalTo("</div>" + CrossSiteScriptingScanRule.GENERIC_ONERROR_ALERT + "<div>"));
         assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_HIGH));
         assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
     }
@@ -1099,11 +1215,13 @@ class CrossSiteScriptingScanRuleUnitTest extends ActiveScannerTest<CrossSiteScri
 
         this.rule.scan();
         assertThat(alertsRaised.size(), equalTo(1));
-        assertThat(alertsRaised.get(0).getEvidence(), equalTo("<script>alert(1);</script>"));
+        assertThat(
+                alertsRaised.get(0).getEvidence(),
+                equalTo(CrossSiteScriptingScanRule.GENERIC_SCRIPT_ALERT));
         assertThat(alertsRaised.get(0).getParam(), equalTo("name"));
         assertThat(
                 alertsRaised.get(0).getAttack(),
-                equalTo("%253Cscript%253Ealert%25281%2529%253B%253C%252Fscript%253E"));
+                equalTo("%253CscrIpt%253Ealert%25281%2529%253B%253C%252FscRipt%253E"));
         assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_HIGH));
         assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
     }
@@ -1195,20 +1313,259 @@ class CrossSiteScriptingScanRuleUnitTest extends ActiveScannerTest<CrossSiteScri
 
         this.rule.scan();
         assertThat(alertsRaised.size(), equalTo(1));
-        assertThat(alertsRaised.get(0).getEvidence(), equalTo("<script>alert(1);</script>"));
+        assertThat(
+                alertsRaised.get(0).getEvidence(),
+                equalTo(CrossSiteScriptingScanRule.GENERIC_SCRIPT_ALERT));
         assertThat(alertsRaised.get(0).getParam(), equalTo("name"));
         assertThat(
                 alertsRaised.get(0).getAttack(),
-                equalTo("%253Cscript%253Ealert%25281%2529%253B%253C%252Fscript%253E"));
+                equalTo("%253CscrIpt%253Ealert%25281%2529%253B%253C%252FscRipt%253E"));
         assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_HIGH));
         assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
     }
 
     @Test
-    void shouldNotAlertXssInJsVariableWithEncoding() throws HttpMalformedHeaderException {
+    void shouldAlertXssOnJsEval() throws HttpMalformedHeaderException {
         // Given
         String path = "/user/search";
-        this.nano.addHandler(
+        nano.addHandler(
+                new NanoServerHandler(path) {
+
+                    @Override
+                    protected Response serve(IHTTPSession session) {
+                        String script = getFirstParamValue(session, "name");
+                        String response =
+                                getHtml("InputInScript.html", new String[][] {{"script", script}});
+                        return newFixedLengthResponse(response);
+                    }
+                });
+
+        HttpMessage msg = getHttpMessage(path + "?name=test");
+        rule.init(msg, parent);
+
+        // When
+        rule.scan();
+
+        // Then
+        assertThat(alertsRaised, hasSize(1));
+        assertThat(
+                alertsRaised.get(0).getEvidence(),
+                equalTo("</script><scrIpt>alert(1);</scRipt><script>"));
+        assertThat(alertsRaised.get(0).getParam(), equalTo("name"));
+        assertThat(
+                alertsRaised.get(0).getAttack(),
+                equalTo("</script><scrIpt>alert(1);</scRipt><script>"));
+        assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_HIGH));
+        assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
+    }
+
+    @Test
+    void shouldAlertXssOnJsEvalHtmlEscaped() throws HttpMalformedHeaderException {
+        // Given
+        String path = "/user/search";
+        nano.addHandler(
+                new NanoServerHandler(path) {
+
+                    @Override
+                    protected Response serve(IHTTPSession session) {
+                        String name = getFirstParamValue(session, "name");
+                        String script = StringEscapeUtils.escapeHtml4(name);
+                        String response =
+                                getHtml("InputInScript.html", new String[][] {{"script", script}});
+                        return newFixedLengthResponse(response);
+                    }
+                });
+
+        HttpMessage msg = getHttpMessage(path + "?name=test");
+        rule.init(msg, parent);
+
+        // When
+        rule.scan();
+
+        // Then
+        assertThat(alertsRaised, hasSize(1));
+        assertThat(alertsRaised.get(0).getEvidence(), equalTo(";alert(1);"));
+        assertThat(alertsRaised.get(0).getParam(), equalTo("name"));
+        assertThat(alertsRaised.get(0).getAttack(), equalTo(";alert(1);"));
+        assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_HIGH));
+        assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
+    }
+
+    @Test
+    void shouldAlertXssInJsUnquotedAssignment() throws HttpMalformedHeaderException {
+        // Given
+        String path = "/user/search";
+        nano.addHandler(
+                new NanoServerHandler(path) {
+
+                    @Override
+                    protected Response serve(IHTTPSession session) {
+                        String name = getFirstParamValue(session, "name");
+                        String script = String.format("var a = %s;", name);
+                        String response =
+                                getHtml("InputInScript.html", new String[][] {{"script", script}});
+                        return newFixedLengthResponse(response);
+                    }
+                });
+
+        HttpMessage msg = getHttpMessage(path + "?name=test");
+        rule.init(msg, parent);
+
+        // When
+        rule.scan();
+
+        // Then
+        assertThat(alertsRaised, hasSize(1));
+        assertThat(
+                alertsRaised.get(0).getEvidence(),
+                equalTo("</script><scrIpt>alert(1);</scRipt><script>"));
+        assertThat(alertsRaised.get(0).getParam(), equalTo("name"));
+        assertThat(
+                alertsRaised.get(0).getAttack(),
+                equalTo("</script><scrIpt>alert(1);</scRipt><script>"));
+        assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_HIGH));
+        assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
+    }
+
+    @Test
+    void shouldAlertXssInJsUnquotedAssignmentHtmlEscaped() throws HttpMalformedHeaderException {
+        // Given
+        String path = "/user/search";
+        nano.addHandler(
+                new NanoServerHandler(path) {
+
+                    @Override
+                    protected Response serve(IHTTPSession session) {
+                        String name = getFirstParamValue(session, "name");
+                        String script =
+                                String.format("var a = %s;", StringEscapeUtils.escapeHtml4(name));
+                        String response =
+                                getHtml("InputInScript.html", new String[][] {{"script", script}});
+                        return newFixedLengthResponse(response);
+                    }
+                });
+
+        HttpMessage msg = getHttpMessage(path + "?name=test");
+        rule.init(msg, parent);
+
+        // When
+        rule.scan();
+
+        // Then
+        assertThat(alertsRaised, hasSize(1));
+        assertThat(alertsRaised.get(0).getEvidence(), equalTo(";alert(1);"));
+        assertThat(alertsRaised.get(0).getParam(), equalTo("name"));
+        assertThat(alertsRaised.get(0).getAttack(), equalTo(";alert(1);"));
+        assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_HIGH));
+        assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
+    }
+
+    @Test
+    void shouldAlertXssInJsString() throws HttpMalformedHeaderException {
+        // Given
+        String path = "/user/search";
+        nano.addHandler(
+                new NanoServerHandler(path) {
+
+                    @Override
+                    protected Response serve(IHTTPSession session) {
+                        String name = getFirstParamValue(session, "name");
+                        String script = String.format("var a = \"%s\"", name);
+                        String response =
+                                getHtml("InputInScript.html", new String[][] {{"script", script}});
+                        return newFixedLengthResponse(response);
+                    }
+                });
+
+        HttpMessage msg = getHttpMessage(path + "?name=test");
+        rule.init(msg, parent);
+
+        // When
+        rule.scan();
+
+        // Then
+        assertThat(alertsRaised, hasSize(1));
+        assertThat(alertsRaised.get(0).getEvidence(), equalTo("\";alert(1);\""));
+        assertThat(alertsRaised.get(0).getParam(), equalTo("name"));
+        assertThat(alertsRaised.get(0).getAttack(), equalTo("\";alert(1);\""));
+        assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_HIGH));
+        assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
+    }
+
+    @Test
+    void shouldAlertXssInJsSlashQuotedString() throws HttpMalformedHeaderException {
+        // Given
+        String path = "/user/search";
+        nano.addHandler(
+                new NanoServerHandler(path) {
+
+                    @Override
+                    protected Response serve(IHTTPSession session) {
+                        String name = getFirstParamValue(session, "name");
+                        String script = String.format("var a = /%s/", name);
+                        String response =
+                                getHtml("InputInScript.html", new String[][] {{"script", script}});
+                        return newFixedLengthResponse(response);
+                    }
+                });
+
+        HttpMessage msg = getHttpMessage(path + "?name=test");
+        rule.init(msg, parent);
+
+        // When
+        rule.scan();
+
+        // Then
+        assertThat(alertsRaised, hasSize(1));
+        assertThat(
+                alertsRaised.get(0).getEvidence(),
+                equalTo("</script><scrIpt>alert(1);</scRipt><script>"));
+        assertThat(alertsRaised.get(0).getParam(), equalTo("name"));
+        assertThat(
+                alertsRaised.get(0).getAttack(),
+                equalTo("</script><scrIpt>alert(1);</scRipt><script>"));
+        assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_HIGH));
+        assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
+    }
+
+    @Test
+    void shouldAlertXssInJsSlashQuotedStringHtmlEscaped() throws HttpMalformedHeaderException {
+        // Given
+        String path = "/user/search";
+        nano.addHandler(
+                new NanoServerHandler(path) {
+
+                    @Override
+                    protected Response serve(IHTTPSession session) {
+                        String name = getFirstParamValue(session, "name");
+                        String script =
+                                String.format("var a = /%s/", StringEscapeUtils.escapeHtml4(name));
+                        String response =
+                                getHtml("InputInScript.html", new String[][] {{"script", script}});
+                        return newFixedLengthResponse(response);
+                    }
+                });
+
+        HttpMessage msg = getHttpMessage(path + "?name=test");
+        rule.init(msg, parent);
+
+        // When
+        rule.scan();
+
+        // Then
+        assertThat(alertsRaised, hasSize(1));
+        assertThat(alertsRaised.get(0).getEvidence(), equalTo(";alert(1);"));
+        assertThat(alertsRaised.get(0).getParam(), equalTo("name"));
+        assertThat(alertsRaised.get(0).getAttack(), equalTo(";alert(1);"));
+        assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_HIGH));
+        assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_MEDIUM));
+    }
+
+    @Test
+    void shouldNotAlertXssInJsStringWithEncoding() throws HttpMalformedHeaderException {
+        // Given
+        String path = "/user/search";
+        nano.addHandler(
                 new NanoServerHandler(path) {
 
                     @Override
@@ -1217,8 +1574,11 @@ class CrossSiteScriptingScanRuleUnitTest extends ActiveScannerTest<CrossSiteScri
                         String response;
                         if (name != null) {
                             name = name.replaceAll("\"", "&quot;");
+                            String script = String.format("var a = \"%s\"", name);
                             response =
-                                    getHtml("InputInScript.html", new String[][] {{"name", name}});
+                                    getHtml(
+                                            "InputInScript.html",
+                                            new String[][] {{"script", script}});
                         } else {
                             response = getHtml("NoInput.html");
                         }
@@ -1234,6 +1594,74 @@ class CrossSiteScriptingScanRuleUnitTest extends ActiveScannerTest<CrossSiteScri
 
         // Then
         assertThat(alertsRaised.size(), equalTo(0));
+    }
+
+    @Test
+    void shouldNotAlertXssInFilteredJsString() throws HttpMalformedHeaderException {
+        // Given
+        String path = "/user/search";
+        nano.addHandler(
+                new NanoServerHandler(path) {
+
+                    @Override
+                    protected Response serve(IHTTPSession session) {
+                        String name = getFirstParamValue(session, "name");
+                        // Remove tags and quotes, based on Webseclab case "/xss/reflect/js3_fp".
+                        name = name.replaceAll("(?i)(<([^>]+)>)", "");
+                        name = name.replaceAll("'|\"", "");
+                        String script = String.format("var a = \"%s\"", name);
+                        String response =
+                                getHtml("InputInScript.html", new String[][] {{"script", script}});
+                        return newFixedLengthResponse(response);
+                    }
+                });
+
+        HttpMessage msg = getHttpMessage(path + "?name=test");
+        rule.init(msg, parent);
+
+        // When
+        rule.scan();
+
+        // Then
+        assertThat(alertsRaised, hasSize(0));
+    }
+
+    @Test
+    void shouldReportXssWeaknessInJsonResponseWithFilteredScript()
+            throws NullPointerException, IOException {
+        // Given
+        String test = "/shouldReportXssWeaknessInJsonResponseWithFilteredScript/";
+
+        this.nano.addHandler(
+                new NanoServerHandler(test) {
+                    @Override
+                    protected Response serve(IHTTPSession session) {
+                        String name = getFirstParamValue(session, "name");
+                        String response;
+                        if (name != null) {
+                            // Strip out 'script' ignoring the case
+                            name = name.replaceAll("(?i)script", "");
+                            response = getHtml("example.json", new String[][] {{"name", name}});
+                        } else {
+                            response = getHtml("example.json");
+                        }
+                        Response resp = newFixedLengthResponse(response);
+                        resp.setMimeType("application/json");
+                        return resp;
+                    }
+                });
+
+        HttpMessage msg = this.getHttpMessage(test + "?name=test");
+        // When
+        this.rule.init(msg, this.parent);
+        this.rule.scan();
+        // Then
+        assertThat(alertsRaised.size(), equalTo(1));
+        assertThat(alertsRaised.get(0).getName(), containsString("JSON"));
+        assertThat(alertsRaised.get(0).getParam(), equalTo("name"));
+        assertThat(alertsRaised.get(0).getAttack(), equalTo("<img src=x onerror=prompt()>"));
+        assertThat(alertsRaised.get(0).getRisk(), equalTo(Alert.RISK_LOW));
+        assertThat(alertsRaised.get(0).getConfidence(), equalTo(Alert.CONFIDENCE_LOW));
     }
 
     @Test
@@ -1266,6 +1694,122 @@ class CrossSiteScriptingScanRuleUnitTest extends ActiveScannerTest<CrossSiteScri
 
         // Then
         assertThat(alertsRaised.size(), equalTo(1));
+    }
+
+    @Test
+    void shouldAlertXssInEscapedTextArea() throws HttpMalformedHeaderException {
+        // Given
+        String path = "/user/escapetextarea";
+        nano.addHandler(
+                new NanoServerHandler(path) {
+
+                    @Override
+                    protected Response serve(IHTTPSession session) {
+                        String text = getFirstParamValue(session, "text");
+                        String response =
+                                getHtml("InputInTextArea.html", new String[][] {{"text", text}});
+                        return newFixedLengthResponse(response);
+                    }
+                });
+
+        HttpMessage msg = getHttpMessage(path + "?text=test");
+        rule.init(msg, parent);
+
+        // When
+        rule.scan();
+
+        // Then
+        assertThat(alertsRaised, hasSize(1));
+    }
+
+    @Test
+    void shouldNotAlertXssInTextArea() throws HttpMalformedHeaderException {
+        // Given
+        String path = "/user/textarea";
+        nano.addHandler(
+                new NanoServerHandler(path) {
+
+                    @Override
+                    protected Response serve(IHTTPSession session) {
+                        String text = getFirstParamValue(session, "text");
+                        // Remove a </textarea> type tag
+                        String notAllowed = "/textarea";
+                        int badOffset = text.toLowerCase().indexOf(notAllowed);
+                        if (badOffset > -1) {
+                            text =
+                                    text.substring(0, badOffset)
+                                            + text.substring(badOffset + notAllowed.length());
+                        }
+                        String response =
+                                getHtml("InputInTextArea.html", new String[][] {{"text", text}});
+                        return newFixedLengthResponse(response);
+                    }
+                });
+
+        HttpMessage msg = getHttpMessage(path + "?text=test");
+        rule.init(msg, parent);
+
+        // When
+        rule.scan();
+
+        // Then
+        assertThat(alertsRaised, hasSize(0));
+    }
+
+    @Test
+    void shouldAlertXssUsingHeaderSplitting() throws HttpMalformedHeaderException {
+        // Given
+        String path = "/user/escapetextarea";
+        nano.addHandler(
+                new NanoServerHandler(path) {
+
+                    @Override
+                    protected Response serve(IHTTPSession session) {
+                        String text = getFirstParamValue(session, "text");
+                        Response response = newFixedLengthResponse("<html></html>");
+                        response.addHeader("X-test", text);
+                        return response;
+                    }
+                });
+
+        HttpMessage msg = getHttpMessage(path + "?text=test");
+        rule.init(msg, parent);
+
+        // When
+        rule.scan();
+
+        // Then
+        assertThat(alertsRaised, hasSize(1));
+        assertThat(alertsRaised.get(0).getEvidence(), is(equalTo("<scrIpt>alert(1);</scRipt>")));
+        assertThat(
+                alertsRaised.get(0).getAttack(),
+                is(equalTo("test\n\r\n\r<scrIpt>alert(1);</scRipt>")));
+    }
+
+    @Test
+    void shouldNotAlertXssInEscapedHeader() throws HttpMalformedHeaderException {
+        // Given
+        String path = "/user/escapetextarea";
+        nano.addHandler(
+                new NanoServerHandler(path) {
+
+                    @Override
+                    protected Response serve(IHTTPSession session) {
+                        String text = getFirstParamValue(session, "text");
+                        Response response = newFixedLengthResponse("<html></html>");
+                        response.addHeader("X-test", text.replace("\n", "").replace("\r", ""));
+                        return response;
+                    }
+                });
+
+        HttpMessage msg = getHttpMessage(path + "?text=test");
+        rule.init(msg, parent);
+
+        // When
+        rule.scan();
+
+        // Then
+        assertThat(alertsRaised, hasSize(0));
     }
 
     @Override

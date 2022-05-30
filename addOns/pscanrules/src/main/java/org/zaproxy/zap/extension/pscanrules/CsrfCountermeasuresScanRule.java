@@ -39,7 +39,6 @@ import org.parosproxy.paros.model.Model;
 import org.parosproxy.paros.network.HttpMessage;
 import org.zaproxy.addon.commonlib.CommonAlertTag;
 import org.zaproxy.zap.extension.anticsrf.ExtensionAntiCSRF;
-import org.zaproxy.zap.extension.pscan.PassiveScanThread;
 import org.zaproxy.zap.extension.pscan.PluginPassiveScanner;
 import org.zaproxy.zap.extension.ruleconfig.RuleConfigParam;
 import org.zaproxy.zap.model.Vulnerabilities;
@@ -59,7 +58,8 @@ public class CsrfCountermeasuresScanRule extends PluginPassiveScanner {
     private static final Map<String, String> ALERT_TAGS =
             CommonAlertTag.toMap(
                     CommonAlertTag.OWASP_2021_A01_BROKEN_AC,
-                    CommonAlertTag.OWASP_2017_A05_BROKEN_AC);
+                    CommonAlertTag.OWASP_2017_A05_BROKEN_AC,
+                    CommonAlertTag.WSTG_V42_SESS_05_CSRF);
 
     private ExtensionAntiCSRF extensionAntiCSRF;
     private String csrfIgnoreList;
@@ -68,11 +68,6 @@ public class CsrfCountermeasuresScanRule extends PluginPassiveScanner {
 
     /** the logger */
     private static Logger logger = LogManager.getLogger(CsrfCountermeasuresScanRule.class);
-
-    @Override
-    public void setParent(PassiveScanThread parent) {
-        // Nothing to do.
-    }
 
     /**
      * gets the plugin id for this extension
@@ -207,7 +202,7 @@ public class CsrfCountermeasuresScanRule extends PluginPassiveScanner {
                 String formDetails = sbForm.toString();
                 String tokenNamesFlattened = tokenNames.toString();
 
-                int risk = Alert.RISK_LOW;
+                int risk = Alert.RISK_MEDIUM;
                 String desc = Constant.messages.getString("pscanrules.noanticsrftokens.desc");
                 String extraInfo =
                         Constant.messages.getString(
@@ -223,7 +218,7 @@ public class CsrfCountermeasuresScanRule extends PluginPassiveScanner {
 
                 newAlert()
                         .setRisk(risk)
-                        .setConfidence(Alert.CONFIDENCE_MEDIUM)
+                        .setConfidence(Alert.CONFIDENCE_LOW)
                         .setDescription(desc + "\n" + getDescription())
                         .setOtherInfo(extraInfo)
                         .setSolution(getSolution())

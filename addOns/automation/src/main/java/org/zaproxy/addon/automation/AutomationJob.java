@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import org.apache.commons.lang3.EnumUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.parosproxy.paros.CommandLine;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.control.Control;
@@ -35,7 +36,9 @@ import org.zaproxy.addon.automation.jobs.JobUtils;
 import org.zaproxy.addon.automation.tests.AbstractAutomationTest;
 import org.zaproxy.addon.automation.tests.AutomationAlertTest;
 import org.zaproxy.addon.automation.tests.AutomationStatisticTest;
+import org.zaproxy.addon.automation.tests.UrlPresenceTest;
 import org.zaproxy.zap.extension.stats.ExtensionStats;
+import org.zaproxy.zap.users.User;
 
 public abstract class AutomationJob implements Comparable<AutomationJob> {
 
@@ -183,6 +186,11 @@ public abstract class AutomationJob implements Comparable<AutomationJob> {
 
     public AutomationPlan getPlan() {
         return plan;
+    }
+
+    public void resetAndSetChanged() {
+        reset();
+        setChanged();
     }
 
     public void setChanged() {
@@ -410,6 +418,17 @@ public abstract class AutomationJob implements Comparable<AutomationJob> {
                 progress.info(
                         Constant.messages.getString(
                                 "automation.tests.add", getType(), testType, test.getName()));
+            } else if ("url".equals(testType)) {
+                try {
+                    test = new UrlPresenceTest(testData, this, progress);
+                } catch (IllegalArgumentException e) {
+                    progress.warn(e.getMessage());
+                    continue;
+                }
+                addTest(test);
+                progress.info(
+                        Constant.messages.getString(
+                                "automation.tests.add", getType(), testType, test.getName()));
             } else {
                 progress.warn(
                         Constant.messages.getString("automation.tests.invalidType", testType));
@@ -629,5 +648,26 @@ public abstract class AutomationJob implements Comparable<AutomationJob> {
         } catch (Exception e) {
             throw new AutomationJobException("Failed to create new job", e);
         }
+    }
+
+    public void verifyUser(String username, AutomationProgress progress) {
+        if (!StringUtils.isEmpty(username) && !this.getEnv().getAllUserNames().contains(username)) {
+            progress.error(
+                    Constant.messages.getString(
+                            "automation.error.job.baduser", this.getName(), username));
+        }
+    }
+
+    public User getUser(String username, AutomationProgress progress) {
+        User user = null;
+        if (!StringUtils.isEmpty(username)) {
+            user = this.getEnv().getUser(username);
+            if (user == null) {
+                progress.error(
+                        Constant.messages.getString(
+                                "automation.error.job.baduser", this.getName(), username));
+            }
+        }
+        return user;
     }
 }

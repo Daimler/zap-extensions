@@ -189,6 +189,11 @@ public class ExtensionQuickStartLaunch extends ExtensionAdaptor
     }
 
     @Override
+    public String getUIName() {
+        return Constant.messages.getString("quickstart.launch.name");
+    }
+
+    @Override
     public String getDescription() {
         return Constant.messages.getString("quickstart.launch.desc");
     }
@@ -233,6 +238,11 @@ public class ExtensionQuickStartLaunch extends ExtensionAdaptor
                                     params.getConfig().save();
                                 }
                             } catch (Exception e1) {
+                                ExtensionSelenium extSel = getExtSelenium();
+                                View.getSingleton()
+                                        .showWarningDialog(
+                                                extSel.getWarnMessageFailedToStart(
+                                                        browserName, e1));
                                 LOGGER.error(e1.getMessage(), e1);
                             }
                         },

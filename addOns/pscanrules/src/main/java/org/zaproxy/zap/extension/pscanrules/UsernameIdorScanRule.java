@@ -36,7 +36,6 @@ import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.core.scanner.Alert;
 import org.parosproxy.paros.network.HttpMessage;
 import org.zaproxy.addon.commonlib.CommonAlertTag;
-import org.zaproxy.zap.extension.pscan.PassiveScanThread;
 import org.zaproxy.zap.extension.pscan.PluginPassiveScanner;
 import org.zaproxy.zap.users.User;
 
@@ -48,7 +47,8 @@ public class UsernameIdorScanRule extends PluginPassiveScanner {
     private static final Map<String, String> ALERT_TAGS =
             CommonAlertTag.toMap(
                     CommonAlertTag.OWASP_2021_A01_BROKEN_AC,
-                    CommonAlertTag.OWASP_2017_A05_BROKEN_AC);
+                    CommonAlertTag.OWASP_2017_A05_BROKEN_AC,
+                    CommonAlertTag.WSTG_V42_ATHZ_04_IDOR);
 
     private static final Logger LOGGER = LogManager.getLogger(UsernameIdorScanRule.class);
 
@@ -62,11 +62,6 @@ public class UsernameIdorScanRule extends PluginPassiveScanner {
     public static final String USERNAME_IDOR_PAYLOAD_CATEGORY = "Username-Idor";
 
     private static Supplier<Iterable<String>> payloadProvider = DEFAULT_PAYLOAD_PROVIDER;
-
-    @Override
-    public void setParent(PassiveScanThread parent) {
-        // Nothing to do.
-    }
 
     private List<User> getUsers() {
         List<User> usersList = new ArrayList<>();

@@ -34,6 +34,7 @@ import javax.swing.JSplitPane;
 import javax.swing.border.EtchedBorder;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.control.Control;
+import org.parosproxy.paros.view.View;
 import org.zaproxy.zap.extension.fuzz.ExtensionFuzz;
 import org.zaproxy.zap.extension.fuzz.FuzzerMessageProcessor;
 import org.zaproxy.zap.extension.fuzz.FuzzerOptions;
@@ -43,6 +44,7 @@ import org.zaproxy.zap.extension.httppanel.Message;
 import org.zaproxy.zap.extension.httppanel.component.split.request.RequestSplitComponent;
 import org.zaproxy.zap.extension.httppanel.component.split.response.ResponseSplitComponent;
 import org.zaproxy.zap.model.MessageLocation;
+import org.zaproxy.zap.utils.Stats;
 import org.zaproxy.zap.utils.ZapXmlConfiguration;
 import org.zaproxy.zap.view.HttpPanelManager;
 import org.zaproxy.zap.view.StandardFieldsDialog;
@@ -67,6 +69,8 @@ public class FuzzerDialog<
 
     private List<PayloadGeneratorMessageLocation<?>> fuzzLocations;
     private FuzzerMessageProcessorsTablePanel<M, FMP> fuzzerMessageProcessorsTablePanel;
+
+    private boolean isEditable;
 
     public FuzzerDialog(
             Frame owner,
@@ -99,7 +103,8 @@ public class FuzzerDialog<
                                 .getNameDefaultPayloadGenerator());
 
         outgoingMessage = outgoing;
-        this.fuzzMessagePanel = new FuzzMessagePanel();
+        this.fuzzMessagePanel = new FuzzMessagePanel(this);
+
         if (outgoingMessage) {
             fuzzMessagePanel.addComponent(new RequestSplitComponent<>(), new ZapXmlConfiguration());
             HttpPanelManager.getInstance().addRequestPanel(fuzzMessagePanel);
@@ -131,6 +136,33 @@ public class FuzzerDialog<
                     new FuzzerMessageProcessorsTablePanel<>(this, message, fuzzerMessageProcessors);
             this.setCustomTabPanel(2, fuzzerMessageProcessorsTablePanel);
         }
+    }
+
+    protected boolean isEditable() {
+        return isEditable;
+    }
+
+    protected void setMessageEditable(boolean editable) {
+        isEditable = editable;
+        try {
+            if (editable) {
+                fuzzLocationsPanel.reset();
+            } else {
+                fuzzMessagePanel.saveData();
+                Stats.incCounter(ExtensionFuzz.MESSAGES_EDITED_STATS);
+            }
+            this.fuzzMessagePanel.setEditable(editable);
+
+        } catch (Exception e) {
+            View.getSingleton()
+                    .showWarningDialog(
+                            this,
+                            Constant.messages.getString("fuzz.fuzzer.dialog.warn.badmessage"));
+        }
+    }
+
+    public Message getMessage() {
+        return fuzzMessagePanel.getMessage();
     }
 
     private static void withExtensionFuzz(Consumer<ExtensionFuzz> consumer) {
@@ -253,6 +285,9 @@ public class FuzzerDialog<
 
     @Override
     public String validateFields() {
+        if (this.isEditable) {
+            return Constant.messages.getString("fuzz.fuzzer.dialog.warn.editMode");
+        }
         if (!fuzzLocationsPanel.hasLocations()) {
             return Constant.messages.getString("fuzz.fuzzer.dialog.warn.noFuzzLocations");
         }

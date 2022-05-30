@@ -50,7 +50,6 @@ import org.parosproxy.paros.network.HtmlParameter;
 import org.parosproxy.paros.network.HttpMessage;
 import org.zaproxy.addon.commonlib.CommonAlertTag;
 import org.zaproxy.zap.extension.httpsessions.HttpSessionsParam;
-import org.zaproxy.zap.extension.pscan.PassiveScanThread;
 import org.zaproxy.zap.extension.pscan.PluginPassiveScanner;
 
 /**
@@ -68,7 +67,8 @@ public class InfoSessionIdUrlScanRule extends PluginPassiveScanner {
     private static final Map<String, String> ALERT_TAGS =
             CommonAlertTag.toMap(
                     CommonAlertTag.OWASP_2021_A01_BROKEN_AC,
-                    CommonAlertTag.OWASP_2017_A03_DATA_EXPOSED);
+                    CommonAlertTag.OWASP_2017_A03_DATA_EXPOSED,
+                    CommonAlertTag.WSTG_V42_SESS_04_SESS_EXPOSED);
 
     private static final int SESSION_TOKEN_MIN_LENGTH = 8;
 
@@ -130,16 +130,6 @@ public class InfoSessionIdUrlScanRule extends PluginPassiveScanner {
 
     public int getWascId() {
         return 13; // WASC Id - Info leakage
-    }
-
-    /**
-     * Set the Scanner thread parent object
-     *
-     * @param parent the PassiveScanThread parent object
-     */
-    @Override
-    public void setParent(PassiveScanThread parent) {
-        // Nothing to do.
     }
 
     private static final Pattern PATHSESSIONIDPATTERN =

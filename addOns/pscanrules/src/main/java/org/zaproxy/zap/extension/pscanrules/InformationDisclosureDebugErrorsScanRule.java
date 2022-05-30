@@ -37,7 +37,7 @@ import org.parosproxy.paros.core.scanner.Plugin.AlertThreshold;
 import org.parosproxy.paros.network.HttpBody;
 import org.parosproxy.paros.network.HttpMessage;
 import org.zaproxy.addon.commonlib.CommonAlertTag;
-import org.zaproxy.zap.extension.pscan.PassiveScanThread;
+import org.zaproxy.addon.commonlib.ResourceIdentificationUtils;
 import org.zaproxy.zap.extension.pscan.PluginPassiveScanner;
 
 public class InformationDisclosureDebugErrorsScanRule extends PluginPassiveScanner {
@@ -48,7 +48,8 @@ public class InformationDisclosureDebugErrorsScanRule extends PluginPassiveScann
     private static final Map<String, String> ALERT_TAGS =
             CommonAlertTag.toMap(
                     CommonAlertTag.OWASP_2021_A01_BROKEN_AC,
-                    CommonAlertTag.OWASP_2017_A03_DATA_EXPOSED);
+                    CommonAlertTag.OWASP_2017_A03_DATA_EXPOSED,
+                    CommonAlertTag.WSTG_V42_ERRH_01_ERR);
 
     private static final String debugErrorFile = "xml/debug-error-messages.txt";
     private static final Logger logger =
@@ -59,7 +60,7 @@ public class InformationDisclosureDebugErrorsScanRule extends PluginPassiveScann
     public void scanHttpResponseReceive(HttpMessage msg, int id, Source source) {
         // At medium or high exclude javascript responses
         if (!AlertThreshold.LOW.equals(this.getAlertThreshold())
-                && msg.getResponseHeader().isJavaScript()) {
+                && ResourceIdentificationUtils.isJavaScript(msg)) {
             return;
         }
         if (msg.getResponseBody().length() > 0 && msg.getResponseHeader().isText()) {
@@ -126,11 +127,6 @@ public class InformationDisclosureDebugErrorsScanRule extends PluginPassiveScann
             }
         }
         return strings;
-    }
-
-    @Override
-    public void setParent(PassiveScanThread parent) {
-        // Nothing to do.
     }
 
     public void setDebugErrorFile(Path path) {

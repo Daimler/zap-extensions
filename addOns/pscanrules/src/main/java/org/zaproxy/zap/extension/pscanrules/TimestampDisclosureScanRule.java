@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.htmlparser.jericho.Source;
-import org.apache.commons.httpclient.URIException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
@@ -40,7 +39,7 @@ import org.parosproxy.paros.network.HttpHeader;
 import org.parosproxy.paros.network.HttpHeaderField;
 import org.parosproxy.paros.network.HttpMessage;
 import org.zaproxy.addon.commonlib.CommonAlertTag;
-import org.zaproxy.zap.extension.pscan.PassiveScanThread;
+import org.zaproxy.addon.commonlib.ResourceIdentificationUtils;
 import org.zaproxy.zap.extension.pscan.PluginPassiveScanner;
 
 /**
@@ -51,6 +50,7 @@ import org.zaproxy.zap.extension.pscan.PluginPassiveScanner;
  */
 public class TimestampDisclosureScanRule extends PluginPassiveScanner {
 
+    private static final Date EPOCH_START = new Date(0L);
     /** a map of a regular expression pattern to details of the timestamp type found */
     static Map<Pattern, String> timestampPatterns = new HashMap<>();
 
@@ -60,7 +60,7 @@ public class TimestampDisclosureScanRule extends PluginPassiveScanner {
         // as well as all of the current Unix time value (beyond the range for a valid Unix time, in
         // fact)
         timestampPatterns.put(
-                Pattern.compile("\\b[0-9]{8,10}\\b", Pattern.CASE_INSENSITIVE), "Unix");
+                Pattern.compile("\\b[0-9]{8,10}\\b(?!%)", Pattern.CASE_INSENSITIVE), "Unix");
     }
 
     private static Logger log = LogManager.getLogger(TimestampDisclosureScanRule.class);
@@ -88,9 +88,6 @@ public class TimestampDisclosureScanRule extends PluginPassiveScanner {
         "Expect-CT"
     };
 
-    static final Pattern PATTERN_FONT_EXTENSIONS =
-            Pattern.compile("(?:\\.ttf|\\.woff|\\.woff2|\\.otf)\\z", Pattern.CASE_INSENSITIVE);
-
     /**
      * gets the name of the scanner
      *
@@ -110,7 +107,7 @@ public class TimestampDisclosureScanRule extends PluginPassiveScanner {
      */
     @Override
     public void scanHttpResponseReceive(HttpMessage msg, int id, Source source) {
-        if (msg.getResponseHeader().hasContentType("font") || isFontRequest(msg)) {
+        if (ResourceIdentificationUtils.isFont(msg)) {
             return;
         }
         log.debug("Checking message {} for timestamps", msg.getRequestHeader().getURI());
@@ -151,12 +148,15 @@ public class TimestampDisclosureScanRule extends PluginPassiveScanner {
                 Matcher matcher = timestampPattern.matcher(haystack);
                 while (matcher.find()) {
                     String evidence = matcher.group();
-                    java.util.Date timestamp = null;
+                    Date timestamp = null;
                     try {
                         // parse the number as a Unix timestamp
-                        timestamp = new java.util.Date((long) Integer.parseInt(evidence) * 1000);
+                        timestamp = new Date((long) Integer.parseInt(evidence) * 1000);
                     } catch (NumberFormatException nfe) {
                         // the number is not formatted correctly to be a timestamp. Skip it.
+                        continue;
+                    }
+                    if (EPOCH_START.equals(timestamp)) {
                         continue;
                     }
                     log.debug("Found a match for timestamp type {}:{}", timestampType, evidence);
@@ -189,28 +189,6 @@ public class TimestampDisclosureScanRule extends PluginPassiveScanner {
                 }
             }
         }
-    }
-
-    private static boolean isFontRequest(HttpMessage msg) {
-        try {
-            String path = msg.getRequestHeader().getURI().getPath();
-            if (path != null) {
-                return PATTERN_FONT_EXTENSIONS.matcher(path).find();
-            }
-        } catch (URIException e) {
-            log.error(e.getMessage(), e);
-        }
-        return false;
-    }
-
-    /**
-     * sets the parent
-     *
-     * @param parent
-     */
-    @Override
-    public void setParent(PassiveScanThread parent) {
-        // Nothing to do.
     }
 
     /**

@@ -6,7 +6,7 @@
     "html": "<!-- ZK [.\\d\\s]+-->",
     "icon": "ZK.png",
     "implies": "Java",
-    "scripts": "zkau/",
+    "scriptSrc": "zkau/",
     "website": "http://zkoss.org"
   },
   "ZURB Foundation": {
@@ -40,6 +40,80 @@
     "url": "\\/zabbix\\/\\;confidence:30",
     "website": "http://zabbix.com"
   },
+  "Zakeke": {
+    "cats": [
+      76
+    ],
+    "description": "Zakeke is a product customisation tool compatible with services and apps mostly used to manage ecommerce store.",
+    "icon": "Zakeke.png",
+    "js": {
+      "zakekeBoot": "",
+      "zakekeCustomizeLabel": "",
+      "zakekeLoading": "",
+      "zakekeProductPage": ""
+    },
+    "pricing": [
+      "recurring",
+      "low"
+    ],
+    "saas": true,
+    "website": "https://www.zakeke.com"
+  },
+  "Zakeke Interactive Product Designer": {
+    "cats": [
+      87,
+      76
+    ],
+    "description": "Zakeke Interactive Product Designer lets customers personalise any product and visualise how they’ll look before checking out.",
+    "icon": "Zakeke.png",
+    "implies": "Zakeke",
+    "pricing": [
+      "recurring",
+      "low"
+    ],
+    "requires": "WooCommerce",
+    "saas": true,
+    "scriptSrc": "/wp-content/plugins/zakeke-interactive-product-designer/.+\\.js(?:\\?ver=(\\d+(?:\\.\\d+)+))?\\;version:\\1",
+    "website": "https://www.zakeke.com"
+  },
+  "Zakeke Visual Customizer": {
+    "cats": [
+      100,
+      76
+    ],
+    "description": "Zakeke Visual Customizer is a cloud-connected visual ecommerce tool that allows brands and retailers to offer live, personalised, 2D, 3D, and augmented reality (AR) functionality for their products.",
+    "icon": "Zakeke.png",
+    "implies": "Zakeke",
+    "pricing": [
+      "recurring",
+      "low"
+    ],
+    "requires": "Shopify",
+    "saas": true,
+    "scriptSrc": "\\.zakeke\\.com/Scripts/integration/shopify/",
+    "website": "https://www.zakeke.com"
+  },
+  "Zakra": {
+    "cats": [
+      80
+    ],
+    "description": "Zakra is flexible, fast, lightweight and modern multipurpose WordPress theme that comes with many starter free sites.",
+    "dom": "link#zakra-style-css",
+    "icon": "Zakra.png",
+    "js": {
+      "zakraFrontend": "",
+      "zakraNavHelper.dimension": ""
+    },
+    "pricing": [
+      "freemium",
+      "low",
+      "recurring",
+      "onetime"
+    ],
+    "requires": "WordPress",
+    "scriptSrc": "/wp-content/themes/zakra/",
+    "website": "https://zakratheme.com"
+  },
   "Zanox": {
     "cats": [
       36
@@ -49,8 +123,35 @@
     "js": {
       "zanox": ""
     },
-    "scripts": "zanox\\.com/scripts/zanox\\.js$",
+    "scriptSrc": "zanox\\.com/scripts/zanox\\.js$",
     "website": "http://zanox.com"
+  },
+  "Zaraz": {
+    "cats": [
+      92
+    ],
+    "description": "Zaraz allows most tools to send their information through the Zaraz backend, replacing multiple network requests with a single request. Zaraz replaces heavy third-party widgets with a lighter-weight version that loads first so that the full-featured tool loads only when the browser reaches interactivity or upon user interaction.",
+    "icon": "Zaraz.svg",
+    "js": {
+      "zaraz": "",
+      "zarazData": ""
+    },
+    "pricing": [
+      "poa"
+    ],
+    "saas": true,
+    "website": "https://zaraz.com"
+  },
+  "Zeleris": {
+    "cats": [
+      99
+    ],
+    "description": "Zeleris provides door to door shipment delivery to Ireland, UK and the EU.",
+    "requiresCategory": 6,
+    "text": [
+      "\\Zeleris\\b"
+    ],
+    "website": "https://www.zeleris.com"
   },
   "Zen Cart": {
     "cats": [
@@ -103,7 +204,7 @@
       "low"
     ],
     "saas": true,
-    "scripts": "static\\.zdassets\\.com",
+    "scriptSrc": "static\\.zdassets\\.com",
     "website": "https://zendesk.com"
   },
   "Zendesk Chat": {
@@ -117,7 +218,7 @@
       "payg"
     ],
     "saas": true,
-    "scripts": "v2\\.zopim\\.com",
+    "scriptSrc": "v2\\.zopim\\.com",
     "website": "http://zopim.com"
   },
   "Zenfolio": {
@@ -131,6 +232,20 @@
     },
     "website": "https://zenfolio.com"
   },
+  "Zeotap": {
+    "cats": [
+      97
+    ],
+    "description": "Zeotap is a customer intelligence platform that helps brands better understand their customers and predict behaviors.",
+    "dom": "link[href*='.zeotap.com']",
+    "icon": "Zeotap.png",
+    "pricing": [
+      "poa"
+    ],
+    "saas": true,
+    "scriptSrc": "\\.zeotap\\.com",
+    "website": "https://zeotap.com"
+  },
   "Zepto": {
     "cats": [
       59
@@ -139,8 +254,61 @@
     "js": {
       "Zepto": ""
     },
-    "scripts": "zepto.*\\.js",
+    "scriptSrc": "zepto.*\\.js",
     "website": "http://zeptojs.com"
+  },
+  "ZestMoney": {
+    "cats": [
+      91
+    ],
+    "description": "ZestMoney is a fintech company that uses digital EMI without the need for a credit card or a credit score.",
+    "icon": "ZestMoney.png",
+    "js": {
+      "ZestMoneyWidget": "",
+      "zestBind": "",
+      "zestMerchant": ""
+    },
+    "pricing": [
+      "freemium"
+    ],
+    "saas": true,
+    "website": "https://www.zestmoney.in"
+  },
+  "Zeus Technology": {
+    "cats": [
+      36
+    ],
+    "description": "Zeus Technology is a media monetisation platform that levels the playing field for publishers and advertisers of all sizes.",
+    "icon": "Zeus Technology.svg",
+    "js": {
+      "zeus.version": "v([\\d\\.]+)\\;version:\\1",
+      "zeusAdUnitPath": ""
+    },
+    "pricing": [
+      "poa"
+    ],
+    "saas": true,
+    "website": "https://www.zeustechnology.com"
+  },
+  "Zid": {
+    "cats": [
+      6
+    ],
+    "cookies": {
+      "zid_catalog_session": ""
+    },
+    "description": "Zid is an ecommerce SaaS that allows merchants to build and manage their online stores.",
+    "icon": "Zid.png",
+    "js": {
+      "zid.store": "",
+      "zidTracking.sendGaProductRemoveFromCartEvent": ""
+    },
+    "pricing": [
+      "mid",
+      "recurring"
+    ],
+    "saas": true,
+    "website": "https://zid.sa"
   },
   "Zimbra": {
     "cats": [
@@ -164,7 +332,7 @@
     },
     "oss": true,
     "pricing": [
-      "freemium",
+      "recurring",
       "mid"
     ],
     "saas": true,
@@ -182,6 +350,20 @@
     },
     "website": "http://django-blog-zinnia.com"
   },
+  "Zinrelo": {
+    "cats": [
+      84
+    ],
+    "description": "Zinrelo is an enterprise-grade, loyalty rewards platform.",
+    "icon": "Zinrelo.png",
+    "js": {
+      "zrl_mi": ""
+    },
+    "pricing": [
+      "poa"
+    ],
+    "website": "https://www.zinrelo.com"
+  },
   "Zip": {
     "cats": [
       41,
@@ -192,13 +374,14 @@
     "icon": "zip_pay.svg",
     "js": {
       "QuadPayShopify": "",
+      "checkout.enabledpayments.zip": "^true$",
       "quadpayID": ""
     },
     "pricing": [
       "payg"
     ],
     "saas": true,
-    "scripts": [
+    "scriptSrc": [
       "quadpay\\.com",
       "static\\.zipmoney\\.com\\.au",
       "zip\\.co"
@@ -219,6 +402,23 @@
     "icon": "Zipkin.png",
     "website": "https://zipkin.io/"
   },
+  "Zmags Creator": {
+    "cats": [
+      95
+    ],
+    "description": "Zmags Creator enables marketers to design and publish endless types of interactive digital experiences without coding.",
+    "icon": "Zmags Creator.png",
+    "js": {
+      "__zmags": ""
+    },
+    "pricing": [
+      "mid",
+      "recurring"
+    ],
+    "saas": true,
+    "scriptSrc": "c(?:reator)?\\.zmags\\.com/",
+    "website": "https://www.creatorbyzmags.com"
+  },
   "Zocdoc": {
     "cats": [
       72
@@ -230,7 +430,7 @@
       "payg"
     ],
     "saas": true,
-    "scripts": "offsiteschedule\\.zocdoc\\.com",
+    "scriptSrc": "offsiteschedule\\.zocdoc\\.com",
     "website": "https://www.zocdoc.com"
   },
   "Zoey": {
@@ -249,7 +449,7 @@
       "zoey.developer": "",
       "zoeyDev": ""
     },
-    "scripts": "cdna4\\.zoeysite\\.com",
+    "scriptSrc": "cdna4\\.zoeysite\\.com",
     "website": "https://www.zoey.com/"
   },
   "Zoho": {
@@ -284,6 +484,26 @@
     "implies": "Zoho",
     "website": "https://www.zoho.com/mail/"
   },
+  "Zoho PageSense": {
+    "cats": [
+      74,
+      76
+    ],
+    "description": "Zoho PageSense is a conversion optimisation platform which combines the power of web analytics, A/B testing, and personalisation.",
+    "icon": "Zoho.svg",
+    "implies": "Zoho",
+    "js": {
+      "$pagesense": "",
+      "pagesense": ""
+    },
+    "pricing": [
+      "recurring",
+      "payg"
+    ],
+    "saas": true,
+    "scriptSrc": "\\.pagesense\\.(?:cn|io)?",
+    "website": "https://www.zoho.com/pagesense/"
+  },
   "Zoko": {
     "cats": [
       52
@@ -302,7 +522,7 @@
       "mid"
     ],
     "saas": true,
-    "scripts": "zoko-shopify-prod\\.web\\.app",
+    "scriptSrc": "zoko-shopify-prod\\.web\\.app",
     "website": "https://www.zoko.io/"
   },
   "Zone.js": {
@@ -317,7 +537,7 @@
   },
   "Zonos": {
     "cats": [
-      6
+      106
     ],
     "description": "Zonos is a cross-border ecommerce software and app solution for companies with international business.",
     "icon": "Zonos.svg",
@@ -330,8 +550,21 @@
       "poa"
     ],
     "saas": true,
-    "scripts": "\\.zonos\\.com/",
+    "scriptSrc": "\\.zonos\\.com/",
     "website": "https://zonos.com"
+  },
+  "ZoodPay": {
+    "cats": [
+      91
+    ],
+    "dom": "img[src*='zoodpay']",
+    "icon": "ZoodPay.png",
+    "pricing": [
+      "payg"
+    ],
+    "saas": true,
+    "scriptSrc": "wp-content/plugins/zoodpay/(?:.+\\?ver=([\\d\\.]+))?\\;version:\\1",
+    "website": "https://www.zoodpay.com"
   },
   "Zoominfo": {
     "cats": [
@@ -340,7 +573,7 @@
     "description": "ZoomInfo provides actionable B2B contact and company information for sales and marketing teams.",
     "icon": "Zoominfo.svg",
     "saas": true,
-    "scripts": "ws\\.zoominfo\\.com",
+    "scriptSrc": "ws\\.zoominfo\\.com",
     "website": "https://www.zoominfo.com/"
   },
   "Zoominfo Chat": {
@@ -350,7 +583,7 @@
     "description": "ZoomInfo chat is a live chat solution.",
     "icon": "Zoominfo.svg",
     "saas": true,
-    "scripts": "madstreetden\\.widget\\.insent\\.ai",
+    "scriptSrc": "madstreetden\\.widget\\.insent\\.ai",
     "website": "https://www.zoominfo.com/chat"
   },
   "Zope": {
@@ -382,11 +615,24 @@
     "meta": {
       "generator": "Zozo Ecommerce"
     },
-    "scripts": [
+    "scriptSrc": [
       "catalog/view/theme/[^\"]+/javascript/common\\.js",
       "zozo-main\\.min\\.js"
     ],
     "website": "https://zozo.vn"
+  },
+  "Zuppler": {
+    "cats": [
+      93
+    ],
+    "description": "Zuppler is a complete and branded online ordering solution for restaurants and caterers with multi-locations.",
+    "dom": "link[href*='.zuppler.com/']",
+    "icon": "Zuppler.png",
+    "pricing": [
+      "payg"
+    ],
+    "saas": true,
+    "website": "https://www.zuppler.com"
   },
   "Zyro": {
     "cats": [
@@ -403,7 +649,7 @@
       "recurring"
     ],
     "saas": true,
-    "scripts": "userapp\\.zyrosite\\.com/",
+    "scriptSrc": "userapp\\.zyrosite\\.com/",
     "website": "https://zyro.com"
   }
 }

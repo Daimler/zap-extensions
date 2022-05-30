@@ -37,6 +37,8 @@ import org.parosproxy.paros.model.Model;
 import org.parosproxy.paros.network.HttpHeader;
 import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.network.HttpSender;
+import org.zaproxy.addon.oast.ExtensionOast;
+import org.zaproxy.zap.utils.Stats;
 
 public class BoastServer {
 
@@ -54,7 +56,8 @@ public class BoastServer {
                 new HttpSender(
                         Model.getSingleton().getOptionsParam().getConnectionParam(),
                         true,
-                        HttpSender.MANUAL_REQUEST_INITIATOR);
+                        // TODO: Replace on next ZAP release with HttpSender.OAST_INITIATOR
+                        ExtensionOast.HTTP_SENDER_OAST_INITIATOR);
 
         uri = new URI(uriString, true);
         boastMsg = new HttpMessage(uri);
@@ -63,6 +66,7 @@ public class BoastServer {
         JSONObject result = JSONObject.fromObject(boastMsg.getResponseBody().toString());
         id = result.getString("id");
         canary = result.getString("canary");
+        Stats.incCounter("stats.oast.boast.payloadsGenerated");
     }
 
     /** @return new BOAST events found on polling */
@@ -79,6 +83,7 @@ public class BoastServer {
                     eventIds.add(event.getString("id"));
                 }
             }
+            Stats.incCounter("stats.oast.boast.interactions", newBoastEvents.size());
             return newBoastEvents;
         } catch (IOException e) {
             LOGGER.warn(

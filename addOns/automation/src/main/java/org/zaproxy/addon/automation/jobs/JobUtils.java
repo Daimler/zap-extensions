@@ -19,7 +19,11 @@
  */
 package org.zaproxy.addon.automation.jobs;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,15 +33,21 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.EnumUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
+import org.parosproxy.paros.control.Control;
 import org.parosproxy.paros.core.scanner.Alert;
 import org.parosproxy.paros.core.scanner.Plugin.AlertThreshold;
 import org.parosproxy.paros.core.scanner.Plugin.AttackStrength;
 import org.zaproxy.addon.automation.AutomationEnvironment;
 import org.zaproxy.addon.automation.AutomationJob;
 import org.zaproxy.addon.automation.AutomationProgress;
+import org.zaproxy.zap.extension.script.ExtensionScript;
+import org.zaproxy.zap.extension.script.ScriptEngineWrapper;
+import org.zaproxy.zap.extension.script.ScriptType;
+import org.zaproxy.zap.extension.script.ScriptWrapper;
 
 public class JobUtils {
 
@@ -187,7 +197,7 @@ public class JobUtils {
             } catch (Exception e1) {
                 progress.error(
                         Constant.messages.getString(
-                                "automation.error.options.methods",
+                                "automation.error.options.method",
                                 obj.getClass().getCanonicalName(),
                                 optionsGetterName,
                                 e1.getMessage()));
@@ -223,9 +233,7 @@ public class JobUtils {
             LOG.error(e1.getMessage(), e1);
             progress.error(
                     Constant.messages.getString(
-                            "automation.error.options.methods",
-                            objectName, // TODO changed params
-                            e1.getMessage()));
+                            "automation.error.options.methods", objectName, e1.getMessage()));
             return;
         }
 
@@ -238,7 +246,6 @@ public class JobUtils {
                 continue;
             }
 
-            String resolvedValue = param.getValue().toString();
             String paramMethodName = "set" + key.toUpperCase().charAt(0) + key.substring(1);
             Method optMethod = methodMap.get(paramMethodName);
             if (optMethod != null) {
@@ -246,7 +253,7 @@ public class JobUtils {
                     Object value = null;
                     Class<?> paramType = optMethod.getParameterTypes()[0];
                     try {
-                        value = stringToType(resolvedValue, paramType);
+                        value = objectToType(param.getValue(), paramType);
                     } catch (NumberFormatException e1) {
                         progress.error(
                                 Constant.messages.getString(
@@ -384,10 +391,7 @@ public class JobUtils {
             LOG.error(e1.getMessage(), e1);
             progress.error(
                     Constant.messages.getString(
-                            "automation.error.options.methods",
-                            objectName, // TODO changed params
-                            e1.getMessage()));
-            return;
+                            "automation.error.options.methods", objectName, e1.getMessage()));
         }
     }
 
@@ -405,24 +409,32 @@ public class JobUtils {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static <T> T stringToType(String str, T t) {
+    static <T> T objectToType(Object obj, T t) {
         if (String.class.equals(t)) {
-            return (T) str;
+            return (T) obj.toString();
         } else if (Integer.class.equals(t) || int.class.equals(t)) {
-            return (T) (Object) Integer.parseInt(str);
+            return (T) (Object) Integer.parseInt(obj.toString());
         } else if (Long.class.equals(t) || long.class.equals(t)) {
-            return (T) (Object) Long.parseLong(str);
+            return (T) (Object) Long.parseLong(obj.toString());
         } else if (Boolean.class.equals(t) || boolean.class.equals(t)) {
             // Don't use Boolean.parseBoolean as it won't reject illegal values
-            String s = str.trim().toLowerCase();
+            String s = obj.toString().trim().toLowerCase();
             if ("true".equals(s)) {
                 return (T) Boolean.TRUE;
             } else if ("false".equals(s)) {
                 return (T) Boolean.FALSE;
             }
-            throw new IllegalArgumentException("Invalid boolean value: " + str);
+            throw new IllegalArgumentException("Invalid boolean value: " + obj.toString());
+        } else if (Map.class.equals(t)) {
+            if (obj instanceof Map) {
+                HashMap map = new HashMap<>();
+                map.putAll((Map) obj);
+                return (T) map;
+            } else {
+                LOG.error("Unable to map to a Map from {}", obj.getClass().getCanonicalName());
+            }
         } else if (Enum.class.isAssignableFrom((Class<T>) t)) {
-            T enumType = (T) EnumUtils.getEnumIgnoreCase((Class<Enum>) t, str);
+            T enumType = (T) EnumUtils.getEnumIgnoreCase((Class<Enum>) t, obj.toString());
             if (enumType != null) {
                 return enumType;
             }
@@ -459,5 +471,116 @@ public class JobUtils {
             return defaultStr;
         }
         return s;
+    }
+
+    public static void addPrivateField(Map<String, Object> list, String fieldName, Object obj) {
+        addPrivateField(list, fieldName, fieldName, obj);
+    }
+
+    public static void addPrivateField(
+            Map<String, Object> list, String mapFieldName, String objectFieldName, Object obj) {
+        Object val = getPrivateField(obj, objectFieldName);
+        if (val != null) {
+            list.put(mapFieldName, val);
+        }
+    }
+
+    public static Object getPrivateField(Object obj, String fieldName) {
+        try {
+            Field field = getClassField(obj, obj.getClass(), fieldName);
+            if (field != null) {
+                return FieldUtils.readField(field, obj, true);
+            }
+        } catch (Exception e) {
+            LOG.error(
+                    "Failed get {} private field: {}",
+                    obj.getClass().getCanonicalName(),
+                    fieldName,
+                    e);
+        }
+        return null;
+    }
+
+    public static void setPrivateField(Object obj, String fieldName, Object value) {
+        try {
+            // Have to use reflection on private field :(
+            Field field = getClassField(obj, obj.getClass(), fieldName);
+            if (field != null) {
+                FieldUtils.writeField(field, obj, value, true);
+            }
+        } catch (Exception e) {
+            LOG.error(
+                    "Failed set {} private field: {}",
+                    obj.getClass().getCanonicalName(),
+                    fieldName,
+                    e);
+        }
+    }
+
+    private static Field getClassField(Object obj, Class<?> c, String fieldName) {
+        if (c == null) {
+            // We've walked all the way up the hierarchy
+            LOG.error(
+                    "Failed get {} private field: {}",
+                    obj.getClass().getCanonicalName(),
+                    fieldName);
+            return null;
+        }
+        try {
+            return c.getDeclaredField(fieldName);
+        } catch (Exception e) {
+            return getClassField(obj, c.getSuperclass(), fieldName);
+        }
+    }
+
+    public static ScriptWrapper getScriptWrapper(
+            File file, String type, String engineName, AutomationProgress progress) {
+        ExtensionScript extScript =
+                Control.getSingleton().getExtensionLoader().getExtension(ExtensionScript.class);
+        ScriptWrapper wrapper = null;
+        if (extScript != null) {
+            // Use existing script if its already loaded
+            for (ScriptWrapper sw : extScript.getScripts(type)) {
+                try {
+                    if (Files.isSameFile(sw.getFile().toPath(), file.toPath())
+                            && sw.getEngineName().equals(engineName)) {
+                        wrapper = sw;
+                        break;
+                    }
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
+            if (wrapper == null) {
+                // Register the script
+                ScriptEngineWrapper engineWrapper = extScript.getEngineWrapper(engineName);
+                if (engineWrapper == null) {
+                    progress.error(
+                            Constant.messages.getString(
+                                    "automation.error.env.sessionmgmt.engine.bad", engineName));
+                } else {
+                    ScriptType scriptType = extScript.getScriptType(type);
+                    LOG.debug("Loading script {}", file.getAbsolutePath());
+                    try {
+                        wrapper =
+                                extScript.loadScript(
+                                        new ScriptWrapper(
+                                                file.getName(),
+                                                "",
+                                                engineWrapper,
+                                                scriptType,
+                                                true,
+                                                file));
+                        extScript.addScript(wrapper, false);
+                    } catch (IOException e) {
+                        progress.error(
+                                Constant.messages.getString(
+                                        "automation.error.env.sessionmgmt.script.bad",
+                                        file.getAbsolutePath()));
+                    }
+                }
+            }
+        }
+        return wrapper;
     }
 }

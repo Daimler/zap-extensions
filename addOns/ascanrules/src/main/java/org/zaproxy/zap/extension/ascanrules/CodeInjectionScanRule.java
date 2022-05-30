@@ -48,7 +48,8 @@ public class CodeInjectionScanRule extends AbstractAppParamPlugin {
     private static final Map<String, String> ALERT_TAGS =
             CommonAlertTag.toMap(
                     CommonAlertTag.OWASP_2021_A03_INJECTION,
-                    CommonAlertTag.OWASP_2017_A01_INJECTION);
+                    CommonAlertTag.OWASP_2017_A01_INJECTION,
+                    CommonAlertTag.WSTG_V42_INPV_11_CODE_INJ);
 
     // PHP control Token used to verify the vulnerability
     private static final String PHP_CONTROL_TOKEN = "zap_token";
@@ -80,7 +81,7 @@ public class CodeInjectionScanRule extends AbstractAppParamPlugin {
     private static final Logger log = LogManager.getLogger(CodeInjectionScanRule.class);
 
     private static final Random RAND = new Random();
-    private static final int MAX_VALUE = 999999;
+    private static final int MAX_VALUE = 999998;
 
     @Override
     public int getId() {
@@ -236,8 +237,8 @@ public class CodeInjectionScanRule extends AbstractAppParamPlugin {
      * @see #ASP_PAYLOADS
      */
     private boolean testAspInjection(String paramName) {
-        int bignum1 = RAND.nextInt(MAX_VALUE);
-        int bignum2 = RAND.nextInt(MAX_VALUE);
+        int bignum1 = getRandomValue();
+        int bignum2 = getRandomValue();
 
         for (String aspPayload : ASP_PAYLOADS) {
             if (isStop()) {
@@ -283,5 +284,9 @@ public class CodeInjectionScanRule extends AbstractAppParamPlugin {
         }
 
         return false;
+    }
+
+    private static int getRandomValue() {
+        return RAND.nextInt(MAX_VALUE) + 1;
     }
 }

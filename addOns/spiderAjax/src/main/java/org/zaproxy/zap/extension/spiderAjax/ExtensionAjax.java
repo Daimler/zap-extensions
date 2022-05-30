@@ -22,6 +22,7 @@ package org.zaproxy.zap.extension.spiderAjax;
 import java.awt.event.KeyEvent;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -41,6 +42,7 @@ import org.parosproxy.paros.model.Session;
 import org.parosproxy.paros.model.SiteNode;
 import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.view.View;
+import org.zaproxy.addon.network.ExtensionNetwork;
 import org.zaproxy.zap.extension.help.ExtensionHelp;
 import org.zaproxy.zap.extension.selenium.ExtensionSelenium;
 import org.zaproxy.zap.model.Context;
@@ -58,14 +60,9 @@ public class ExtensionAjax extends ExtensionAdaptor {
     public static final int PROXY_LISTENER_ORDER = ProxyListenerLog.PROXY_LISTENER_ORDER + 1;
     public static final String NAME = "ExtensionSpiderAjax";
 
-    private static final List<Class<? extends Extension>> DEPENDENCIES;
-
-    static {
-        List<Class<? extends Extension>> dependencies = new ArrayList<>(1);
-        dependencies.add(ExtensionSelenium.class);
-
-        DEPENDENCIES = Collections.unmodifiableList(dependencies);
-    }
+    private static final List<Class<? extends Extension>> DEPENDENCIES =
+            Collections.unmodifiableList(
+                    Arrays.asList(ExtensionSelenium.class, ExtensionNetwork.class));
 
     private SpiderPanel spiderPanel = null;
     private PopupMenuAjaxSite popupMenuSpiderSite = null;
@@ -77,6 +74,7 @@ public class ExtensionAjax extends ExtensionAdaptor {
     private SpiderListener spiderListener;
     private AjaxSpiderAPI ajaxSpiderApi;
     private AjaxSpiderParam ajaxSpiderParam;
+    private ExtensionNetwork extensionNetwork;
 
     /**
      * initializes the extension
@@ -119,6 +117,9 @@ public class ExtensionAjax extends ExtensionAdaptor {
             extensionHook.getHookMenu().addToolsMenuItem(getMenuItemCustomScan());
             ExtensionHelp.enableHelpKey(getSpiderPanel(), "addon.spiderajax.tab");
         }
+
+        extensionNetwork =
+                Control.getSingleton().getExtensionLoader().getExtension(ExtensionNetwork.class);
     }
 
     @Override
@@ -128,8 +129,7 @@ public class ExtensionAjax extends ExtensionAdaptor {
 
     @Override
     public void unload() {
-        if (getView() != null) {
-            getSpiderPanel().stopScan();
+        if (hasView()) {
             getSpiderPanel().unload();
 
             SpiderEventPublisher.unregisterPublisher();
@@ -142,6 +142,14 @@ public class ExtensionAjax extends ExtensionAdaptor {
         }
 
         super.unload();
+    }
+
+    @Override
+    public void stop() {
+        if (hasView()) {
+            stopScan();
+        }
+        ajaxSpiderApi.stopSpider();
     }
 
     @Override
@@ -388,9 +396,15 @@ public class ExtensionAjax extends ExtensionAdaptor {
         return this.getMessages().getString("spiderajax.desc");
     }
 
+    @Override
+    public String getUIName() {
+        return Constant.messages.getString("spiderajax.name");
+    }
+
     public SpiderThread createSpiderThread(
             String displayName, AjaxSpiderTarget target, SpiderListener spiderListener) {
-        SpiderThread spiderThread = new SpiderThread(displayName, target, this, spiderListener);
+        SpiderThread spiderThread =
+                new SpiderThread(displayName, target, this, spiderListener, extensionNetwork);
         spiderThread.addSpiderListener(getSpiderListener());
 
         return spiderThread;

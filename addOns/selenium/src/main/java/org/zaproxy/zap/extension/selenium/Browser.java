@@ -202,20 +202,17 @@ public enum Browser {
         }
 
         Path basePath = getWebDriversDir().resolve(osDirName);
-        Path driver;
-        if (isOs64Bits()) {
-            driver = basePath.resolve("64").resolve(driverName);
-            if (Files.exists(driver)) {
-                try {
-                    setExecutable(driver);
-                    return driver.toAbsolutePath().toString();
-                } catch (IOException e) {
-                    logger.warn("Failed to set the bundled WebDriver executable:", e);
-                }
-            }
+        String archDir = getArchDir();
+        String driverPath = process(basePath.resolve(archDir).resolve(driverName));
+        if (driverPath != null) {
+            return driverPath;
         }
 
-        driver = basePath.resolve("32").resolve(driverName);
+        // Fallback to 32 in case the WebDriver does not have a 64 specific.
+        return process(basePath.resolve("32").resolve(driverName));
+    }
+
+    private static String process(Path driver) {
         if (Files.exists(driver)) {
             try {
                 setExecutable(driver);
@@ -254,9 +251,15 @@ public enum Browser {
         return null;
     }
 
-    private static boolean isOs64Bits() {
+    private static String getArchDir() {
         String arch = System.getProperty("os.arch");
-        return arch.contains("amd64") || arch.contains("x86_64");
+        String archDir = "32";
+        if (arch.contains("amd64") || arch.contains("x86_64")) {
+            archDir = "64";
+        } else if (arch.contains("aarch64")) {
+            archDir = "arm64";
+        }
+        return archDir;
     }
 
     private static void setExecutable(Path file) throws IOException {

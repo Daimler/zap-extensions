@@ -35,9 +35,17 @@
     },
     {
       "path":".svn/entries",
+      "content":["FILE","DIR"],
       "links":["https://www.oreilly.com/library/view/version-control-with/9780596510336/ch08s02s01.html"],
       "type":"svn_dir",
       "source":"snallygaster"
+    },
+    {
+      "path":".svn/wc.db",
+      "content":["SQLite"],
+      "links":["https://www.oreilly.com/library/view/version-control-with/9780596510336/ch08s02s01.html"],
+      "type":"svn_dir",
+      "source":"ZAP Dev Team"
     },
     {
       "path":"CVS/root",
@@ -199,6 +207,12 @@
       "source":"snallygaster"
     },
     {
+      "path":"vb_test.php",
+      "content":["<title>vBulletin Test Script"],
+      "type":"vb_test",
+      "source":"snallygaster"
+    },
+    {
       "path":"CHANGELOG.txt",
       "content":["Drupal "],
       "type":"drupal",
@@ -227,7 +241,7 @@
       "content":["component name=\"VimSettings\""],
       "links":["https://blog.jetbrains.com/blog/2019/09/26/jetbrains-security-bulletin-q2-2019/","https://nvd.nist.gov/vuln/detail/CVE-2019-14957"],
       "type":"jetbrains_vim_settings",
-      "source":"misc"
+      "source":"ZAP Dev Team"
     },
     {
       "path":"server-info",
@@ -235,6 +249,34 @@
       "links":["https://twitter.com/jae_hak99/status/1286605139042643974","https://httpd.apache.org/docs/current/mod/mod_info.html"],
       "type":"apache_server_info",
       "source":"twitter"	
+    },
+    {
+      "path":"phpinfo.php",
+      "content":["phpinfo()"],
+	  "links":["https://www.php.net/manual/en/function.phpinfo.php"],
+      "type":"phpinfo",
+      "source":"snallygaster"
+    },
+    {
+      "path":"info.php",
+      "content":["phpinfo()"],
+	  "links":["https://www.php.net/manual/en/function.phpinfo.php"],
+      "type":"phpinfo",
+      "source":"snallygaster"
+    },
+    {
+      "path":"i.php",
+      "content":["phpinfo()"],
+	  "links":["https://www.php.net/manual/en/function.phpinfo.php"],
+      "type":"phpinfo",
+      "source":"snallygaster"
+    },
+    {
+      "path":"test.php",
+      "content":["phpinfo()"],
+	  "links":["https://www.php.net/manual/en/function.phpinfo.php"],
+      "type":"phpinfo",
+      "source":"snallygaster"
     }
   ]
 } 

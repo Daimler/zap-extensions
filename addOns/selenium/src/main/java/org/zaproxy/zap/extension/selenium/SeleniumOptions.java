@@ -19,13 +19,22 @@
  */
 package org.zaproxy.zap.extension.selenium;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.Validate;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.ie.InternetExplorerDriverService;
 import org.openqa.selenium.phantomjs.PhantomJSDriverService;
+import org.parosproxy.paros.Constant;
 import org.zaproxy.zap.common.VersionedAbstractParam;
 import org.zaproxy.zap.extension.api.ZapApiIgnore;
 
@@ -35,6 +44,7 @@ import org.zaproxy.zap.extension.api.ZapApiIgnore;
  * <p>It allows to change, programmatically, the following options:
  *
  * <ul>
+ *   <li>The path to Chrome binary;
  *   <li>The path to ChromeDriver;
  *   <li>The path to Firefox binary;
  *   <li>The path to Firefox driver (geckodriver);
@@ -43,6 +53,7 @@ import org.zaproxy.zap.extension.api.ZapApiIgnore;
  */
 public class SeleniumOptions extends VersionedAbstractParam {
 
+    public static final String CHROME_BINARY_SYSTEM_PROPERTY = "zap.selenium.webdriver.chrome.bin";
     public static final String CHROME_DRIVER_SYSTEM_PROPERTY =
             ChromeDriverService.CHROME_DRIVER_EXE_PROPERTY;
     public static final String FIREFOX_BINARY_SYSTEM_PROPERTY =
@@ -55,6 +66,12 @@ public class SeleniumOptions extends VersionedAbstractParam {
 
     public static final String PHANTOM_JS_BINARY_SYSTEM_PROPERTY =
             PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY;
+
+    private static final File EXTENSIONS_DIR =
+            new File(Constant.getZapHome() + "/selenium/extensions/");
+    private static final File[] NO_FILES = {};
+
+    private static final Logger LOGGER = LogManager.getLogger(SeleniumOptions.class);
 
     /**
      * The current version of the configurations. Used to keep track of configuration changes
@@ -77,6 +94,9 @@ public class SeleniumOptions extends VersionedAbstractParam {
      */
     private static final String CONFIG_VERSION_KEY = SELENIUM_BASE_KEY + VERSION_ATTRIBUTE;
 
+    /** The configuration key to read/write the path Chrome binary. */
+    private static final String CHROME_BINARY_KEY = SELENIUM_BASE_KEY + ".chromeBinary";
+
     /** The configuration key to read/write the path to ChromeDriver. */
     private static final String CHROME_DRIVER_KEY = SELENIUM_BASE_KEY + ".chromeDriver";
 
@@ -89,6 +109,13 @@ public class SeleniumOptions extends VersionedAbstractParam {
     /** The configuration key to read/write the path PhantomJS binary. */
     private static final String PHANTOM_JS_BINARY_KEY = SELENIUM_BASE_KEY + ".phantomJsBinary";
 
+    private static final String DISABLED_EXTENSIONS_KEY = SELENIUM_BASE_KEY + ".disabledExts";
+
+    private static final String EXTENSIONS_LAST_DIR_KEY = SELENIUM_BASE_KEY + ".lastDir";
+
+    /** The path to Chrome binary. */
+    private String chromeBinaryPath = "";
+
     /** The path to ChromeDriver. */
     private String chromeDriverPath = "";
 
@@ -100,6 +127,10 @@ public class SeleniumOptions extends VersionedAbstractParam {
 
     /** The path to PhantomJS binary. */
     private String phantomJsBinaryPath = "";
+
+    private List<Object> disabledExtensions;
+
+    private String lastDirectory;
 
     @Override
     @ZapApiIgnore
@@ -115,6 +146,15 @@ public class SeleniumOptions extends VersionedAbstractParam {
 
     @Override
     protected void parseImpl() {
+        try {
+            Files.createDirectories(EXTENSIONS_DIR.toPath());
+        } catch (IOException e) {
+            LOGGER.error("Failed to create the extensions directory:", e);
+        }
+
+        chromeBinaryPath =
+                readSystemPropertyWithOptionFallback(
+                        CHROME_BINARY_SYSTEM_PROPERTY, CHROME_BINARY_KEY);
         chromeDriverPath =
                 getWebDriverPath(Browser.CHROME, CHROME_DRIVER_SYSTEM_PROPERTY, CHROME_DRIVER_KEY);
         firefoxBinaryPath =
@@ -127,6 +167,10 @@ public class SeleniumOptions extends VersionedAbstractParam {
         phantomJsBinaryPath =
                 readSystemPropertyWithOptionFallback(
                         PHANTOM_JS_BINARY_SYSTEM_PROPERTY, PHANTOM_JS_BINARY_KEY);
+
+        disabledExtensions = getConfig().getList(DISABLED_EXTENSIONS_KEY);
+
+        lastDirectory = getConfig().getString(EXTENSIONS_LAST_DIR_KEY);
     }
 
     /**
@@ -192,6 +236,32 @@ public class SeleniumOptions extends VersionedAbstractParam {
             case 1:
                 getConfig().clearProperty("selenium.ieDriver");
                 break;
+        }
+    }
+
+    /**
+     * Gets the path to Chrome binary.
+     *
+     * @return the path to Chrome binary, or empty if not set.
+     */
+    public String getChromeBinaryPath() {
+        return chromeBinaryPath;
+    }
+
+    /**
+     * Sets the path to Chrome binary.
+     *
+     * @param chromeBinaryPath the path to Chrome binary, or empty if not known.
+     * @throws IllegalArgumentException if {@code chromeBinaryPath} is {@code null}.
+     */
+    public void setChromeBinaryPath(String chromeBinaryPath) {
+        Validate.notNull(chromeBinaryPath, "Parameter chromeBinaryPath must not be null.");
+
+        if (!this.chromeBinaryPath.equals(chromeBinaryPath)) {
+            this.chromeBinaryPath = chromeBinaryPath;
+
+            saveAndSetSystemProperty(
+                    CHROME_BINARY_KEY, CHROME_BINARY_SYSTEM_PROPERTY, chromeBinaryPath);
         }
     }
 
@@ -333,5 +403,91 @@ public class SeleniumOptions extends VersionedAbstractParam {
             saveAndSetSystemProperty(
                     PHANTOM_JS_BINARY_KEY, PHANTOM_JS_BINARY_SYSTEM_PROPERTY, phantomJsBinaryPath);
         }
+    }
+
+    public List<BrowserExtension> getEnabledBrowserExtensions(Browser browser) {
+        return this.getBrowserExtensions().stream()
+                .filter(BrowserExtension::isEnabled)
+                .filter(be -> be.getBrowser() == browser)
+                .collect(Collectors.toList());
+    }
+
+    public List<BrowserExtension> getBrowserExtensions() {
+        List<BrowserExtension> list = new ArrayList<>();
+        if (EXTENSIONS_DIR.exists() && EXTENSIONS_DIR.isDirectory()) {
+            // Always read these from filestore so we always pickup new files
+            for (File file : EXTENSIONS_DIR.listFiles()) {
+                Path path = file.toPath();
+                if (BrowserExtension.isBrowserExtension(path)) {
+                    BrowserExtension ext = new BrowserExtension(path);
+                    ext.setEnabled(
+                            !this.disabledExtensions.contains(ext.getPath().toFile().getName()));
+                    list.add(ext);
+                }
+            }
+        }
+        return list;
+    }
+
+    public void setBrowserExtensions(List<BrowserExtension> exts) {
+        this.disabledExtensions.clear();
+        // Delete any that are not in the list
+        for (File file : getFiles(EXTENSIONS_DIR)) {
+            Path path = file.toPath();
+            if (BrowserExtension.isBrowserExtension(path)) {
+                boolean found = false;
+                for (BrowserExtension ext : exts) {
+                    if (ext.getPath().equals(path)) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    try {
+                        Files.delete(file.toPath());
+                    } catch (IOException e) {
+                        LOGGER.error(
+                                "Failed to delete browser extension {}", file.getAbsoluteFile(), e);
+                    }
+                }
+            }
+        }
+        // Copy any newly added extensions
+        for (BrowserExtension ext : exts) {
+            File f = ext.getPath().toFile();
+            if (!f.getParentFile().equals(EXTENSIONS_DIR)) {
+                File target = new File(EXTENSIONS_DIR, f.getName());
+                try {
+                    FileUtils.copyFileToDirectory(f, EXTENSIONS_DIR, false);
+                } catch (Exception e) {
+                    LOGGER.error(
+                            "Failed to copy browser extension {} to {} ",
+                            f.getAbsolutePath(),
+                            target.getAbsolutePath(),
+                            e);
+                }
+            }
+            if (!ext.isEnabled()) {
+                this.disabledExtensions.add(ext.getPath().toFile().getName());
+            }
+        }
+        this.getConfig().setProperty(DISABLED_EXTENSIONS_KEY, this.disabledExtensions);
+    }
+
+    private static File[] getFiles(File file) {
+        File[] files = file.listFiles();
+        if (files != null) {
+            return files;
+        }
+        return NO_FILES;
+    }
+
+    public String getLastDirectory() {
+        return lastDirectory;
+    }
+
+    public void setLastDirectory(String lastDirectory) {
+        this.lastDirectory = lastDirectory;
+        this.getConfig().setProperty(EXTENSIONS_LAST_DIR_KEY, this.lastDirectory);
     }
 }

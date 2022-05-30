@@ -22,6 +22,7 @@ package org.zaproxy.zap.extension.zest;
 import java.io.IOException;
 import javax.script.ScriptException;
 import org.parosproxy.paros.control.Control;
+import org.zaproxy.addon.network.ExtensionNetwork;
 import org.zaproxy.zap.authentication.ScriptBasedAuthenticationMethodType;
 import org.zaproxy.zap.extension.ascan.ExtensionActiveScan;
 import org.zaproxy.zap.extension.pscan.ExtensionPassiveScan;
@@ -41,6 +42,7 @@ public class ZestScriptWrapper extends ScriptWrapper {
     private int lengthApprox = 1;
     private ZestScript zestScript = null;
     private ExtensionZest extension = null;
+    private ExtensionNetwork extensionNetwork;
     private ScriptWrapper original = null;
     private boolean debug = false;
     private boolean recording = false;
@@ -121,24 +123,35 @@ public class ZestScriptWrapper extends ScriptWrapper {
     public <T> T getInterface(Class<T> class1) throws ScriptException, IOException {
         // Clone the wrapper so that we get a new instance every time
         if (class1.isAssignableFrom(ZestPassiveRunner.class)) {
-            return (T) new ZestPassiveRunner(this.getExtension(), this.clone());
+            return (T)
+                    new ZestPassiveRunner(this.getExtension(), getExtensionNetwork(), this.clone());
 
         } else if (class1.isAssignableFrom(ZestActiveRunner.class)) {
-            return (T) new ZestActiveRunner(this.getExtension(), this.clone());
+            return (T)
+                    new ZestActiveRunner(this.getExtension(), getExtensionNetwork(), this.clone());
 
         } else if (class1.isAssignableFrom(ZestTargetedRunner.class)) {
-            return (T) new ZestTargetedRunner(this.getExtension(), this.clone());
+            return (T)
+                    new ZestTargetedRunner(
+                            this.getExtension(), getExtensionNetwork(), this.clone());
 
         } else if (class1.isAssignableFrom(ZestHttpSenderRunner.class)) {
-            return (T) new ZestHttpSenderRunner(this.getExtension(), this.clone());
+            return (T)
+                    new ZestHttpSenderRunner(
+                            this.getExtension(), getExtensionNetwork(), this.clone());
 
         } else if (class1.isAssignableFrom(ZestProxyRunner.class)) {
-            return (T) new ZestProxyRunner(this.getExtension(), this.clone());
+            return (T)
+                    new ZestProxyRunner(this.getExtension(), getExtensionNetwork(), this.clone());
 
         } else if (class1.isAssignableFrom(ZestAuthenticationRunner.class)) {
-            return (T) new ZestAuthenticationRunner(this.getExtension(), this.clone());
+            return (T)
+                    new ZestAuthenticationRunner(
+                            this.getExtension(), getExtensionNetwork(), this.clone());
         } else if (class1.isAssignableFrom(ZestSequenceRunner.class)) {
-            return (T) new ZestSequenceRunner(this.getExtension(), this.clone());
+            return (T)
+                    new ZestSequenceRunner(
+                            this.getExtension(), getExtensionNetwork(), this.clone());
         }
         return null;
     }
@@ -152,6 +165,16 @@ public class ZestScriptWrapper extends ScriptWrapper {
                                     .getExtension(ExtensionZest.NAME);
         }
         return extension;
+    }
+
+    private ExtensionNetwork getExtensionNetwork() {
+        if (extensionNetwork == null) {
+            extensionNetwork =
+                    Control.getSingleton()
+                            .getExtensionLoader()
+                            .getExtension(ExtensionNetwork.class);
+        }
+        return extensionNetwork;
     }
 
     @Override

@@ -20,6 +20,7 @@
 package org.zaproxy.zap.extension.pscanrules;
 
 import java.util.List;
+import java.util.Map;
 import net.htmlparser.jericho.Source;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.core.scanner.Alert;
@@ -27,7 +28,8 @@ import org.parosproxy.paros.core.scanner.Plugin.AlertThreshold;
 import org.parosproxy.paros.network.HttpHeader;
 import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.network.HttpStatusCode;
-import org.zaproxy.zap.extension.pscan.PassiveScanThread;
+import org.zaproxy.addon.commonlib.CommonAlertTag;
+import org.zaproxy.addon.commonlib.ResourceIdentificationUtils;
 import org.zaproxy.zap.extension.pscan.PluginPassiveScanner;
 
 public class CacheControlScanRule extends PluginPassiveScanner {
@@ -35,25 +37,22 @@ public class CacheControlScanRule extends PluginPassiveScanner {
     /** Prefix for internationalised messages used by this rule */
     private static final String MESSAGE_PREFIX = "pscanrules.cachecontrol.";
 
-    @Override
-    public void setParent(PassiveScanThread parent) {
-        // Nothing to do.
-    }
+    private static final Map<String, String> ALERT_TAGS =
+            CommonAlertTag.toMap(CommonAlertTag.WSTG_V42_ATHN_06_CACHE_WEAKNESS);
 
     @Override
     public void scanHttpResponseReceive(HttpMessage msg, int id, Source source) {
         if (msg.getRequestHeader().isSecure()
                 && msg.getResponseBody().length() > 0
-                && !msg.getResponseHeader().isImage()) {
+                && !ResourceIdentificationUtils.isImage(msg)) {
 
             if (!AlertThreshold.LOW.equals(this.getAlertThreshold())
                     && (HttpStatusCode.isRedirection(msg.getResponseHeader().getStatusCode())
                             || getHelper().isClientError(msg)
                             || getHelper().isServerError(msg)
                             || !msg.getResponseHeader().isText()
-                            || msg.getResponseHeader().isJavaScript()
-                            || msg.getResponseHeader().isCss()
-                            || msg.getRequestHeader().isCss())) {
+                            || ResourceIdentificationUtils.isJavaScript(msg)
+                            || ResourceIdentificationUtils.isCss(msg))) {
                 // Covers HTML, XML, JSON and TEXT while excluding JS & CSS
                 return;
             }
@@ -102,8 +101,13 @@ public class CacheControlScanRule extends PluginPassiveScanner {
         return Constant.messages.getString(MESSAGE_PREFIX + "name");
     }
 
+    @Override
+    public Map<String, String> getAlertTags() {
+        return ALERT_TAGS;
+    }
+
     public int getRisk() {
-        return Alert.RISK_LOW;
+        return Alert.RISK_INFO;
     }
 
     public String getDescription() {

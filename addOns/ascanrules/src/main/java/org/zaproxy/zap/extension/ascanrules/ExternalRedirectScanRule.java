@@ -54,7 +54,8 @@ public class ExternalRedirectScanRule extends AbstractAppParamPlugin {
     private static final Map<String, String> ALERT_TAGS =
             CommonAlertTag.toMap(
                     CommonAlertTag.OWASP_2021_A03_INJECTION,
-                    CommonAlertTag.OWASP_2017_A01_INJECTION);
+                    CommonAlertTag.OWASP_2017_A01_INJECTION,
+                    CommonAlertTag.WSTG_V42_CLNT_04_OPEN_REDIR);
 
     private static final int PLUGIN_ID = 20019;
 
@@ -80,6 +81,7 @@ public class ExternalRedirectScanRule extends AbstractAppParamPlugin {
         REDIRECT_SITE,
         "http://" + REDIRECT_SITE,
         "https://" + REDIRECT_SITE,
+        "https://" + REDIRECT_SITE.replace(".", "%2e"), // Double encode the dots
         "http:\\\\" + REDIRECT_SITE,
         "https:\\\\" + REDIRECT_SITE,
         "//" + REDIRECT_SITE,

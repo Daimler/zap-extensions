@@ -21,6 +21,24 @@
     },
     "website": "https://www.kissmetrics.com"
   },
+  "KMK": {
+    "cats": [
+      6
+    ],
+    "description": "KMK is a company that offers ecommerce software technology in C2C, B2B, B2C areas.",
+    "dns": {
+      "NS": "ns\\d\\.kmkhosting\\.net",
+      "SOA": "ns\\d\\.kmkhosting\\.net"
+    },
+    "dom": "a[href*='.kmk.net.tr/'][target='_blank'], div#kmkCopyright",
+    "icon": "KMK.svg",
+    "pricing": [
+      "recurring",
+      "poa"
+    ],
+    "saas": true,
+    "website": "https://www.kmk.net.tr"
+  },
   "KQS.store": {
     "cats": [
       6
@@ -60,8 +78,60 @@
       "katex.version": "^(.+)$\\;version:\\1"
     },
     "oss": true,
-    "scripts": "katex(@|/)[0-9.]+(?:/dist)?/katex(?:\\.min)?\\.(mjs|js|css)\\;version:\\1",
+    "scriptSrc": "katex(@|/)[0-9.]+(?:/dist)?/katex(?:\\.min)?\\.(mjs|js|css)\\;version:\\1",
     "website": "https://katex.org/"
+  },
+  "Kadence WP Kadence": {
+    "cats": [
+      80
+    ],
+    "description": "Kadence WP Kadence is a multipurpose WordPress theme that is available for free download and also offers a pro version.",
+    "dom": "link#kadence-global-css",
+    "icon": "Kadence WP.svg",
+    "js": {
+      "kadence": "",
+      "kadenceConfig": ""
+    },
+    "pricing": [
+      "freemium",
+      "onetime",
+      "mid",
+      "recurring"
+    ],
+    "requires": "WordPress",
+    "scriptSrc": "/wp-content/themes/kadence/.+navigation\\.min\\.js(?:\\?ver=([\\d\\.]+))?\\;version:\\1",
+    "website": "https://www.kadencewp.com/kadence-theme"
+  },
+  "Kadence WP Virtue": {
+    "cats": [
+      80
+    ],
+    "description": "Kadence WP Virtue is a multipurpose WordPress theme that is available for free download and also offers a pro version.",
+    "dom": "link[href*='/wp-content/themes/virtue/']",
+    "icon": "Kadence WP.svg",
+    "pricing": [
+      "freemium",
+      "low",
+      "recurring"
+    ],
+    "requires": "WordPress",
+    "scriptSrc": "/wp-content/themes/virtue/.+main-min\\.js(?:\\?ver=([\\d\\.]+))?\\;version:\\1",
+    "website": "https://www.kadencewp.com/product/virtue-free-theme"
+  },
+  "Kaira Vogue": {
+    "cats": [
+      80
+    ],
+    "description": "Vogue is a very easy to use multipurpose WordPress theme created by Kaira.",
+    "dom": "link#vogue-style-css",
+    "icon": "Kaira.png",
+    "pricing": [
+      "freemium",
+      "onetime"
+    ],
+    "requires": "WordPress",
+    "scriptSrc": "/wp-content/themes/vogue(?:-child)?/",
+    "website": "https://kairaweb.com/wordpress-theme/vogue"
   },
   "Kajabi": {
     "cats": [
@@ -79,6 +149,19 @@
     ],
     "saas": true,
     "website": "https://kajabi.com"
+  },
+  "Kakao": {
+    "cats": [
+      19
+    ],
+    "description": "Kakao platform provides various services such as Kakao Talk, Kakao Talk Channel, Kakao Story as well as Kakao Pay, Kakao Commerce, Kakao Page provided by the subsidiaries. Users can use all Kakao platform services with a united account called Kakao Account.",
+    "dom": "a[href*='.kakao.com/'][target='_blank']",
+    "icon": "Kakao.svg",
+    "js": {
+      "Kakao.VERSION": "^([\\d\\.]+)$\\;version:\\1"
+    },
+    "scriptSrc": "\\.kakao\\.com/",
+    "website": "https://developers.kakao.com/product"
   },
   "Kameleoon": {
     "cats": [
@@ -99,7 +182,7 @@
       "poa"
     ],
     "saas": true,
-    "scripts": "\\.kameleoon\\.\\w+/kameleoon\\.js",
+    "scriptSrc": "\\.kameleoon\\.\\w+/kameleoon\\.js",
     "website": "https://kameleoon.com/"
   },
   "Kamva": {
@@ -113,7 +196,7 @@
     "meta": {
       "generator": "[CK]amva"
     },
-    "scripts": "cdn\\.mykamva\\.ir",
+    "scriptSrc": "cdn\\.mykamva\\.ir",
     "website": "https://kamva.ir"
   },
   "Kapture CRM": {
@@ -132,7 +215,7 @@
       "recurring"
     ],
     "saas": true,
-    "scripts": "\\.kapturecrm\\.com/.+\\?ver=([\\d\\.]+)\\;version:\\1",
+    "scriptSrc": "\\.kapturecrm\\.com/.+\\?ver=([\\d\\.]+)\\;version:\\1",
     "website": "https://www.kapturecrm.com"
   },
   "Karma": {
@@ -146,7 +229,7 @@
       "karma.vars.version": "(.+)\\;version:\\1"
     },
     "oss": true,
-    "scripts": "karma\\.mdpcdn\\.com",
+    "scriptSrc": "karma\\.mdpcdn\\.com",
     "website": "https://karma-runner.github.io"
   },
   "Kartra": {
@@ -165,7 +248,7 @@
       "recurring"
     ],
     "saas": true,
-    "scripts": "app\\.kartra\\.com",
+    "scriptSrc": "app\\.kartra\\.com",
     "website": "https://home.kartra.com"
   },
   "Keap": {
@@ -180,9 +263,21 @@
       "recurring"
     ],
     "saas": true,
-    "scripts": "property\\.infusionsoft\\.com",
+    "scriptSrc": "\\.infusionsoft\\.com/",
     "website": "https://keap.com",
     "xhr": "property\\.infusionsoft\\.com"
+  },
+  "Keen Delivery": {
+    "cats": [
+      99
+    ],
+    "description": "Keen Delivery is a Dutch shipping platform ",
+    "icon": "Keen Delivery.svg",
+    "requiresCategory": 6,
+    "text": [
+      "\\bKeen Delivery\\b"
+    ],
+    "website": "https://www.keendelivery.com"
   },
   "Kemal": {
     "cats": [
@@ -229,7 +324,7 @@
       "poa"
     ],
     "saas": true,
-    "scripts": "/CMSPages/GetResource\\.ashx",
+    "scriptSrc": "/CMSPages/GetResource\\.ashx",
     "website": "http://www.kentico.com"
   },
   "Kerberos": {
@@ -252,6 +347,24 @@
     "icon": "kestrel.svg",
     "implies": "Microsoft ASP.NET",
     "website": "https://docs.microsoft.com/en-us/aspnet/core/fundamentals/servers/kestrel"
+  },
+  "Kevel": {
+    "cats": [
+      36
+    ],
+    "description": "Kevel (formerly Adzerk) is a developer of ad-serving APIs to help developers build server-side ad platforms.",
+    "dom": "iframe[src*='adzerk.net'], link[href*='adzerk.net']",
+    "icon": "Kevel.svg",
+    "js": {
+      "ados": "",
+      "adosResults": ""
+    },
+    "pricing": [
+      "poa"
+    ],
+    "saas": true,
+    "scriptSrc": "adzerk\\.net/",
+    "website": "https://www.kevel.com"
   },
   "KeyCDN": {
     "cats": [
@@ -293,7 +406,7 @@
     "pricing": [
       "poa"
     ],
-    "scripts": "cdn-tp\\d+\\.mozu\\.com",
+    "scriptSrc": "cdn-tp\\d+\\.mozu\\.com",
     "website": "https://kibocommerce.com"
   },
   "Kibo Personalization": {
@@ -306,6 +419,8 @@
     "js": {
       "BaynoteAPI": "",
       "BaynoteJSVersion": "",
+      "certona.recommendations": "",
+      "certonaRecommendations": "",
       "monetate": "",
       "monetateQ": "",
       "monetateT": ""
@@ -314,9 +429,10 @@
       "poa"
     ],
     "saas": true,
-    "scripts": [
+    "scriptSrc": [
       "\\.monetate\\.net",
-      "\\.baynote\\.net"
+      "\\.baynote\\.net",
+      "\\.certona\\.net"
     ],
     "website": "https://kibocommerce.com/personalization-software"
   },
@@ -329,7 +445,7 @@
       "Kinetic": "",
       "Kinetic.version": "^(.+)$\\;version:\\1"
     },
-    "scripts": "kinetic(?:-v?([\\d.]+))?(?:\\.min)?\\.js\\;version:\\1",
+    "scriptSrc": "kinetic(?:-v?([\\d.]+))?(?:\\.min)?\\.js\\;version:\\1",
     "website": "https://github.com/ericdrowell/KineticJS/"
   },
   "Kinsta": {
@@ -343,6 +459,21 @@
     "icon": "kinsta.svg",
     "implies": "WordPress",
     "website": "https://kinsta.com"
+  },
+  "Kirki Customizer Framework": {
+    "cats": [
+      87
+    ],
+    "description": "Kirki Customizer Framework is a toolkit allowing WordPress developers to use the Customizer and take advantage of its advanced features and flexibility by abstracting the code.",
+    "dom": "link[href*='/wp-content/plugins/kirki/']",
+    "icon": "Kirki Customizer Framework.png",
+    "pricing": [
+      "freemium",
+      "poa"
+    ],
+    "requires": "WordPress",
+    "scriptSrc": "/wp-content/plugins/kirki/",
+    "website": "https://kirki.org"
   },
   "Kitcart": {
     "cats": [
@@ -377,13 +508,12 @@
       "recurring"
     ],
     "saas": true,
-    "scripts": "cdn\\.static\\.kiwisizing\\.com/",
+    "scriptSrc": "cdn\\.static\\.kiwisizing\\.com/",
     "website": "https://www.kiwisizing.com"
   },
   "Klarna Checkout": {
     "cats": [
       41,
-      6,
       91
     ],
     "cookies": {
@@ -392,6 +522,9 @@
     },
     "description": "Klarna Checkout is a complete payment solution where Klarna handles a store's entire checkout.",
     "dom": "[aria-labelledby='pi-klarna']",
+    "headers": {
+      "content-security-policy": "\\.klarna(?:cdn|services)\\.(?:net|com)"
+    },
     "icon": "Klarna.svg",
     "js": {
       "KlarnaOnsiteService": "",
@@ -403,8 +536,39 @@
       "recurring"
     ],
     "saas": true,
-    "scripts": "\\.klarnaservices\\.com/lib\\.js",
+    "scriptSrc": "\\.klarnaservices\\.com/lib\\.js",
     "website": "https://www.klarna.com/international/"
+  },
+  "Klaro": {
+    "cats": [
+      67
+    ],
+    "description": "Klaro is a simple consent management platform and privacy tool.",
+    "icon": "Klaro.png",
+    "js": {
+      "klaro": "",
+      "klaroConfig": ""
+    },
+    "oss": true,
+    "pricing": [
+      "freemium",
+      "low",
+      "recurring"
+    ],
+    "saas": true,
+    "website": "https://heyklaro.com"
+  },
+  "Klasha": {
+    "cats": [
+      41
+    ],
+    "description": "Klasha is a payment solution provider that handles a store's entire checkout.",
+    "icon": "Klasha.svg",
+    "js": {
+      "KlashaClient": ""
+    },
+    "scriptSrc": "klasha-integration\\.js",
+    "website": "https://www.klasha.com/"
   },
   "Klaviyo": {
     "cats": [
@@ -416,7 +580,7 @@
       "KlaviyoSubscribe": "",
       "klaviyo": ""
     },
-    "scripts": "klaviyo\\.com",
+    "scriptSrc": "klaviyo\\.com",
     "website": "https://www.klaviyo.com/"
   },
   "Klevu": {
@@ -435,8 +599,21 @@
       "recurring"
     ],
     "saas": true,
-    "scripts": "js\\.klevu\\.\\w+/klevu-js-v([\\d.]+)\\;version:\\1",
+    "scriptSrc": "js\\.klevu\\.\\w+/klevu-js-v([\\d.]+)\\;version:\\1",
     "website": "https://www.klevu.com"
+  },
+  "Klickly": {
+    "cats": [
+      36
+    ],
+    "description": "Klickly is an invite-only, commission-based advertising platform.",
+    "icon": "Klickly.svg",
+    "pricing": [
+      "payg"
+    ],
+    "saas": true,
+    "scriptSrc": "analytics\\.klickly\\.com/pixel\\.js\\?v=([\\d\\.]+)\\;version:\\1",
+    "website": "https://www.klickly.com"
   },
   "Knockout.js": {
     "cats": [
@@ -465,7 +642,7 @@
       "recurring"
     ],
     "saas": true,
-    "scripts": "ko-fi\\.com/widgets",
+    "scriptSrc": "ko-fi\\.com/widgets",
     "website": "https://ko-fi.com"
   },
   "Koa": {
@@ -559,7 +736,7 @@
     "meta": {
       "generator": "Koken ([\\d.]+)\\;version:\\1"
     },
-    "scripts": "koken(?:\\.js\\?([\\d.]+)|/storage)\\;version:\\1",
+    "scriptSrc": "koken(?:\\.js\\?([\\d.]+)|/storage)\\;version:\\1",
     "website": "http://koken.me"
   },
   "Komodo CMS": {
@@ -588,7 +765,7 @@
       "poa"
     ],
     "saas": true,
-    "scripts": "\\.k-analytix\\.com",
+    "scriptSrc": "\\.k-analytix\\.com",
     "website": "https://www.konduto.com"
   },
   "Koobi": {
@@ -611,7 +788,7 @@
     },
     "icon": "Kooboo CMS.png",
     "implies": "Microsoft ASP.NET",
-    "scripts": "/Kooboo",
+    "scriptSrc": "/Kooboo",
     "website": "http://kooboo.com"
   },
   "Kooomo": {
@@ -641,7 +818,7 @@
       1
     ],
     "icon": "Kotisivukone.png",
-    "scripts": "kotisivukone(?:\\.min)?\\.js",
+    "scriptSrc": "kotisivukone(?:\\.min)?\\.js",
     "website": "http://www.kotisivukone.fi"
   },
   "Kount": {
@@ -659,7 +836,7 @@
       "poa"
     ],
     "saas": true,
-    "scripts": [
+    "scriptSrc": [
       "shopify\\.kount\\.net/js"
     ],
     "website": "https://kount.com"
@@ -689,7 +866,7 @@
     "pricing": [
       "payg"
     ],
-    "scripts": "cdn\\.kueskipay\\.com",
+    "scriptSrc": "cdn\\.kueskipay\\.com",
     "website": "https://kueskipay.com/"
   },
   "Kustomer": {
@@ -702,9 +879,40 @@
     "js": {
       "Kustomer": ""
     },
-    "scripts": [
+    "scriptSrc": [
       "cdn\\.kustomerapp\\.com"
     ],
     "website": "https://www.kustomer.com/"
+  },
+  "k-eCommerce": {
+    "cats": [
+      6
+    ],
+    "description": "k-eCommerce is mdf commerce’s platform for SMBs, providing all-in-one ecommerce and digital payment solutions integrated to Microsoft Dynamics and SAP Business One. ",
+    "dom": "a[href*='.k-ecommerce.com/'][target='_blank']",
+    "icon": "k-eCommerce.png",
+    "meta": {
+      "generator": "k-eCommerce"
+    },
+    "pricing": [
+      "poa"
+    ],
+    "saas": true,
+    "website": "https://www.k-ecommerce.com"
+  },
+  "keep. archeevo": {
+    "cats": [
+      95
+    ],
+    "description": "keep. archeevo is an archival management software that aims to support all the functional areas of an archival institution, covering activities ranging from archival description to employee performance assessment.",
+    "icon": "keep. archeevo.png",
+    "js": {
+      "ArcheevoSnippets.mostviewedDocumentsURL": "",
+      "embedArcheevoBasicSearch": ""
+    },
+    "pricing": [
+      "poa"
+    ],
+    "website": "https://www.keep.pt/en/produts/archeevo-archival-management-software"
   }
 }

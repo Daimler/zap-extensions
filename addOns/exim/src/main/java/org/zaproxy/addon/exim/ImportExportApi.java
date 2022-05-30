@@ -24,6 +24,7 @@ import net.sf.json.JSONObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.zaproxy.addon.exim.har.HarImporter;
+import org.zaproxy.addon.exim.log.LogsImporter;
 import org.zaproxy.addon.exim.urls.UrlsImporter;
 import org.zaproxy.zap.extension.api.ApiAction;
 import org.zaproxy.zap.extension.api.ApiException;
@@ -38,15 +39,19 @@ public class ImportExportApi extends ApiImplementor {
 
     private static final Logger LOG = LogManager.getLogger(ImportExportApi.class);
     private static final String PREFIX = "exim";
-    private static final String ACTION_IMPORTHAR = "importhar";
     private static final String PARAM_FILE_PATH = "filePath";
-
-    private static final String ACTION_IMPORTURLS = "importurls";
+    private static final String ACTION_IMPORT_HAR = "importHar";
+    private static final String ACTION_IMPORT_URLS = "importUrls";
+    private static final String ACTION_IMPORT_ZAP_LOGS = "importZapLogs";
+    private static final String ACTION_IMPORT_MODSEC2_LOGS = "importModsec2Logs";
 
     public ImportExportApi() {
         super();
-        this.addApiAction(new ApiAction(ACTION_IMPORTHAR, new String[] {PARAM_FILE_PATH}));
-        this.addApiAction(new ApiAction(ACTION_IMPORTURLS, new String[] {PARAM_FILE_PATH}));
+        this.addApiAction(new ApiAction(ACTION_IMPORT_HAR, new String[] {PARAM_FILE_PATH}));
+        this.addApiAction(new ApiAction(ACTION_IMPORT_URLS, new String[] {PARAM_FILE_PATH}));
+        this.addApiAction(new ApiAction(ACTION_IMPORT_ZAP_LOGS, new String[] {PARAM_FILE_PATH}));
+        this.addApiAction(
+                new ApiAction(ACTION_IMPORT_MODSEC2_LOGS, new String[] {PARAM_FILE_PATH}));
     }
 
     @Override
@@ -58,17 +63,25 @@ public class ImportExportApi extends ApiImplementor {
     public ApiResponse handleApiAction(String name, JSONObject params) throws ApiException {
         LOG.debug("handleApiAction {} {}", name, params);
 
-        boolean success;
         File file;
         switch (name) {
-            case ACTION_IMPORTHAR:
+            case ACTION_IMPORT_HAR:
                 file = new File(ApiUtils.getNonEmptyStringParam(params, PARAM_FILE_PATH));
-                success = HarImporter.importHarFile(file);
-                return handleFileImportResponse(success, file);
-            case ACTION_IMPORTURLS:
+                HarImporter harImporter = new HarImporter(file);
+                return handleFileImportResponse(harImporter.isSuccess(), file);
+            case ACTION_IMPORT_URLS:
                 file = new File(ApiUtils.getNonEmptyStringParam(params, PARAM_FILE_PATH));
-                success = UrlsImporter.importUrlFile(file);
-                return handleFileImportResponse(success, file);
+                UrlsImporter importer = new UrlsImporter(file);
+                return handleFileImportResponse(importer.isSuccess(), file);
+            case ACTION_IMPORT_ZAP_LOGS:
+                file = new File(ApiUtils.getNonEmptyStringParam(params, PARAM_FILE_PATH));
+                LogsImporter zapImporter = new LogsImporter(file, LogsImporter.LogType.ZAP);
+                return handleFileImportResponse(zapImporter.isSuccess(), file);
+            case ACTION_IMPORT_MODSEC2_LOGS:
+                file = new File(ApiUtils.getNonEmptyStringParam(params, PARAM_FILE_PATH));
+                LogsImporter logsImporter =
+                        new LogsImporter(file, LogsImporter.LogType.MOD_SECURITY_2);
+                return handleFileImportResponse(logsImporter.isSuccess(), file);
             default:
                 throw new ApiException(Type.BAD_ACTION);
         }

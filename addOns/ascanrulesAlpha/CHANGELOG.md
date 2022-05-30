@@ -4,7 +4,49 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
+### Changed
+- Maintenance changes.
 
+## [38] - 2022-04-08
+### Added
+- Scan rules for Server Side Template Injection ([Issue 2332](https://github.com/zaproxy/zaproxy/issues/2332)).
+
+## [37] - 2022-04-04
+### Added
+- Spring4Shell (CVE-2022-22965) Scan Rule.
+### Changed
+- The Web Cache Deception scan rule now uses a comparison mechanism which should be more performant, and will no longer scan messages which had an error response to start with (Issue 6655).
+
+## [36] - 2022-02-15
+### Added
+- Out-of-band XSS Scan Rule.
+- Exponential Entity Expansion (Billion Laughs Attack) Scan Rule.
+
+### Changed
+- Improved performance of a Web Cache Deception scan rule (Issue 6655).
+
+## [35] - 2022-01-07
+### Fixed
+- Log4Shell: Fixed the RMI Payloads (Issue 7002).
+- Log4Shell: Continue with further payloads if one payload throws an error
+
+### Changed
+- Log4Shell: Added detection for CVE-2021-45046
+
+## [34] - 2021-12-12
+### Added
+- Log4Shell (CVE-2021-44228) Scan Rule.
+
+### Changed
+- Update minimum ZAP version to 2.11.1.
+- Depend on the OAST add-on.
+
+## [33] - 2021-12-06
+### Changed
+- Fixed typo in payload in Forbidden (403) Bypass scan rule.
+
+### Added
+- OWASP Web Security Testing Guide v4.2 mappings where applicable.
 
 ## [32] - 2021-10-07
 ### Added
@@ -250,6 +292,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - First version, including persistent XSS tests
 
+[38]: https://github.com/zaproxy/zap-extensions/releases/ascanrulesAlpha-v38
+[37]: https://github.com/zaproxy/zap-extensions/releases/ascanrulesAlpha-v37
+[36]: https://github.com/zaproxy/zap-extensions/releases/ascanrulesAlpha-v36
+[35]: https://github.com/zaproxy/zap-extensions/releases/ascanrulesAlpha-v35
+[34]: https://github.com/zaproxy/zap-extensions/releases/ascanrulesAlpha-v34
+[33]: https://github.com/zaproxy/zap-extensions/releases/ascanrulesAlpha-v33
 [32]: https://github.com/zaproxy/zap-extensions/releases/ascanrulesAlpha-v32
 [31]: https://github.com/zaproxy/zap-extensions/releases/ascanrulesAlpha-v31
 [30]: https://github.com/zaproxy/zap-extensions/releases/ascanrulesAlpha-v30

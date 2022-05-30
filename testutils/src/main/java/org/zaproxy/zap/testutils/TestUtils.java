@@ -168,7 +168,7 @@ public abstract class TestUtils {
         nano.start();
     }
 
-    private static int getRandomPort() throws IOException {
+    protected static int getRandomPort() throws IOException {
         try (ServerSocket server = new ServerSocket(0)) {
             return server.getLocalPort();
         }
@@ -530,6 +530,17 @@ public abstract class TestUtils {
                             }
                             // Return an empty string for non extension's messages.
                             return "";
+                        });
+
+        when(i18n.containsKey(anyString()))
+                .thenAnswer(
+                        invocation -> {
+                            String key = (String) invocation.getArguments()[0];
+                            if (key.startsWith(prefix)) {
+                                return extensionResourceBundle.containsKey(key);
+                            }
+                            // Return true for non extension's messages.
+                            return true;
                         });
     }
 

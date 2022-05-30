@@ -104,6 +104,35 @@ class TimestampDisclosureScanRuleUnitTest extends PassiveScannerTest<TimestampDi
         assertEquals(0, alertsRaised.size());
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"00000000", "000000000", "0000000000"})
+    void shouldNotRaiseAlertOnZeroValues(String value) throws Exception {
+        // Given
+        HttpMessage msg = createMessage(value);
+        // When
+        scanHttpResponseReceive(msg);
+        // Then
+        assertEquals(0, alertsRaised.size());
+    }
+
+    @ParameterizedTest
+    @ValueSource(
+            strings = {
+                "0.33333333%",
+                "0.33333333em",
+                "0.33333333rem",
+                "1.1592500000000001",
+                "000000000000000000000000000000001"
+            })
+    void shouldNotRaiseAlertOnUnlikelyValues(String value) throws Exception {
+        // Given
+        HttpMessage msg = createMessage(value);
+        // When
+        scanHttpResponseReceive(msg);
+        // Then
+        assertEquals(0, alertsRaised.size());
+    }
+
     @Test
     void shouldRaiseAlertOnValidCurrentTimestamp() throws Exception {
         // Given
@@ -369,15 +398,6 @@ class TimestampDisclosureScanRuleUnitTest extends PassiveScannerTest<TimestampDi
         scanHttpResponseReceive(msg);
         // Then
         assertEquals(0, alertsRaised.size());
-    }
-
-    @Test
-    void patternFontExtensionShouldNotFindSubString() {
-        // Given / When
-        boolean result =
-                TimestampDisclosureScanRule.PATTERN_FONT_EXTENSIONS.matcher("/font.woffL").find();
-        // Then
-        assertEquals(false, result);
     }
 
     @ParameterizedTest

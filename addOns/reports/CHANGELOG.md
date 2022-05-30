@@ -4,7 +4,36 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
+### Changed
+- Maintenance changes.
 
+## [0.13.0] - 2022-04-05
+### Changed
+- Dependency updates.
+- Replace variables present in `reportDir` and `reportFile` when running the automation job.
+
+## [0.12.0] - 2022-02-11
+### Changed
+- Maintenance changes.
+
+### Fixed
+- Problem generating 'Risk and Confidence HTML' report with Java 17 (Issue 7026)
+
+## [0.11.0] - 2022-02-08
+### Added
+- Traditional-json-plus report
+- Template specific help pages
+- Report generation statistics
+
+### Changed
+- Update minimum ZAP version to 2.11.1.
+- Dependency updates.
+- When the automation Job is edited via UI Dialog then the status will be set to Not started
+
+## [0.10.0] - 2021-12-06
+### Changed
+- Dependency updates.
+- Maintenance changes.
 
 ## [0.9.1] - 2021-10-14
 ### Fixed
@@ -107,6 +136,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - First version.
 
+[0.13.0]: https://github.com/zaproxy/zap-extensions/releases/reports-v0.13.0
+[0.12.0]: https://github.com/zaproxy/zap-extensions/releases/reports-v0.12.0
+[0.11.0]: https://github.com/zaproxy/zap-extensions/releases/reports-v0.11.0
+[0.10.0]: https://github.com/zaproxy/zap-extensions/releases/reports-v0.10.0
 [0.9.1]: https://github.com/zaproxy/zap-extensions/releases/reports-v0.9.1
 [0.9.0]: https://github.com/zaproxy/zap-extensions/releases/reports-v0.9.0
 [0.8.0]: https://github.com/zaproxy/zap-extensions/releases/reports-v0.8.0

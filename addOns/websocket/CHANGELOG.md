@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## Unreleased
 
 
+## [26] - 2022-05-20
+### Changed
+- Maintenance changes.
+- Cache WebSocket Passive Rules scripts for better performance with all script engines.
+
+### Fixed
+- Handle errors caused by WebSocket Passive Rules scripts, which would break the passive scan.
+
+## [25] - 2022-03-14
+### Changed
+- Update minimum ZAP version to 2.11.1.
+- Update the reference links used in the Username IDOR passive scan script.
+- Reset the name of the connection threads when not actively used.
+
+### Fixed
+- Fix exception when manually reconnecting to the server.
+- Stop properly when shutting down.
+
 ## [24] - 2021-10-06
 ### Changed
 - Now using 2.10 logging infrastructure (Log4j 2.x).
@@ -176,6 +194,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
 
+[26]: https://github.com/zaproxy/zap-extensions/releases/websocket-v26
+[25]: https://github.com/zaproxy/zap-extensions/releases/websocket-v25
 [24]: https://github.com/zaproxy/zap-extensions/releases/websocket-v24
 [23]: https://github.com/zaproxy/zap-extensions/releases/websocket-v23
 [22]: https://github.com/zaproxy/zap-extensions/releases/websocket-v22

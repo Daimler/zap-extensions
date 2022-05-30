@@ -1,8 +1,11 @@
+import org.zaproxy.gradle.addon.AddOnStatus
+
 description = "Automation Framework."
 
 zapAddOn {
     addOnName.set("Automation Framework")
-    zapVersion.set("2.11.0")
+    addOnStatus.set(AddOnStatus.BETA)
+    zapVersion.set("2.11.1")
 
     manifest {
         author.set("ZAP Dev Team")
@@ -24,9 +27,9 @@ crowdin {
 }
 
 dependencies {
-    api("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.9.6")
-    api("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.12.0")
-    api("com.fasterxml.jackson.core:jackson-databind:2.12.0")
-    api("org.snakeyaml:snakeyaml-engine:2.2.1")
+    api("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.13.0")
+    api("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.0")
+    api("com.fasterxml.jackson.core:jackson-databind:2.13.0")
+    api("org.snakeyaml:snakeyaml-engine:2.3")
     testImplementation(project(":testutils"))
 }

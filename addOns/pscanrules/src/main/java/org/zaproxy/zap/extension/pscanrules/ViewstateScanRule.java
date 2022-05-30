@@ -34,9 +34,9 @@ import net.htmlparser.jericho.Source;
 import net.htmlparser.jericho.StartTag;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.core.scanner.Alert;
+import org.parosproxy.paros.core.scanner.Plugin.AlertThreshold;
 import org.parosproxy.paros.network.HttpMessage;
 import org.zaproxy.addon.commonlib.CommonAlertTag;
-import org.zaproxy.zap.extension.pscan.PassiveScanThread;
 import org.zaproxy.zap.extension.pscan.PluginPassiveScanner;
 
 public class ViewstateScanRule extends PluginPassiveScanner {
@@ -64,9 +64,13 @@ public class ViewstateScanRule extends PluginPassiveScanner {
         // consider it as valid.
         if (!v.isValid()) return;
 
-        if (!v.hasMACtest1() || !v.hasMACtest2())
-            if (!v.hasMACtest1() && !v.hasMACtest2()) alertNoMACforSure().raise();
-            else alertNoMACUnsure().raise();
+        if (!v.hasMACtest1() || !v.hasMACtest2()) {
+            if (!v.hasMACtest1() && !v.hasMACtest2()) {
+                alertNoMACforSure().raise();
+            } else if (AlertThreshold.LOW.equals(getAlertThreshold())) {
+                alertNoMACUnsure().raise();
+            }
+        }
 
         if (!v.isLatestAspNetVersion()) alertOldAspVersion().raise();
 
@@ -87,7 +91,8 @@ public class ViewstateScanRule extends PluginPassiveScanner {
                 .setOtherInfo(var.getResultExtract().toString())
                 .setSolution(getSolution())
                 .setCweId(getCweId())
-                .setWascId(getWascId());
+                .setWascId(getWascId())
+                .setAlertRef(PLUGIN_ID + "-" + var.getAlertRef());
     }
 
     private AlertBuilder alertOldAspVersion() {
@@ -98,7 +103,8 @@ public class ViewstateScanRule extends PluginPassiveScanner {
                 .setDescription(Constant.messages.getString(MESSAGE_PREFIX + "oldver.desc"))
                 .setSolution(Constant.messages.getString(MESSAGE_PREFIX + "oldver.soln"))
                 .setCweId(getCweId())
-                .setWascId(getWascId());
+                .setWascId(getWascId())
+                .setAlertRef(PLUGIN_ID + "-3");
     }
 
     // TODO: see if this alert triggers too often, as the detection rule is far from being robust
@@ -112,7 +118,8 @@ public class ViewstateScanRule extends PluginPassiveScanner {
                 .setSolution(Constant.messages.getString(MESSAGE_PREFIX + "nomac.unsure.soln"))
                 .setReference(Constant.messages.getString(MESSAGE_PREFIX + "nomac.unsure.refs"))
                 .setCweId(getCweId())
-                .setWascId(getWascId());
+                .setWascId(getWascId())
+                .setAlertRef(PLUGIN_ID + "-4");
     }
 
     private AlertBuilder alertNoMACforSure() {
@@ -124,7 +131,8 @@ public class ViewstateScanRule extends PluginPassiveScanner {
                 .setSolution(Constant.messages.getString(MESSAGE_PREFIX + "nomac.sure.soln"))
                 .setReference(Constant.messages.getString(MESSAGE_PREFIX + "nomac.sure.refs"))
                 .setCweId(getCweId())
-                .setWascId(getWascId());
+                .setWascId(getWascId())
+                .setAlertRef(PLUGIN_ID + "-5");
     }
 
     private AlertBuilder alertSplitViewstate() {
@@ -135,7 +143,8 @@ public class ViewstateScanRule extends PluginPassiveScanner {
                 .setDescription(Constant.messages.getString(MESSAGE_PREFIX + "split.desc"))
                 .setSolution(Constant.messages.getString(MESSAGE_PREFIX + "split.soln"))
                 .setCweId(getCweId())
-                .setWascId(getWascId());
+                .setWascId(getWascId())
+                .setAlertRef(PLUGIN_ID + "-6");
     }
 
     @Override
@@ -169,11 +178,6 @@ public class ViewstateScanRule extends PluginPassiveScanner {
     @Override
     public int getPluginId() {
         return PLUGIN_ID;
-    }
-
-    @Override
-    public void setParent(PassiveScanThread parent) {
-        // Nothing to do.
     }
 
     @Override
@@ -262,6 +266,10 @@ public class ViewstateScanRule extends PluginPassiveScanner {
         public boolean hasResults() {
             return !this.resultExtract.isEmpty();
         }
+
+        public int getAlertRef() {
+            return this.pattern.getAlertRef();
+        }
     }
 
     // TODO: enhance this class with searches for e.g. passwords, ODBC strings, etc
@@ -271,7 +279,8 @@ public class ViewstateScanRule extends PluginPassiveScanner {
                         "[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}", Pattern.CASE_INSENSITIVE),
                 Constant.messages.getString(MESSAGE_PREFIX + "content.email.name"),
                 Constant.messages.getString(MESSAGE_PREFIX + "content.email.desc"),
-                Constant.messages.getString(MESSAGE_PREFIX + "content.email.pattern.source")),
+                Constant.messages.getString(MESSAGE_PREFIX + "content.email.pattern.source"),
+                2),
 
         // TODO: once the viewstate parser is implemented, filter out all the version numbers of the
         // serialized objects which also trigger this filter
@@ -282,20 +291,27 @@ public class ViewstateScanRule extends PluginPassiveScanner {
                 Pattern.compile("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}"),
                 Constant.messages.getString(MESSAGE_PREFIX + "content.ip.name"),
                 Constant.messages.getString(MESSAGE_PREFIX + "content.ip.desc"),
-                Constant.messages.getString(MESSAGE_PREFIX + "content.ip.pattern.source"));
+                Constant.messages.getString(MESSAGE_PREFIX + "content.ip.pattern.source"),
+                1);
 
         ViewstateAnalyzerPattern(
-                Pattern p, String alertHeader, String alertDescription, String sourceRegex) {
+                Pattern p,
+                String alertHeader,
+                String alertDescription,
+                String sourceRegex,
+                int alertRef) {
             this.pattern = p;
             this.alertHeader = alertHeader;
             this.alertDescription = alertDescription;
             this.sourceRegex = sourceRegex;
+            this.alertRef = alertRef;
         }
 
         private Pattern pattern;
         private String alertHeader;
         private String alertDescription;
         private String sourceRegex;
+        private final int alertRef;
 
         public Pattern getPattern() {
             return this.pattern;
@@ -307,6 +323,10 @@ public class ViewstateScanRule extends PluginPassiveScanner {
 
         public String getAlertHeader() {
             return this.alertHeader;
+        }
+
+        public int getAlertRef() {
+            return this.alertRef;
         }
     }
 

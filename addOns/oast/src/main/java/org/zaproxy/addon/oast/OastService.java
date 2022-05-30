@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class OastService {
 
     private final List<OastRequestHandler> oastRequestHandlerList = new ArrayList<>();
+    private final List<OastStateChangedListener> oastStateChangedListenerList = new ArrayList<>();
 
     public abstract String getName();
 
@@ -34,6 +35,16 @@ public abstract class OastService {
     public abstract void startService();
 
     public abstract void stopService();
+
+    public abstract boolean isRegistered();
+
+    /**
+     * Always returns a new payload. Registers with the service if required.
+     *
+     * @return a new URL that can be used for external interaction requests, never {@code null}.
+     * @throws Exception if it is unable to get a new payload.
+     */
+    public abstract String getNewPayload() throws Exception;
 
     public void poll() {}
 
@@ -53,6 +64,24 @@ public abstract class OastService {
         oastRequestHandlerList.clear();
     }
 
+    public void addOastStateChangedListener(OastStateChangedListener oastStateChangedListener) {
+        oastStateChangedListenerList.add(oastStateChangedListener);
+    }
+
+    public void fireOastStateChanged() {
+        fireOastStateChanged(new OastState(getName(), isRegistered(), null));
+    }
+
+    public void fireOastStateChanged(OastState oastState) {
+        for (OastStateChangedListener handler : oastStateChangedListenerList) {
+            handler.stateChanged(oastState);
+        }
+    }
+
+    public void clearOastStateChangedListeners() {
+        oastStateChangedListenerList.clear();
+    }
+
     protected static class OastThreadFactory implements ThreadFactory {
 
         private final AtomicInteger threadNumber;
@@ -62,8 +91,7 @@ public abstract class OastService {
         public OastThreadFactory(String namePrefix) {
             threadNumber = new AtomicInteger(1);
             this.namePrefix = namePrefix;
-            SecurityManager s = System.getSecurityManager();
-            group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
+            group = Thread.currentThread().getThreadGroup();
         }
 
         @Override

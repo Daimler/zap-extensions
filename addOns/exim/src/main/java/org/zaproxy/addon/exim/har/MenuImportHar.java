@@ -19,16 +19,25 @@
  */
 package org.zaproxy.addon.exim.har;
 
+import edu.umass.cs.benchlab.har.tools.HarFileReader;
 import java.io.File;
+import java.io.IOException;
 import javax.swing.JFileChooser;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.model.Model;
 import org.parosproxy.paros.view.View;
+import org.zaproxy.addon.commonlib.ui.ProgressPane;
+import org.zaproxy.addon.commonlib.ui.ProgressPaneListener;
+import org.zaproxy.addon.commonlib.ui.ReadableFileChooser;
+import org.zaproxy.addon.exim.ExtensionExim;
 import org.zaproxy.zap.view.ZapMenuItem;
 
 public class MenuImportHar extends ZapMenuItem {
 
     private static final long serialVersionUID = -9207224834749823025L;
+    private static final Logger LOG = LogManager.getLogger(MenuImportHar.class);
     private static final String THREAD_PREFIX = "ZAP-Import-Har-";
 
     private int threadId = 1;
@@ -41,7 +50,7 @@ public class MenuImportHar extends ZapMenuItem {
         this.addActionListener(
                 e -> {
                     JFileChooser chooser =
-                            new JFileChooser(
+                            new ReadableFileChooser(
                                     Model.getSingleton().getOptionsParam().getUserDirectory());
                     int rc = chooser.showOpenDialog(View.getSingleton().getMainFrame());
                     if (rc == JFileChooser.APPROVE_OPTION) {
@@ -52,8 +61,34 @@ public class MenuImportHar extends ZapMenuItem {
                                     public void run() {
                                         this.setName(THREAD_PREFIX + threadId++);
                                         File file = chooser.getSelectedFile();
-                                        boolean success = HarImporter.importHarFile(file);
-                                        if (!success) {
+                                        int tasks = 0;
+                                        boolean indeterminate;
+                                        try {
+                                            tasks =
+                                                    new HarFileReader()
+                                                            .readHarFile(file)
+                                                            .getEntries()
+                                                            .getEntries()
+                                                            .size();
+                                            indeterminate = false;
+                                        } catch (IOException e) {
+                                            indeterminate = true;
+                                            LOG.warn(
+                                                    "Couldn't count entries in: {}",
+                                                    file.getAbsoluteFile());
+                                        }
+                                        ProgressPane currentImportPane =
+                                                new ProgressPane(
+                                                        file.getAbsolutePath(), indeterminate);
+                                        currentImportPane.setTotalTasks(tasks);
+                                        ExtensionExim.getProgressPanel()
+                                                .addProgressPane(currentImportPane);
+                                        HarImporter harImporter =
+                                                new HarImporter(
+                                                        file,
+                                                        new ProgressPaneListener(
+                                                                currentImportPane));
+                                        if (!harImporter.isSuccess()) {
                                             View.getSingleton()
                                                     .showWarningDialog(
                                                             Constant.messages.getString(

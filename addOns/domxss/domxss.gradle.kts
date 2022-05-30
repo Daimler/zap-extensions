@@ -5,7 +5,7 @@ description = "DOM XSS Active scanner rule"
 zapAddOn {
     addOnName.set("DOM XSS Active scanner rule")
     addOnStatus.set(AddOnStatus.BETA)
-    zapVersion.set("2.11.0")
+    zapVersion.set("2.11.1")
 
     manifest {
         author.set("Aabha Biyani, ZAP Dev Team")
@@ -18,11 +18,14 @@ zapAddOn {
         }
         dependencies {
             addOns {
+                register("network") {
+                    version.set(">=0.1.0")
+                }
                 register("selenium") {
                     version.set("15.*")
                 }
                 register("commonlib") {
-                    version.set(">= 1.5.0 & < 2.0.0")
+                    version.set(">= 1.6.0 & < 2.0.0")
                 }
             }
         }
@@ -31,10 +34,12 @@ zapAddOn {
 
 dependencies {
     compileOnly(parent!!.childProjects.get("commonlib")!!)
+    compileOnly(parent!!.childProjects.get("network")!!)
     compileOnly(parent!!.childProjects.get("selenium")!!)
     testImplementation(parent!!.childProjects.get("commonlib")!!)
+    testImplementation(parent!!.childProjects.get("network")!!)
     testImplementation(parent!!.childProjects.get("selenium")!!)
-    testImplementation("io.github.bonigarcia:webdrivermanager:4.2.2")
+    testImplementation("io.github.bonigarcia:webdrivermanager:5.0.3")
     testImplementation(project(":testutils"))
 }
 

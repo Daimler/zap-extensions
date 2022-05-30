@@ -28,7 +28,6 @@ import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.httpclient.InvalidRedirectLocationException;
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -56,7 +55,8 @@ public class PathTraversalScanRule extends AbstractAppParamPlugin {
     private static final Map<String, String> ALERT_TAGS =
             CommonAlertTag.toMap(
                     CommonAlertTag.OWASP_2021_A01_BROKEN_AC,
-                    CommonAlertTag.OWASP_2017_A05_BROKEN_AC);
+                    CommonAlertTag.OWASP_2017_A05_BROKEN_AC,
+                    CommonAlertTag.WSTG_V42_ATHZ_01_DIR_TRAVERSAL);
 
     private static final String NON_EXISTANT_FILENAME = "thishouldnotexistandhopefullyitwillnot";
 
@@ -460,7 +460,6 @@ public class PathTraversalScanRule extends AbstractAppParamPlugin {
                         | IllegalStateException
                         | UnknownHostException
                         | IllegalArgumentException
-                        | InvalidRedirectLocationException
                         | URIException ex) {
                     log.debug(
                             "Caught {} {} when accessing: {}",
@@ -472,7 +471,7 @@ public class PathTraversalScanRule extends AbstractAppParamPlugin {
                 }
 
                 // do some pattern matching on the results.
-                Pattern errorPattern = Pattern.compile("Exception|Error");
+                Pattern errorPattern = Pattern.compile("Exception|Error", Pattern.CASE_INSENSITIVE);
                 Matcher errorMatcher = errorPattern.matcher(msg.getResponseBody().toString());
 
                 String urlfilename = msg.getRequestHeader().getURI().getName();
@@ -507,7 +506,6 @@ public class PathTraversalScanRule extends AbstractAppParamPlugin {
                                 | IllegalStateException
                                 | UnknownHostException
                                 | IllegalArgumentException
-                                | InvalidRedirectLocationException
                                 | URIException ex) {
                             log.debug(
                                     "Caught {} {} when accessing: {}",
@@ -607,7 +605,6 @@ public class PathTraversalScanRule extends AbstractAppParamPlugin {
                 | IllegalStateException
                 | UnknownHostException
                 | IllegalArgumentException
-                | InvalidRedirectLocationException
                 | URIException ex) {
             log.debug(
                     "Caught {} {} when accessing: {}",

@@ -5,7 +5,7 @@ description = "Imports and spiders OpenAPI definitions."
 zapAddOn {
     addOnName.set("OpenAPI Support")
     addOnStatus.set(AddOnStatus.BETA)
-    zapVersion.set("2.11.0")
+    zapVersion.set("2.11.1")
 
     manifest {
         author.set("ZAP Dev Team plus Joanna Bona, Nathalie Bouchahine, Artur Grzesica, Mohammad Kamar, Markus Kiss, Michal Materniak, Marcin Spiewak, and SDA SE Open Industry Solutions")
@@ -18,9 +18,16 @@ zapAddOn {
                 dependencies {
                     addOns {
                         register("automation") {
-                            version.set(">=0.6.0")
+                            version.set(">=0.12.0")
                         }
                     }
+                }
+            }
+        }
+        dependencies {
+            addOns {
+                register("commonlib") {
+                    version.set(">= 1.8.0 & < 2.0.0")
                 }
             }
         }
@@ -42,18 +49,22 @@ configurations {
 
 dependencies {
     compileOnly(parent!!.childProjects.get("automation")!!)
+    compileOnly(parent!!.childProjects.get("commonlib")!!)
+
     implementation("io.swagger.parser.v3:swagger-parser:2.0.28")
     implementation("io.swagger:swagger-compat-spec-parser:1.0.56") {
         // Not needed:
         exclude(group = "com.github.java-json-tools", module = "json-schema-validator")
         exclude(group = "org.apache.httpcomponents", module = "httpclient")
     }
-    implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.14.0") {
+    implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.17.2") {
         // Provided by ZAP.
         exclude(group = "org.apache.logging.log4j")
     }
 
-    testImplementation("org.apache.logging.log4j:log4j-core:2.14.0")
+    testImplementation(parent!!.childProjects.get("commonlib")!!)
+    testImplementation(parent!!.childProjects.get("commonlib")!!.sourceSets.test.get().output)
+    testImplementation("org.apache.logging.log4j:log4j-core:2.17.2")
     testImplementation(parent!!.childProjects.get("automation")!!)
     testImplementation(project(":testutils"))
 }

@@ -6,7 +6,7 @@ tasks.withType<JavaCompile> {
 
 zapAddOn {
     addOnName.set("Bug Tracker")
-    zapVersion.set("2.11.0")
+    zapVersion.set("2.11.1")
 
     manifest {
         author.set("ZAP Dev Team")
@@ -19,7 +19,7 @@ dependencies {
         // Not needed.
         exclude(group = "junit")
     }
-    implementation("org.kohsuke:github-api:1.109") {
+    implementation("org.kohsuke:github-api:1.303") {
         // Not needed.
         exclude(group = "com.infradna.tool")
         // Provided by ZAP.

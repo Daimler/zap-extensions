@@ -4,7 +4,32 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
+### Changed
+- Dependency updates.
+- Maintenance changes.
 
+## [13] - 2022-02-01
+### Changed
+- Update minimum ZAP version to 2.11.1.
+- Dependency updates.
+- When the automation Job is edited via UI Dialog then the status will be set to Not started
+
+### Fixed
+- Do not report "Unrecognised parameter" for valid parameters.
+
+## [12] - 2021-11-29
+### Changed
+- Maintenance changes.
+- WSDL File scan rule now includes identification of URLs in the form "example.com/service?wsdl", and specifically excludes 404s and 500s (including support for Custom Pages).
+- `Import a WSDL file from a URL` now logs a more specific message for some exception conditions, or when failing to convert the input 'URL' string into an actual URL to make the WSDL request.
+- The `Import a WSDL file from a URL` dialog now accepts pressing the enter key to activate the import process (instead of having to click the Import button), and the escape key to close/cancel the dialog.
+
+## [11] - 2021-10-29
+### Changed
+- Dependency updates.
+
+### Fixed
+- NPE when detecting parameters.
 
 ## [10] - 2021-10-06
 ### Added
@@ -83,6 +108,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - First version
 
+[13]: https://github.com/zaproxy/zap-extensions/releases/soap-v13
+[12]: https://github.com/zaproxy/zap-extensions/releases/soap-v12
+[11]: https://github.com/zaproxy/zap-extensions/releases/soap-v11
 [10]: https://github.com/zaproxy/zap-extensions/releases/soap-v10
 [9]: https://github.com/zaproxy/zap-extensions/releases/soap-v9
 [8]: https://github.com/zaproxy/zap-extensions/releases/soap-v8

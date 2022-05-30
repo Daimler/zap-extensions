@@ -1,11 +1,11 @@
 import org.zaproxy.gradle.addon.AddOnStatus
 
-description = "The release quality Passive Scanner rules"
+description = "The release status Passive Scanner rules"
 
 zapAddOn {
     addOnName.set("Passive scanner rules")
     addOnStatus.set(AddOnStatus.RELEASE)
-    zapVersion.set("2.11.0")
+    zapVersion.set("2.11.1")
 
     manifest {
         author.set("ZAP Dev Team")
@@ -14,7 +14,7 @@ zapAddOn {
         dependencies {
             addOns {
                 register("commonlib") {
-                    version.set(">= 1.5.0 & < 2.0.0")
+                    version.set(">= 1.7.0 & < 2.0.0")
                 }
             }
         }
@@ -44,7 +44,7 @@ dependencies {
     testImplementation(parent!!.childProjects.get("commonlib")!!)
     testImplementation(parent!!.childProjects.get("custompayloads")!!)
     testImplementation(project(":testutils"))
-    testImplementation("org.apache.commons:commons-lang3:3.9")
+    testImplementation("org.apache.commons:commons-lang3:3.12.0")
 }
 
 spotless {

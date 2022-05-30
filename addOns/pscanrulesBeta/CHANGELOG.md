@@ -4,7 +4,26 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
+### Changed
+- Maintenance changes.
 
+## [29] - 2022-04-05
+### Changed
+- Update minimum ZAP version to 2.11.1.
+- Maintenance changes.
+
+### Removed
+- Content Security Policy (CSP) Header Not Set scan rule promoted to release.
+
+## [28] - 2021-12-01
+### Fixed
+- Fixed false positive in Reverse Tabnabbing scan rule.
+
+### Changed
+- Maintenance changes.
+
+### Added
+- OWASP Web Security Testing Guide v4.2 mappings where applicable.
 
 ## [27] - 2021-10-07
 ### Added
@@ -213,6 +232,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Updated to support new addon format
 
+[29]: https://github.com/zaproxy/zap-extensions/releases/pscanrulesBeta-v29
+[28]: https://github.com/zaproxy/zap-extensions/releases/pscanrulesBeta-v28
 [27]: https://github.com/zaproxy/zap-extensions/releases/pscanrulesBeta-v27
 [26]: https://github.com/zaproxy/zap-extensions/releases/pscanrulesBeta-v26
 [25]: https://github.com/zaproxy/zap-extensions/releases/pscanrulesBeta-v25

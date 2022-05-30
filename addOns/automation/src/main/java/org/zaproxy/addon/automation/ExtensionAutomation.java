@@ -57,8 +57,9 @@ import org.zaproxy.addon.automation.jobs.PassiveScanWaitJob;
 import org.zaproxy.addon.automation.jobs.RequestorJob;
 import org.zaproxy.addon.automation.jobs.SpiderJob;
 import org.zaproxy.zap.ZAP;
+import org.zaproxy.zap.ZAP.ProcessType;
 import org.zaproxy.zap.eventBus.Event;
-import org.zaproxy.zap.extension.stats.ExtensionStats;
+import org.zaproxy.zap.utils.Stats;
 
 public class ExtensionAutomation extends ExtensionAdaptor implements CommandLineListener {
 
@@ -69,6 +70,13 @@ public class ExtensionAutomation extends ExtensionAdaptor implements CommandLine
     public static final String PREFIX = "automation";
 
     public static final String RESOURCES_DIR = "/org/zaproxy/addon/automation/resources/";
+
+    protected static final String PLANS_RUN_STATS = "stats.auto.plans.run";
+    protected static final String TOTAL_JOBS_RUN_STATS = "stats.auto.jobs.run";
+    protected static final String JOBS_RUN_STATS_PREFIX = "stats.auto.job.";
+    protected static final String JOBS_RUN_STATS_POSTFIX = ".run";
+    protected static final String ERROR_COUNT_STATS = "stats.auto.errors";
+    protected static final String WARNING_COUNT_STATS = "stats.auto.warnings";
 
     public static final ImageIcon ICON =
             new ImageIcon(ExtensionAutomation.class.getResource(RESOURCES_DIR + "robot.png"));
@@ -93,16 +101,22 @@ public class ExtensionAutomation extends ExtensionAdaptor implements CommandLine
         super(NAME);
         setI18nPrefix(PREFIX);
 
-        this.registerAutomationJob(new AddOnJob());
-        this.registerAutomationJob(new PassiveScanConfigJob());
-        this.registerAutomationJob(new RequestorJob());
-        this.registerAutomationJob(new PassiveScanWaitJob());
-        this.registerAutomationJob(new SpiderJob());
-        this.registerAutomationJob(new DelayJob());
-        this.registerAutomationJob(new ActiveScanJob());
-        this.registerAutomationJob(new ParamsJob());
         // Instantiate early so its visible to potential consumers
         AutomationEventPublisher.getPublisher();
+    }
+
+    @Override
+    public void init() {
+        super.init();
+
+        registerAutomationJob(new AddOnJob());
+        registerAutomationJob(new PassiveScanConfigJob());
+        registerAutomationJob(new RequestorJob());
+        registerAutomationJob(new PassiveScanWaitJob());
+        registerAutomationJob(new SpiderJob());
+        registerAutomationJob(new DelayJob());
+        registerAutomationJob(new ActiveScanJob());
+        registerAutomationJob(new ParamsJob());
     }
 
     @Override
@@ -215,20 +229,18 @@ public class ExtensionAutomation extends ExtensionAdaptor implements CommandLine
         }
     }
 
-    private void clearStats() {
-        // Clear stats for any stats tests
-        ExtensionStats extStats =
-                Control.getSingleton().getExtensionLoader().getExtension(ExtensionStats.class);
-        if (extStats != null && extStats.getInMemoryStats() != null) {
-            extStats.getInMemoryStats().allCleared();
-        }
+    private void setPlanFinished(AutomationPlan plan) {
+        plan.setFinished(new Date());
+        AutomationEventPublisher.publishEvent(
+                AutomationEventPublisher.PLAN_FINISHED, plan, plan.getProgress().toMap());
+        Stats.incCounter(ERROR_COUNT_STATS, plan.getProgress().getErrors().size());
+        Stats.incCounter(WARNING_COUNT_STATS, plan.getProgress().getWarnings().size());
     }
 
     public AutomationProgress runPlan(AutomationPlan plan, boolean resetProgress) {
         if (resetProgress) {
             plan.resetProgress();
         }
-        clearStats();
 
         AutomationProgress progress = plan.getProgress();
         AutomationEnvironment env = plan.getEnv();
@@ -241,12 +253,11 @@ public class ExtensionAutomation extends ExtensionAdaptor implements CommandLine
 
         AutomationEventPublisher.publishEvent(
                 AutomationEventPublisher.PLAN_ENV_CREATED, plan, null);
+        Stats.incCounter(PLANS_RUN_STATS);
 
         if (progress.hasErrors() || env.isTimeToQuit()) {
             // If the environment reports an error then no point in continuing
-            AutomationEventPublisher.publishEvent(
-                    AutomationEventPublisher.PLAN_FINISHED, plan, plan.getProgress().toMap());
-            plan.setFinished(new Date());
+            setPlanFinished(plan);
             return progress;
         }
 
@@ -258,6 +269,8 @@ public class ExtensionAutomation extends ExtensionAdaptor implements CommandLine
             job.setStatus(AutomationJob.Status.RUNNING);
             AutomationEventPublisher.publishEvent(AutomationEventPublisher.JOB_STARTED, job, null);
             job.runJob(env, progress);
+            Stats.incCounter(TOTAL_JOBS_RUN_STATS);
+            Stats.incCounter(JOBS_RUN_STATS_PREFIX + job.getType() + JOBS_RUN_STATS_POSTFIX);
             job.logTestsToProgress(progress);
             job.setStatus(AutomationJob.Status.COMPLETED);
             AutomationEventPublisher.publishEvent(
@@ -270,20 +283,12 @@ public class ExtensionAutomation extends ExtensionAdaptor implements CommandLine
                 break;
             }
         }
-        plan.setFinished(new Date());
-
-        AutomationEventPublisher.publishEvent(
-                AutomationEventPublisher.PLAN_FINISHED, plan, plan.getProgress().toMap());
+        setPlanFinished(plan);
         return progress;
     }
 
     public void runPlanAsync(AutomationPlan plan) {
-        new Thread(
-                        () -> {
-                            this.runPlan(plan, true);
-                        },
-                        "ZAP-Automation")
-                .start();
+        new Thread(() -> this.runPlan(plan, true), "ZAP-Automation").start();
     }
 
     public AutomationPlan loadPlan(File f) throws IOException {
@@ -374,7 +379,7 @@ public class ExtensionAutomation extends ExtensionAdaptor implements CommandLine
         if (this.hasView()) {
             this.getAutomationPanel().setCurrentPlan(plan);
         }
-        this.plans.put(plan.getId(), plan);
+        registerPlan(plan);
     }
 
     public AutomationPlan getPlan(int planId) {
@@ -397,9 +402,7 @@ public class ExtensionAutomation extends ExtensionAdaptor implements CommandLine
         }
         try {
             AutomationPlan plan = new AutomationPlan(this, f);
-            if (this.hasView()) {
-                this.getAutomationPanel().setCurrentPlan(plan);
-            }
+            this.displayPlan(plan);
             this.runPlan(plan, false);
             AutomationProgress progress = plan.getProgress();
 
@@ -513,7 +516,21 @@ public class ExtensionAutomation extends ExtensionAdaptor implements CommandLine
     @Override
     public void execute(CommandLineArgument[] args) {
         if (arguments[ARG_AUTO_RUN_IDX].isEnabled()) {
-            runAutomationFile(arguments[ARG_AUTO_RUN_IDX].getArguments().firstElement());
+            AutomationProgress progress =
+                    runAutomationFile(arguments[ARG_AUTO_RUN_IDX].getArguments().firstElement());
+            if (ProcessType.cmdline.equals(ZAP.getProcessType())) {
+                if (progress.hasErrors()) {
+                    Control.getSingleton()
+                            .setExitStatus(
+                                    1,
+                                    "Automation Framework setting exit status to due to plan errors");
+                } else if (progress.hasWarnings()) {
+                    Control.getSingleton()
+                            .setExitStatus(
+                                    2,
+                                    "Automation Framework setting exit status to due to plan warnings");
+                }
+            }
         }
         if (arguments[ARG_AUTO_GEN_MIN_IDX].isEnabled()) {
             generateTemplateFile(
@@ -542,5 +559,10 @@ public class ExtensionAutomation extends ExtensionAdaptor implements CommandLine
     @Override
     public String getAuthor() {
         return Constant.ZAP_TEAM;
+    }
+
+    @Override
+    public String getUIName() {
+        return Constant.messages.getString("automation.name");
     }
 }
