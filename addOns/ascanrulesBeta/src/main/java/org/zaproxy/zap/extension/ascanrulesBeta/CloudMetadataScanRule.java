@@ -21,6 +21,7 @@ package org.zaproxy.zap.extension.ascanrulesBeta;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -42,6 +43,7 @@ import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.network.HttpMethodHelper;
 import org.parosproxy.paros.network.HttpRequestHeader;
 import org.parosproxy.paros.network.HttpResponseHeader;
+import org.parosproxy.paros.network.SSLConnector;
 import org.zaproxy.addon.commonlib.CommonAlertTag;
 import org.zaproxy.zap.ZapGetMethod;
 import org.zaproxy.zap.users.User;
@@ -58,13 +60,25 @@ public class CloudMetadataScanRule extends AbstractHostPlugin {
     private static final int PLUGIN_ID = 90034;
     private static final String METADATA_PATH = "/latest/meta-data/";
     private static final List<String> METADATA_HOSTS =
-            Arrays.asList("169.154.169.254", "aws.zaproxy.org");
+            Arrays.asList(
+                    "169.154.169.254", "aws.zaproxy.org", "100.100.100.200", "alibaba.zaproxy.org");
 
     private static final Logger LOG = LogManager.getLogger(CloudMetadataScanRule.class);
     private static final Map<String, String> ALERT_TAGS =
             CommonAlertTag.toMap(
                     CommonAlertTag.OWASP_2021_A05_SEC_MISCONFIG,
                     CommonAlertTag.OWASP_2017_A06_SEC_MISCONFIG);
+
+    private static boolean useHttpSender;
+
+    static {
+        try {
+            Class.forName("org.zaproxy.addon.network.internal.client.BaseHttpSender");
+            useHttpSender = SSLConnector.class.getAnnotation(Deprecated.class) != null;
+        } catch (Exception e) {
+            useHttpSender = false;
+        }
+    }
 
     @Override
     public int getId() {
@@ -133,6 +147,12 @@ public class CloudMetadataScanRule extends AbstractHostPlugin {
     }
 
     void sendMessageWithCustomHostHeader(HttpMessage message, String host) throws IOException {
+        if (useHttpSender) {
+            message.setUserObject(Collections.singletonMap("host", host));
+            sendAndReceive(message, false);
+            return;
+        }
+
         HttpMethodParams params = new HttpMethodParams();
         params.setVirtualHost(host);
         HttpMethod method =

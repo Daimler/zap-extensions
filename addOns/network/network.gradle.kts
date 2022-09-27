@@ -14,7 +14,7 @@ configurations.api { extendsFrom(bouncyCastle) }
 
 zapAddOn {
     addOnName.set("Network")
-    addOnStatus.set(AddOnStatus.ALPHA)
+    addOnStatus.set(AddOnStatus.BETA)
     zapVersion.set("2.11.1")
 
     manifest {
@@ -44,12 +44,27 @@ crowdin {
     }
 }
 
+spotless {
+    java {
+        target(fileTree(projectDir) {
+            include("src/**/*.java")
+            exclude("src/main/java/org/apache/hc/client5/**/Zap*.java")
+        })
+    }
+}
+
 dependencies {
-    val nettyVersion = "4.1.73.Final"
+    val nettyVersion = "4.1.81.Final"
     implementation("io.netty:netty-codec:$nettyVersion")
     implementation("io.netty:netty-handler:$nettyVersion")
 
-    val bcVersion = "1.69"
+    implementation("org.apache.httpcomponents.client5:httpclient5:5.2-beta1")
+    implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.17.2") {
+        // Provided by ZAP.
+        exclude(group = "org.apache.logging.log4j")
+    }
+
+    val bcVersion = "1.70"
     bouncyCastle("org.bouncycastle:bcmail-jdk15on:$bcVersion")
     bouncyCastle("org.bouncycastle:bcprov-jdk15on:$bcVersion")
     bouncyCastle("org.bouncycastle:bcpkix-jdk15on:$bcVersion")

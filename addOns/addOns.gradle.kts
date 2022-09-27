@@ -33,6 +33,11 @@ val parentProjects = listOf(
     "webdrivers"
 )
 
+val jacocoToolVersion = "0.8.8"
+jacoco {
+    toolVersion = jacocoToolVersion
+}
+
 val ghReleaseDataProvider = provider {
     subprojects.first().zapAddOn.gitHubRelease
 }
@@ -93,15 +98,19 @@ subprojects {
     }
 
     java {
-        // Compile with Java 8 when building ZAP releases.
+        // Compile with appropriate Java version when building ZAP releases.
         if (System.getenv("ZAP_RELEASE") != null) {
             toolchain {
-                languageVersion.set(JavaLanguageVersion.of(8))
+                languageVersion.set(JavaLanguageVersion.of(System.getenv("ZAP_JAVA_VERSION")))
             }
         } else {
             sourceCompatibility = JavaVersion.VERSION_1_8
             targetCompatibility = JavaVersion.VERSION_1_8
         }
+    }
+
+    jacoco {
+        toolVersion = jacocoToolVersion
     }
 
     tasks.named<JacocoReport>("jacocoTestReport") {

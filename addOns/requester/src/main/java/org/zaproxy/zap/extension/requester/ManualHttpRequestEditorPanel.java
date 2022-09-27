@@ -23,8 +23,8 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.HeadlessException;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -39,13 +39,13 @@ import org.apache.commons.httpclient.URIException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
+import org.parosproxy.paros.extension.OptionsChangedListener;
 import org.parosproxy.paros.model.Model;
 import org.parosproxy.paros.model.OptionsParam;
 import org.parosproxy.paros.network.HttpHeader;
 import org.parosproxy.paros.network.HttpMalformedHeaderException;
 import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.network.HttpRequestHeader;
-import org.parosproxy.paros.view.View;
 import org.zaproxy.zap.PersistentConnectionListener;
 import org.zaproxy.zap.extension.help.ExtensionHelp;
 import org.zaproxy.zap.extension.httppanel.HttpPanel;
@@ -54,16 +54,15 @@ import org.zaproxy.zap.extension.httppanel.HttpPanelRequest;
 import org.zaproxy.zap.extension.httppanel.HttpPanelResponse;
 import org.zaproxy.zap.extension.httppanel.Message;
 import org.zaproxy.zap.view.HttpPanelManager;
-import org.zaproxy.zap.view.ZapMenuItem;
 
-public class ManualHttpRequestEditorPanel extends ManualRequestEditorPanel {
+@SuppressWarnings("serial")
+public class ManualHttpRequestEditorPanel extends ManualRequestEditorPanel
+        implements OptionsChangedListener {
 
     private static final long serialVersionUID = -5830450800029295419L;
     private static final Logger logger = LogManager.getLogger(ManualHttpRequestEditorPanel.class);
     private static final String CONFIG_KEY = "requesterpanel";
-    private static final String HELP_KEY = "requester";
-
-    private ZapMenuItem menuItem;
+    private static final String HELP_KEY = "addon.requester.tab";
 
     private HttpPanelSender sender;
 
@@ -76,10 +75,23 @@ public class ManualHttpRequestEditorPanel extends ManualRequestEditorPanel {
     private JLabel labelTimeElapse = null;
     private JLabel labelContentLength = null;
     private JLabel labelTotalLength = null;
+    private String helpKey = null;
+    private int defaultView;
 
-    public ManualHttpRequestEditorPanel() throws HeadlessException {
-        super(true, CONFIG_KEY);
-        sender = new HttpPanelSender(getRequestPanel(), getResponsePanel());
+    public ManualHttpRequestEditorPanel() {
+        this(CONFIG_KEY, HELP_KEY, RequestResponsePanel.SIDE_BY_SIDE_VIEW);
+    }
+
+    public ManualHttpRequestEditorPanel(String configurationKey) throws HeadlessException {
+        this(configurationKey, "addon.requester.dialogs", RequestResponsePanel.TABS_VIEW);
+    }
+
+    private ManualHttpRequestEditorPanel(String configurationKey, String helpKey, int defaultView)
+            throws HeadlessException {
+        super(true, configurationKey);
+        this.defaultView = defaultView;
+        this.helpKey = helpKey;
+        sender = new HttpPanelSender(getMessagePanel(), getResponsePanel());
 
         initialize();
     }
@@ -107,13 +119,8 @@ public class ManualHttpRequestEditorPanel extends ManualRequestEditorPanel {
     }
 
     @Override
-    public Class<? extends Message> getMessageType() {
-        return HttpMessage.class;
-    }
-
-    @Override
     public Message getMessage() {
-        return getRequestPanel().getMessage();
+        return getMessagePanel().getMessage();
     }
 
     @Override
@@ -122,19 +129,23 @@ public class ManualHttpRequestEditorPanel extends ManualRequestEditorPanel {
             return;
         }
 
-        getRequestPanel().setMessage(aMessage);
+        getMessagePanel().setMessage(aMessage);
         getResponsePanel().setMessage(aMessage);
         setFooterStatus(null);
         switchToTab(0);
     }
 
     @Override
-    protected HttpPanelSender getMessageSender() {
-        return sender;
+    protected void sendMessage(Message message) throws IOException {
+        sender.sendMessage(message);
+    }
+
+    public void cleanup() {
+        sender.cleanup();
     }
 
     @Override
-    protected HttpPanelRequest getRequestPanel() {
+    protected HttpPanelRequest getMessagePanel() {
         if (requestPanel == null) {
             requestPanel = new HttpPanelRequest(true, configurationKey);
             requestPanel.setEnableViewSelect(true);
@@ -158,17 +169,28 @@ public class ManualHttpRequestEditorPanel extends ManualRequestEditorPanel {
         if (requestResponsePanel == null) {
             requestResponsePanel =
                     new RequestResponsePanel(
-                            configurationKey, getRequestPanel(), getResponsePanel());
+                            configurationKey,
+                            getMessagePanel(),
+                            getResponsePanel(),
+                            this::sendButtonTriggered,
+                            defaultView);
 
-            JButton helpButton = new JButton();
-            helpButton.setIcon(ExtensionHelp.getHelpIcon());
-            helpButton.setToolTipText(Constant.messages.getString("help.dialog.button.tooltip"));
-            helpButton.addActionListener(e -> ExtensionHelp.showHelp(HELP_KEY));
-            requestResponsePanel.addResponseToolbarButton(
-                    helpButton, HttpPanel.OptionsLocation.END);
+            if (helpKey != null) {
+                JButton helpButton = new JButton();
+                helpButton.setIcon(ExtensionHelp.getHelpIcon());
+                helpButton.setToolTipText(
+                        Constant.messages.getString("help.dialog.button.tooltip"));
+                helpButton.addActionListener(e -> ExtensionHelp.showHelp(helpKey));
+                if (!helpKey.equals(HELP_KEY)) {
+                    requestResponsePanel.addToolbarButton(helpButton);
+                } else {
+                    requestResponsePanel.addResponseToolbarButton(
+                            helpButton, HttpPanel.OptionsLocation.END);
+                }
 
-            requestResponsePanel.addEndButton(getBtnSend());
-            requestResponsePanel.addSeparator();
+                requestResponsePanel.addEndButton(getBtnSend());
+                requestResponsePanel.addSeparator();
+            }
 
             requestResponsePanel.loadConfig();
         }
@@ -207,36 +229,26 @@ public class ManualHttpRequestEditorPanel extends ManualRequestEditorPanel {
     }
 
     private void setFooterStatus(HttpMessage msg) {
+        long timeLapse = 0;
+        long contentLength = 0;
+        long totalLength = 0;
         if (msg != null) {
-            // get values
-            long contentLength = msg.getResponseBody().length();
-            long totalLength = msg.getResponseHeader().toString().length() + contentLength;
-            long timeLapse = msg.getTimeElapsedMillis();
-            // show time lapse and content length between request and response
-            // Constant.messages.getString("manReq.label.timeLapse")
-            getLabelTimeLapse()
-                    .setText(
-                            Constant.messages.getString("manReq.label.timeLapse")
-                                    + String.valueOf(timeLapse)
-                                    + " ms");
-            getLabelContentLength()
-                    .setText(
-                            Constant.messages.getString("manReq.label.contentLength")
-                                    + String.valueOf(contentLength)
-                                    + " "
-                                    + Constant.messages.getString("manReq.label.totalLengthBytes"));
-            getLabelTotalLength()
-                    .setText(
-                            Constant.messages.getString("manReq.label.totalLength")
-                                    + String.valueOf(totalLength)
-                                    + " "
-                                    + Constant.messages.getString("manReq.label.totalLengthBytes"));
-        } else {
-            getLabelTimeLapse().setText(Constant.messages.getString("manReq.label.timeLapse"));
-            getLabelContentLength()
-                    .setText(Constant.messages.getString("manReq.label.contentLength"));
-            getLabelTotalLength().setText(Constant.messages.getString("manReq.label.totalLength"));
+            contentLength = msg.getResponseBody().length();
+            totalLength = msg.getResponseHeader().toString().length() + contentLength;
+            timeLapse = msg.getTimeElapsedMillis();
         }
+        getLabelTimeLapse()
+                .setText(
+                        Constant.messages.getString(
+                                "requester.httppanel.label.timelapse", timeLapse));
+        getLabelContentLength()
+                .setText(
+                        Constant.messages.getString(
+                                "requester.httppanel.label.contentlength", contentLength));
+        getLabelTotalLength()
+                .setText(
+                        Constant.messages.getString(
+                                "requester.httppanel.label.totallength", totalLength));
     }
 
     private void switchToTab(int i) {
@@ -246,34 +258,13 @@ public class ManualHttpRequestEditorPanel extends ManualRequestEditorPanel {
     }
 
     @Override
-    protected void saveConfig() {
+    public void saveConfig() {
         requestResponsePanel.saveConfig();
     }
 
     @Override
-    public ZapMenuItem getMenuItem() {
-        if (menuItem == null) {
-            menuItem =
-                    new ZapMenuItem(
-                            "menu.tools.manReq",
-                            View.getSingleton().getMenuShortcutKeyStroke(KeyEvent.VK_M, 0, false));
-            menuItem.addActionListener(
-                    e -> {
-                        Message message = getMessage();
-                        if (message == null
-                                || (message instanceof HttpMessage
-                                        && ((HttpMessage) message).getRequestHeader().isEmpty())) {
-                            setDefaultMessage();
-                        }
-                        setVisible(true);
-                    });
-        }
-        return menuItem;
-    }
-
-    @Override
-    public void clear() {
-        super.clear();
+    public void reset() {
+        super.reset();
 
         getResponsePanel().clearView();
     }
@@ -330,16 +321,16 @@ public class ManualHttpRequestEditorPanel extends ManualRequestEditorPanel {
     public static final class RequestResponsePanel extends JPanel {
 
         private static final String REQUEST_CAPTION =
-                Constant.messages.getString("manReq.tab.request");
+                Constant.messages.getString("requester.httppanel.tab.request");
         private static final String RESPONSE_CAPTION =
-                Constant.messages.getString("manReq.tab.response");
+                Constant.messages.getString("requester.httppanel.tab.response");
 
         private static final String TABS_VIEW_TOOL_TIP =
-                Constant.messages.getString("manReq.display.tabs");
+                Constant.messages.getString("requester.httppanel.display.tabs");
         private static final String ABOVE_VIEW_TOOL_TIP =
-                Constant.messages.getString("manReq.display.above");
+                Constant.messages.getString("requester.httppanel.display.above");
         private static final String SIDE_BY_SIDE_VIEW_TOOL_TIP =
-                Constant.messages.getString("manReq.display.sidebyside");
+                Constant.messages.getString("requester.httppanel.display.sidebyside");
 
         private static final String SELECTEDLAYOUT_CONFIG_KEY = "selectedlayout";
         private static final String HORIZONTAL_DIVIDER_LOCATION_CONFIG_KEY =
@@ -355,6 +346,7 @@ public class ManualHttpRequestEditorPanel extends ManualRequestEditorPanel {
 
         private final HttpPanelRequest requestPanel;
         private final HttpPanelResponse responsePanel;
+        private final int defaultView;
 
         private int currentView;
         private JComponent currentViewPanel;
@@ -369,27 +361,33 @@ public class ManualHttpRequestEditorPanel extends ManualRequestEditorPanel {
         private int verticalDividerLocation;
         private int horizontalDividerLocation;
 
+        private JButton responseSendButton;
+
+        private Runnable sendAction;
+
         public RequestResponsePanel(
-                String configurationKey, HttpPanelRequest request, HttpPanelResponse response)
+                String configurationKey,
+                HttpPanelRequest request,
+                HttpPanelResponse response,
+                Runnable sendAction,
+                int defaultView)
                 throws IllegalArgumentException {
             super(new BorderLayout());
             if (request == null || response == null) {
                 throw new IllegalArgumentException(
                         "The request and response panels cannot be null.");
             }
+            this.defaultView = defaultView;
 
             this.configurationKey = configurationKey;
 
             this.requestPanel = request;
             this.responsePanel = response;
+            this.sendAction = sendAction;
 
             this.currentView = -1;
 
-            tabsButtonView =
-                    new JToggleButton(
-                            new ImageIcon(
-                                    ManualRequestEditorPanel.class.getResource(
-                                            "/resource/icon/layout_tabbed.png")));
+            tabsButtonView = new JToggleButton(ExtensionRequester.createIcon("layout-tabbed.png"));
             tabsButtonView.setToolTipText(TABS_VIEW_TOOL_TIP);
 
             tabsButtonView.addActionListener(e -> changeView(TABS_VIEW));
@@ -397,10 +395,7 @@ public class ManualHttpRequestEditorPanel extends ManualRequestEditorPanel {
             addToolbarButton(tabsButtonView);
 
             aboveButtonView =
-                    new JToggleButton(
-                            new ImageIcon(
-                                    ManualRequestEditorPanel.class.getResource(
-                                            "/resource/icon/layout_vertical_split.png")));
+                    new JToggleButton(ExtensionRequester.createIcon("layout-vertical-split.png"));
             aboveButtonView.setToolTipText(ABOVE_VIEW_TOOL_TIP);
 
             aboveButtonView.addActionListener(e -> changeView(ABOVE_VIEW));
@@ -408,15 +403,14 @@ public class ManualHttpRequestEditorPanel extends ManualRequestEditorPanel {
             addToolbarButton(aboveButtonView);
 
             sideBySideButtonView =
-                    new JToggleButton(
-                            new ImageIcon(
-                                    ManualRequestEditorPanel.class.getResource(
-                                            "/resource/icon/layout_horizontal_split.png")));
+                    new JToggleButton(ExtensionRequester.createIcon("layout-horizontal-split.png"));
             sideBySideButtonView.setToolTipText(SIDE_BY_SIDE_VIEW_TOOL_TIP);
 
             sideBySideButtonView.addActionListener(e -> changeView(SIDE_BY_SIDE_VIEW));
 
             addToolbarButton(sideBySideButtonView);
+
+            responsePanel.addOptions(getResponseSendButton(), HttpPanel.OptionsLocation.END);
         }
 
         public void loadConfig() {
@@ -435,9 +429,7 @@ public class ManualHttpRequestEditorPanel extends ManualRequestEditorPanel {
                     Model.getSingleton()
                             .getOptionsParam()
                             .getConfig()
-                            .getInt(
-                                    configurationKey + SELECTEDLAYOUT_CONFIG_KEY,
-                                    SIDE_BY_SIDE_VIEW));
+                            .getInt(configurationKey + SELECTEDLAYOUT_CONFIG_KEY, defaultView));
 
             requestPanel.loadConfig(Model.getSingleton().getOptionsParam().getConfig());
             responsePanel.loadConfig(Model.getSingleton().getOptionsParam().getConfig());
@@ -559,6 +551,7 @@ public class ManualHttpRequestEditorPanel extends ManualRequestEditorPanel {
             tabbedPane.addTab(REQUEST_CAPTION, null, requestPanel, null);
             tabbedPane.addTab(RESPONSE_CAPTION, null, responsePanel, null);
             tabbedPane.setSelectedIndex(0);
+            getResponseSendButton().setVisible(true);
 
             currentViewPanel = tabbedPane;
         }
@@ -566,6 +559,7 @@ public class ManualHttpRequestEditorPanel extends ManualRequestEditorPanel {
         private void switchToAboveView() {
             currentView = ABOVE_VIEW;
             currentButtonView = aboveButtonView;
+            getResponseSendButton().setVisible(false);
 
             currentViewPanel = createSplitPane(JSplitPane.VERTICAL_SPLIT);
         }
@@ -573,6 +567,7 @@ public class ManualHttpRequestEditorPanel extends ManualRequestEditorPanel {
         private void switchToSideBySideView() {
             currentView = SIDE_BY_SIDE_VIEW;
             currentButtonView = sideBySideButtonView;
+            getResponseSendButton().setVisible(false);
 
             currentViewPanel = createSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         }
@@ -601,25 +596,42 @@ public class ManualHttpRequestEditorPanel extends ManualRequestEditorPanel {
 
             return splitPane;
         }
+
+        private JButton getResponseSendButton() {
+            if (responseSendButton == null) {
+                responseSendButton =
+                        new JButton(Constant.messages.getString("requester.button.send"));
+                responseSendButton.setMnemonic(KeyEvent.VK_ENTER);
+                responseSendButton.setToolTipText(getBtnSendTooltip());
+                responseSendButton.addActionListener(
+                        e -> {
+                            responseSendButton.setEnabled(false);
+                            sendAction.run();
+                            responseSendButton.setEnabled(true);
+                        });
+            }
+            return responseSendButton;
+        }
     }
 
     public void addPersistentConnectionListener(PersistentConnectionListener listener) {
-        getMessageSender().addPersistentConnectionListener(listener);
+        sender.addPersistentConnectionListener(listener);
     }
 
     public void removePersistentConnectionListener(PersistentConnectionListener listener) {
-        getMessageSender().removePersistentConnectionListener(listener);
+        sender.removePersistentConnectionListener(listener);
     }
 
-    public void beforeClose() {
-        HttpPanelManager panelManager = HttpPanelManager.getInstance();
-        panelManager.removeRequestPanel(getRequestPanel());
-        panelManager.removeResponsePanel(getResponsePanel());
+    @Override
+    public void unload() {
+        super.unload();
+
+        HttpPanelManager.getInstance().removeResponsePanel(getResponsePanel());
     }
 
-    void optionsChanged(OptionsParam optionsParam) {
-        getMessageSender()
-                .setButtonTrackingSessionStateEnabled(
-                        optionsParam.getConnectionParam().isHttpStateEnabled());
+    @Override
+    public void optionsChanged(OptionsParam optionsParam) {
+        sender.setButtonTrackingSessionStateEnabled(
+                optionsParam.getConnectionParam().isHttpStateEnabled());
     }
 }

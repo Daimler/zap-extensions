@@ -4,8 +4,12 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
+
+
+## [30] - 2022-09-15
 ### Changed
 - Maintenance changes.
+- Reverse Tabnabbing scan rule now leverages the Common Library Trusted Domains implementation.
 
 ## [29] - 2022-04-05
 ### Changed
@@ -232,6 +236,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Updated to support new addon format
 
+[30]: https://github.com/zaproxy/zap-extensions/releases/pscanrulesBeta-v30
 [29]: https://github.com/zaproxy/zap-extensions/releases/pscanrulesBeta-v29
 [28]: https://github.com/zaproxy/zap-extensions/releases/pscanrulesBeta-v28
 [27]: https://github.com/zaproxy/zap-extensions/releases/pscanrulesBeta-v27

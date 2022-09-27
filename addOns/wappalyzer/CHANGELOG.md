@@ -5,6 +5,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 
+
+## [21.13.0] - 2022-09-23
+### Changed
+- Maintenance changes.
+- Updated with upstream Wappalyzer icon and pattern changes.
+
+
+
+## [21.12.0] - 2022-08-15
+### Changed
+- Maintenance changes.
+- Updated with upstream Wappalyzer icon and pattern changes.
+
+
+
+## [21.11.0] - 2022-06-03
+###Changed
+- Updated with upstream Wappalyzer icon and pattern changes.
+- Update Wappalyzer URL in help documentation.
+
 ### Fixed
 - Threading issue - only reproducible with currently unreleased core changes.
 
@@ -227,6 +247,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - First version
 
 
+[21.13.0]: https://github.com/zaproxy/zap-extensions/releases/wappalyzer-v21.13.0
+[21.12.0]: https://github.com/zaproxy/zap-extensions/releases/wappalyzer-v21.12.0
+[21.11.0]: https://github.com/zaproxy/zap-extensions/releases/wappalyzer-v21.11.0
 [21.10.0]: https://github.com/zaproxy/zap-extensions/releases/wappalyzer-v21.10.0
 [21.9.0]: https://github.com/zaproxy/zap-extensions/releases/wappalyzer-v21.9.0
 [21.8.0]: https://github.com/zaproxy/zap-extensions/releases/wappalyzer-v21.8.0

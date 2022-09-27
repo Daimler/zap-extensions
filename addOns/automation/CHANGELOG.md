@@ -7,9 +7,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 - Maintenance changes.
 
+
+## [0.17.0] - 2022-09-09
+### Added
+- Add Save As button that allows user to save the automation plan to a different file (Issue 7178).
+- Support for monitor tests.
+
+### Changed
+- Maintenance changes.
+- Rely on spider add-on (Issue 3113).
+- passiveScan-config job resets the state, as scanOnlyInScope is often confusing in the GUI. 
+- Deprecated the addOns job.
+
+### Fixed
+- Correct loading of custom scripts (e.g. Zest).
+- The activeScan and spider jobs no longer switch tabs when they run.
+
+## [0.16.0] - 2022-06-22
+### Changed
+- Maintenance changes.
+
 ### Fixed
 - Show each context URL in its own line when editing in the GUI (Issue 7241).
 - Correct error messages.
+- Wrong API end point reference in help
+- Fix exception when alerts found during active scan no longer exist when creating the data for the report.
 
 ## [0.15.0] - 2022-04-25
 ### Added
@@ -164,6 +186,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - First version.
 
+[0.17.0]: https://github.com/zaproxy/zap-extensions/releases/automation-v0.17.0
+[0.16.0]: https://github.com/zaproxy/zap-extensions/releases/automation-v0.16.0
 [0.15.0]: https://github.com/zaproxy/zap-extensions/releases/automation-v0.15.0
 [0.14.0]: https://github.com/zaproxy/zap-extensions/releases/automation-v0.14.0
 [0.13.0]: https://github.com/zaproxy/zap-extensions/releases/automation-v0.13.0

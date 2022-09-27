@@ -4,15 +4,26 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
+
+
+## [48] - 2022-09-22
+### Changed
+- Command Injection Scan Rule: Decode HTML entities in HTML responses before attempting to search for attack validation patterns.
+
+## [47] - 2022-08-16
 ### Added
 - Cross Site Scripting header splitting attacks.
+- The External Redirect scan rule now includes alert references on Alerts, and has example alert functionality for documentation generation purposes.
 
 ### Changed
 - Maintenance changes.
+- Updated the External Redirect scan rule to be more accurate.
+- The Reflected XSS scan rule now generates alerts for all content-types when alert threshold set to LOW. If alert threshold MEDIUM or HIGH, alerts are raised for HTML responses only.
 
 ### Fixed
 - The Remote File Inclusion scan rule no longer follows redirects before checking the response for content indicating a vulnerability (Issue 5887).
 - False positive where Cross Site Scripting payloads are safely rendered in a textarea tag.
+- Unescaped tag end causing Cross Site Scripting rule to throw an exception.
 
 ## [46] - 2022-03-21
 ### Changed
@@ -315,6 +326,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
 
+[48]: https://github.com/zaproxy/zap-extensions/releases/ascanrules-v48
+[47]: https://github.com/zaproxy/zap-extensions/releases/ascanrules-v47
 [46]: https://github.com/zaproxy/zap-extensions/releases/ascanrules-v46
 [45]: https://github.com/zaproxy/zap-extensions/releases/ascanrules-v45
 [44]: https://github.com/zaproxy/zap-extensions/releases/ascanrules-v44

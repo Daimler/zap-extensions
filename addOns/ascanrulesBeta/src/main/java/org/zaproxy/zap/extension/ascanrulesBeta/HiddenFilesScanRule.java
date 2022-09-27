@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,7 @@ import org.parosproxy.paros.core.scanner.AbstractHostPlugin;
 import org.parosproxy.paros.core.scanner.Alert;
 import org.parosproxy.paros.core.scanner.Category;
 import org.parosproxy.paros.network.HttpHeader;
+import org.parosproxy.paros.network.HttpMalformedHeaderException;
 import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.network.HttpRequestHeader;
 import org.parosproxy.paros.network.HttpStatusCode;
@@ -71,7 +73,14 @@ public class HiddenFilesScanRule extends AbstractHostPlugin {
                     CommonAlertTag.WSTG_V42_CONF_05_ENUMERATE_INFRASTRUCTURE);
     static final String PAYLOADS_FILE_PATH = "json/hidden_files.json";
 
-    private static final List<String> HIDDEN_FILES = new ArrayList<>();
+    private static final List<String> HIDDEN_FILES =
+            Arrays.asList(
+                    // Source Control paths to look for, per:
+                    // https://twitter.com/intigriti/status/1533050946212839424
+                    ".hg", // Mercurial
+                    ".bzr", // Bazaar
+                    "._darcs", // Darcs
+                    "BitKeeper");
     private static final Supplier<Iterable<String>> DEFAULT_PAYLOAD_PROVIDER = () -> HIDDEN_FILES;
     public static final String HIDDEN_FILE_PAYLOAD_CATEGORY = "Hidden-File";
     private static Supplier<Iterable<String>> payloadProvider = DEFAULT_PAYLOAD_PROVIDER;
@@ -186,15 +195,42 @@ public class HiddenFilesScanRule extends AbstractHostPlugin {
     }
 
     private void raiseAlert(HttpMessage msg, int confidence, int risk, HiddenFile file) {
-        newAlert()
+        buildAlert(msg, confidence, risk, file).raise();
+    }
+
+    private AlertBuilder buildAlert(HttpMessage msg, int confidence, int risk, HiddenFile file) {
+        return newAlert()
                 .setRisk(risk)
                 .setConfidence(confidence)
                 .setName(getAlertName())
                 .setOtherInfo(getOtherInfo(file.getType()))
                 .setEvidence(msg.getResponseHeader().getPrimeHeader())
                 .setReference(getReferences(file))
-                .setMessage(msg)
-                .raise();
+                .setMessage(msg);
+    }
+
+    @Override
+    public List<Alert> getExampleAlerts() {
+        List<Alert> alerts = new ArrayList<>();
+        String testPath = "CVS/root";
+        List<String> contents = Arrays.asList(":");
+        List<String> notContents = Arrays.asList("<");
+        List<String> links = Collections.emptyList();
+        HiddenFile hiddenFile =
+                new HiddenFile(testPath, contents, notContents, "", links, "cvs_dir", false);
+        HttpMessage msg;
+        try {
+            msg = new HttpMessage(new URI("https://example.com/" + testPath, false));
+        } catch (URIException | HttpMalformedHeaderException | NullPointerException e) {
+            LOG.warn("The HttpMessage for Example Alerts could not be created for some reason.", e);
+            return Collections.emptyList();
+        }
+        msg.getResponseHeader().setStatusCode(HttpStatusCode.OK);
+        Alert example = buildAlert(msg, Alert.CONFIDENCE_LOW, getRisk(), hiddenFile).build();
+        example.setTags(
+                CommonAlertTag.mergeTags(example.getTags(), CommonAlertTag.CUSTOM_PAYLOADS));
+        alerts.add(example);
+        return alerts;
     }
 
     @Override

@@ -180,7 +180,7 @@
     "cats": [
       1
     ],
-    "cpe": "cpe:/a:vardot:varbase",
+    "cpe": "cpe:2.3:a:vardot:varbase:*:*:*:*:*:*:*:*",
     "dom": "meta[content='Varbase'],div[class*='varbase_'],div[class*='_varbase'],div[class*='varbase-'],div[class*='block-varbase'],div[class*='blockvarbase']",
     "icon": "varbase.png",
     "implies": "Drupal",
@@ -190,10 +190,25 @@
     "oss": true,
     "website": "https://www.vardot.com/solutions/varbase"
   },
+  "Variti": {
+    "cats": [
+      16
+    ],
+    "description": "Variti is a network security solutions firm that blocks bad bots, protects users from various automated abuse, attacks and fraud techniques.",
+    "headers": {
+      "X-VARITI-CCR": ""
+    },
+    "icon": "Variti.png",
+    "pricing": [
+      "poa"
+    ],
+    "website": "https://variti.io"
+  },
   "Varnish": {
     "cats": [
       23
     ],
+    "cpe": "cpe:2.3:a:varnish-software:varnich_cache:*:*:*:*:*:*:*:*",
     "description": "Varnish is a reverse caching proxy.",
     "headers": {
       "Via": "varnish(?: \\(Varnish/([\\d.]+)\\))?\\;version:\\1",
@@ -367,6 +382,21 @@
     "scriptSrc": "\\.vidazoo\\.com",
     "website": "https://www.vidazoo.com"
   },
+  "Video Greet": {
+    "cats": [
+      100
+    ],
+    "description": "Video Greet lets your customers add a video message to gifts with QR codes.",
+    "icon": "Video Greet.png",
+    "js": {
+      "__vg.video_greet_button_src": ""
+    },
+    "pricing": [
+      "freemium"
+    ],
+    "requires": "Shopify",
+    "website": "https://apps.shopify.com/videogreet-gift-messages"
+  },
   "VideoJS": {
     "cats": [
       14
@@ -400,6 +430,24 @@
     "icon": "vigbo.png",
     "scriptSrc": "(?:\\.vigbo\\.com|\\.gophotoweb\\.com)",
     "website": "https://vigbo.com"
+  },
+  "Vigil": {
+    "cats": [
+      13
+    ],
+    "description": "Vigil is a microservices status page. Monitors a distributed infrastructure and sends alerts (Slack, SMS, etc.).",
+    "dom": {
+      "p > a[href*='github.com/valeriansaliou/vigil']": {
+        "text": "^Vigil$"
+      }
+    },
+    "icon": "default.svg",
+    "implies": [
+      "Rust",
+      "Docker"
+    ],
+    "oss": true,
+    "website": "https://github.com/valeriansaliou/vigil"
   },
   "Vignette": {
     "cats": [
@@ -642,15 +690,36 @@
     "cats": [
       19
     ],
-    "description": "Next Generation Frontend Tooling",
+    "description": "Vite is a rapid development tool for modern web projects.",
     "icon": "vite.svg",
-    "website": "https://vitejs.dev/"
+    "oss": true,
+    "website": "https://vitejs.dev"
+  },
+  "Vitrin.me": {
+    "cats": [
+      51
+    ],
+    "description": "Vitrin.me is a no-code platform that lets anyone build web apps without writing any code.",
+    "icon": "Vitrin.me.svg",
+    "implies": [
+      "Python",
+      "Django",
+      "React",
+      "Next.js"
+    ],
+    "pricing": [
+      "low",
+      "recurring"
+    ],
+    "saas": true,
+    "scriptSrc": "\\.vitrin\\.me/",
+    "website": "https://vitrin.me"
   },
   "Vizury": {
     "cats": [
       32
     ],
-    "description": "Vizury is a commerce marketing platform.",
+    "description": "Vizury is a ecommerce marketing platform.",
     "icon": "Vizury.png",
     "js": {
       "safariVizury": "",
@@ -662,6 +731,20 @@
     "saas": true,
     "scriptSrc": "\\.vizury\\.com",
     "website": "https://www.vizury.com"
+  },
+  "Vntana": {
+    "cats": [
+      105
+    ],
+    "description": "Vntana (stylised as VNTANA) is an American social augmented reality company.",
+    "dom": "iframe[src*='embed.vntana.com/'], iframe[nitro-lazy-src*='embed.vntana.com/']",
+    "icon": "Vntana.png",
+    "pricing": [
+      "freemium",
+      "poa"
+    ],
+    "saas": true,
+    "website": "https://www.vntana.com"
   },
   "Volusion": {
     "cats": [
@@ -785,13 +868,29 @@
     "icon": "vue.svg",
     "js": {
       "Vue.version": "^(.+)$\\;version:\\1",
-      "__VUE_HOT_MAP__": ""
+      "__VUE_HOT_MAP__": "",
+      "vueDLL": ""
     },
     "scriptSrc": [
       "vue[.-]([\\d.]*\\d)[^/]*\\.js\\;version:\\1",
       "(?:/([\\d.]+))?/vue(?:\\.min)?\\.js\\;version:\\1"
     ],
     "website": "https://vuejs.org"
+  },
+  "Vue2-animate": {
+    "cats": [
+      19
+    ],
+    "description": "Vue2-animate is a Vue.js port of Animate.css.",
+    "dom": "link[href*='/vue2-animate.min.css']",
+    "icon": "vue.svg",
+    "implies": [
+      "Vue.js",
+      "Sass",
+      "Animate.css"
+    ],
+    "oss": true,
+    "website": "https://github.com/asika32764/vue2-animate"
   },
   "VuePress": {
     "cats": [
@@ -826,7 +925,7 @@
       "bblastvisit": "",
       "bbsessionhash": ""
     },
-    "cpe": "cpe:/a:vbulletin:vbulletin",
+    "cpe": "cpe:2.3:a:vbulletin:vbulletin:*:*:*:*:*:*:*:*",
     "description": "vBulletin is tool that is used to create and manage online forums or discussion boards. It is written in PHP and uses a MySQL database server.",
     "html": "<div id=\"copyright\">Powered by vBulletin",
     "icon": "vBulletin.png",

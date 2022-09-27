@@ -20,26 +20,38 @@
 package org.zaproxy.zap.extension.requester;
 
 import java.awt.Component;
+import java.lang.reflect.Method;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.extension.ExtensionAdaptor;
 import org.parosproxy.paros.extension.ExtensionHook;
 import org.parosproxy.paros.extension.ExtensionHookMenu;
 import org.parosproxy.paros.extension.ExtensionHookView;
+import org.parosproxy.paros.model.HistoryReference;
 import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.view.View;
+import org.zaproxy.addon.requester.internal.AbstractHttpMessageEditorDialog;
+import org.zaproxy.addon.requester.internal.ResendHttpMessageEditorDialog;
+import org.zaproxy.addon.requester.internal.SendHttpMessageEditorDialog;
 import org.zaproxy.zap.extension.httppanel.HttpPanel;
 import org.zaproxy.zap.extension.httppanel.Message;
+import org.zaproxy.zap.utils.DisplayUtils;
+import org.zaproxy.zap.view.HrefTypeInfo;
 
 public class ExtensionRequester extends ExtensionAdaptor {
 
+    private static final Logger LOGGER = LogManager.getLogger(ExtensionRequester.class);
+
     public static final String NAME = "ExtensionRequester";
 
-    private static final String RESOURCE = "/org/zaproxy/zap/extension/requester/resources";
+    private static final String IMAGES_DIR = "resources/images/";
 
-    public static final ImageIcon REQUESTER_ICON =
-            new ImageIcon(ExtensionRequester.class.getResource(RESOURCE + "/requester.png"));
+    private static ImageIcon requesterIcon;
+
+    private static ImageIcon manualIcon;
 
     private RequesterPanel requesterPanel = null;
     private RightClickMsgMenuRequester popupMsgMenuRequester = null;
@@ -47,16 +59,54 @@ public class ExtensionRequester extends ExtensionAdaptor {
     private RequesterParam requesterParams;
     private RequesterOptionsPanel requesterOptionsPanel;
 
+    private AbstractHttpMessageEditorDialog sendDialog;
+    private AbstractHttpMessageEditorDialog resendDialog;
+
     public ExtensionRequester() {
         super(NAME);
         this.setOrder(211);
+    }
+
+    public static final ImageIcon getManualIcon() {
+        if (manualIcon == null) {
+            manualIcon = createIcon("hand.png");
+        }
+        return manualIcon;
+    }
+
+    public static ImageIcon createIcon(String relativePath) {
+        return DisplayUtils.getScaledIcon(
+                ExtensionRequester.class.getResource(IMAGES_DIR + relativePath));
+    }
+
+    public static ImageIcon getRequesterIcon() {
+        if (requesterIcon == null) {
+            requesterIcon = createIcon("requester.png");
+        }
+        return requesterIcon;
     }
 
     @Override
     public void hook(ExtensionHook extensionHook) {
         super.hook(extensionHook);
         extensionHook.addOptionsParamSet(getOptionsParam());
-        if (getView() != null) {
+
+        addHrefType(
+                extensionHook,
+                new HrefTypeInfo(
+                        HistoryReference.TYPE_ZAP_USER,
+                        Constant.messages.getString("requester.href.type.name.manual"),
+                        hasView() ? getManualIcon() : null));
+
+        if (hasView()) {
+            if (isDeprecated(
+                    org.parosproxy.paros.extension.manualrequest.ExtensionManualRequestEditor
+                            .class)) {
+                sendDialog =
+                        new SendHttpMessageEditorDialog(new ManualHttpRequestEditorPanel("manual"));
+                sendDialog.load(extensionHook);
+            }
+
             extensionHook.addOptionsChangedListener(getRequesterPanel());
 
             ExtensionHookView hookView = extensionHook.getHookView();
@@ -67,7 +117,32 @@ public class ExtensionRequester extends ExtensionAdaptor {
             menu.addPopupMenuItem(getPopupMsgMenuRequester());
             // ToolsMenuItem
             menu.addToolsMenuItem(new ToolsMenuItemRequester(this));
+
+            if (isDeprecated(org.zaproxy.zap.extension.stdmenus.PopupMenuResendMessage.class)) {
+                ManualHttpRequestEditorPanel panel = new ManualHttpRequestEditorPanel("resend");
+                resendDialog = new ResendHttpMessageEditorDialog(panel);
+                resendDialog.load(extensionHook);
+            }
         }
+    }
+
+    private static void addHrefType(ExtensionHook extensionHook, HrefTypeInfo hrefTypeInfo) {
+        if (!isDeprecated(
+                org.parosproxy.paros.extension.manualrequest.ExtensionManualRequestEditor.class)) {
+            return;
+        }
+
+        try {
+            Method method =
+                    ExtensionHook.class.getDeclaredMethod("addHrefType", HrefTypeInfo.class);
+            method.invoke(extensionHook, hrefTypeInfo);
+        } catch (Exception e) {
+            LOGGER.error("An error occurred while adding the history type:", e);
+        }
+    }
+
+    private static boolean isDeprecated(Class<?> clazz) {
+        return clazz.getAnnotation(Deprecated.class) != null;
     }
 
     private RequesterParam getOptionsParam() {
@@ -140,8 +215,16 @@ public class ExtensionRequester extends ExtensionAdaptor {
 
     @Override
     public void unload() {
-        if (getView() != null) {
+        if (hasView()) {
             getRequesterPanel().unload();
+
+            if (resendDialog != null) {
+                resendDialog.unload();
+            }
+
+            if (sendDialog != null) {
+                sendDialog.unload();
+            }
         }
     }
 
