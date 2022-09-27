@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -45,6 +46,7 @@ class SarifResultTest {
 
     private static final String PSEUDO_BASE64_ENCODED_CONTENT = "somethingBase64Encoded";
     private static final String A_SIMPLE_BODY = "the-body";
+
     SarifBase64Encoder encoder;
     SarifBinaryContentDetector binaryContentDetector;
 
@@ -93,7 +95,7 @@ class SarifResultTest {
     }
 
     @DisplayName(
-            "When content detector decides its binary - SARIF Webresponse body has no text, but binary with base64 encoded body bytes")
+            "When content detector decides it is binary - SARIF Webresponse body has no text, but binary with base64 encoded body bytes")
     @Test
     void webResponseBinary() {
         /* prepare */
@@ -153,7 +155,7 @@ class SarifResultTest {
     }
 
     @DisplayName(
-            "When content detector decides its binary - SARIF Webrequest body has no text, but binary with base64 encoded body bytes")
+            "When content detector decides it is binary - SARIF Webrequest body has no text, but binary with base64 encoded body bytes")
     @Test
     void webRequestBinary() {
         /* prepare */
@@ -184,7 +186,7 @@ class SarifResultTest {
     }
 
     @DisplayName(
-            "When content detector decides its NOT binary - SARIF Webrequest body has plain text")
+            "When content detector decides it is NOT binary - SARIF Webrequest body has plain text")
     @Test
     void webRequestNotBinary() {
         /* prepare */
@@ -211,6 +213,37 @@ class SarifResultTest {
         SarifBody body = result.getWebRequest().getBody();
         assertEquals(null, body.getBinary());
         assertEquals(A_SIMPLE_BODY, body.getText());
+    }
+
+    @Test
+    void headerContainingBasicAuthAuthorizationInfoWillBeHiddenInReport() {
+        /* prepare */
+        // @formatter:off
+        Alert alert =
+                newAlertBuilder()
+                        .setRequestBody(A_SIMPLE_BODY)
+                        .setRequestHeader(
+                                "GET https://127.0.0.1:8080 HTTP/1.1\nAccept-Language: en-us,en;q=0.5\nAuthorization: Basic dXNlcjpwYXNzd29yZA==")
+                        .build();
+        // @formatter:on
+        when(binaryContentDetector.isBinaryContent(eq(alert.getMessage().getRequestHeader())))
+                .thenReturn(false);
+        when(encoder.encodeBytesToBase64(any())).thenReturn(PSEUDO_BASE64_ENCODED_CONTENT);
+
+        /* execute */
+        SarifResult result =
+                SarifResult.builder()
+                        .setAlert(alert)
+                        .setBase64Encoder(encoder)
+                        .setBinaryContentDetector(binaryContentDetector)
+                        .build();
+
+        /* test */
+        Map<String, String> headers = result.getWebRequest().getHeaders();
+        assertEquals("en-us,en;q=0.5", headers.get("Accept-Language"));
+        assertEquals(
+                SarifHeaderCredentialHider.CREDENTIAL_REPLACEMENT_ASTERISKS,
+                headers.get("Authorization"));
     }
 
     // @formatter:off
