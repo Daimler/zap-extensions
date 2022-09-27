@@ -48,8 +48,8 @@ import org.parosproxy.paros.extension.ExtensionHook;
 import org.parosproxy.paros.model.Model;
 import org.yaml.snakeyaml.Yaml;
 import org.zaproxy.addon.automation.gui.AutomationPanel;
+import org.zaproxy.addon.automation.gui.OptionsPanel;
 import org.zaproxy.addon.automation.jobs.ActiveScanJob;
-import org.zaproxy.addon.automation.jobs.AddOnJob;
 import org.zaproxy.addon.automation.jobs.DelayJob;
 import org.zaproxy.addon.automation.jobs.ParamsJob;
 import org.zaproxy.addon.automation.jobs.PassiveScanConfigJob;
@@ -59,6 +59,7 @@ import org.zaproxy.addon.automation.jobs.SpiderJob;
 import org.zaproxy.zap.ZAP;
 import org.zaproxy.zap.ZAP.ProcessType;
 import org.zaproxy.zap.eventBus.Event;
+import org.zaproxy.zap.extension.spider.ExtensionSpider;
 import org.zaproxy.zap.utils.Stats;
 
 public class ExtensionAutomation extends ExtensionAdaptor implements CommandLineListener {
@@ -86,6 +87,7 @@ public class ExtensionAutomation extends ExtensionAdaptor implements CommandLine
     private Map<String, AutomationJob> jobs = new HashMap<>();
     private SortedSet<AutomationJob> sortedJobs = new TreeSet<>();
 
+    private OptionsPanel optionsPanel;
     private AutomationParam param;
     private LinkedHashMap<Integer, AutomationPlan> plans = new LinkedHashMap<>();
 
@@ -105,15 +107,18 @@ public class ExtensionAutomation extends ExtensionAdaptor implements CommandLine
         AutomationEventPublisher.getPublisher();
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void init() {
         super.init();
 
-        registerAutomationJob(new AddOnJob());
+        registerAutomationJob(new org.zaproxy.addon.automation.jobs.AddOnJob());
         registerAutomationJob(new PassiveScanConfigJob());
         registerAutomationJob(new RequestorJob());
         registerAutomationJob(new PassiveScanWaitJob());
-        registerAutomationJob(new SpiderJob());
+        if (ExtensionSpider.class.getAnnotation(Deprecated.class) == null) {
+            registerAutomationJob(new SpiderJob());
+        }
         registerAutomationJob(new DelayJob());
         registerAutomationJob(new ActiveScanJob());
         registerAutomationJob(new ParamsJob());
@@ -128,8 +133,34 @@ public class ExtensionAutomation extends ExtensionAdaptor implements CommandLine
 
         extensionHook.addApiImplementor(new AutomationAPI(this));
 
-        if (getView() != null) {
+        if (hasView()) {
             extensionHook.getHookView().addStatusPanel(getAutomationPanel());
+            extensionHook.getHookView().addOptionPanel(getOptionsPanel());
+        }
+    }
+
+    private OptionsPanel getOptionsPanel() {
+        if (optionsPanel == null) {
+            optionsPanel = new OptionsPanel();
+        }
+        return optionsPanel;
+    }
+
+    @Override
+    public void optionsLoaded() {
+        if (hasView() && this.getParam().isOpenLastPlan()) {
+            String path = getParam().getLastPlanPath();
+            if (path != null) {
+                File f = new File(path);
+                if (f.canRead()) {
+                    try {
+                        getAutomationPanel().loadPlan(this.loadPlan(f));
+                        getAutomationPanel().setTabFocus();
+                    } catch (IOException e) {
+                        LOG.debug(e.getMessage(), e);
+                    }
+                }
+            }
         }
     }
 
@@ -230,6 +261,7 @@ public class ExtensionAutomation extends ExtensionAdaptor implements CommandLine
     }
 
     private void setPlanFinished(AutomationPlan plan) {
+        plan.getJobs().forEach(AutomationJob::planFinished);
         plan.setFinished(new Date());
         AutomationEventPublisher.publishEvent(
                 AutomationEventPublisher.PLAN_FINISHED, plan, plan.getProgress().toMap());
@@ -255,13 +287,15 @@ public class ExtensionAutomation extends ExtensionAdaptor implements CommandLine
                 AutomationEventPublisher.PLAN_ENV_CREATED, plan, null);
         Stats.incCounter(PLANS_RUN_STATS);
 
+        List<AutomationJob> jobsToRun = plan.getJobs();
+
+        jobsToRun.forEach(AutomationJob::planStarted);
+
         if (progress.hasErrors() || env.isTimeToQuit()) {
             // If the environment reports an error then no point in continuing
             setPlanFinished(plan);
             return progress;
         }
-
-        List<AutomationJob> jobsToRun = plan.getJobs();
 
         for (AutomationJob job : jobsToRun) {
             job.applyParameters(progress);

@@ -20,44 +20,18 @@
 package org.zaproxy.addon.graphql;
 
 import net.htmlparser.jericho.Source;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.network.HttpMessage;
-import org.parosproxy.paros.network.HttpSender;
 import org.zaproxy.zap.spider.parser.SpiderParser;
 
 public class GraphQlSpider extends SpiderParser {
 
-    private static final Logger LOG = LogManager.getLogger(GraphQlSpider.class);
-
     @Override
     public boolean parseResource(HttpMessage message, Source source, int depth) {
-        try {
-            GraphQlParser parser =
-                    new GraphQlParser(
-                            message.getRequestHeader().getURI(),
-                            HttpSender.SPIDER_INITIATOR,
-                            false);
-            parser.addRequesterListener(new HistoryPersister());
-            parser.introspect();
-        } catch (Exception e) {
-            LOG.debug(e.getMessage(), e);
-            return false;
-        }
-        return true;
+        return GraphQlSpiderHelper.parseMessage(message);
     }
 
     @Override
     public boolean canParseResource(HttpMessage message, String path, boolean wasAlreadyConsumed) {
-        String uri = message.getRequestHeader().getURI().toString();
-        switch (MessageValidator.validate(message)) {
-            case VALID_ENDPOINT:
-                LOG.debug("Found GraphQl endpoint at: {}", uri);
-                return true;
-            case VALID_SCHEMA:
-                LOG.debug("Found GraphQL schema at: {}", uri);
-                break;
-        }
-        return false;
+        return GraphQlSpiderHelper.canParseMessage(message);
     }
 }

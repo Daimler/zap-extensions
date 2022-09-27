@@ -4,10 +4,14 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
+
+
+## [34] - 2022-09-23
 ### Changed
 - Spider checkboxes in Automated Scan will be disabled when scan is running. (Issue 7072)
 - Use Network add-on to obtain main proxy address/port.
 - Maintenance changes.
+- Use Spider add-on (Issue 3113).
 
 ### Fixed
 - Accept any 2xx result code instead of just 200.
@@ -171,6 +175,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
 
+[34]: https://github.com/zaproxy/zap-extensions/releases/quickstart-v34
 [33]: https://github.com/zaproxy/zap-extensions/releases/quickstart-v33
 [32]: https://github.com/zaproxy/zap-extensions/releases/quickstart-v32
 [31]: https://github.com/zaproxy/zap-extensions/releases/quickstart-v31

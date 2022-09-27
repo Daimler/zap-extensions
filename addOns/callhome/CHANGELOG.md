@@ -5,8 +5,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 ### Changed
+- Maintenance changes.
+- Promoted to Release status.
+
+## [0.4.0] - 2022-07-18
+### Changed
 - Show a more user friendly log and Output tab message when Java's truststore may not contain the CA certificate(s) for intermediate proxy(ies) (Issue 1623).
 - Maintenance changes.
+
+### Fixed
+- HTTP Sender listeners could modify CFU and telemetry requests.
 
 ## [0.3.0] - 2022-01-21
 ### Added
@@ -37,6 +45,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - First version supports Check for Updates and News calls.
 
+[0.4.0]: https://github.com/zaproxy/zap-extensions/releases/callhome-v0.4.0
 [0.3.0]: https://github.com/zaproxy/zap-extensions/releases/callhome-v0.3.0
 [0.2.0]: https://github.com/zaproxy/zap-extensions/releases/callhome-v0.2.0
 [0.1.0]: https://github.com/zaproxy/zap-extensions/releases/callhome-v0.1.0

@@ -4,9 +4,15 @@ All notable changes to this add-on will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
+
+
+## [14] - 2022-09-23
 ### Changed
 - Dependency updates.
 - Maintenance changes.
+- Use Spider add-on (Issue 3113).
+- Use Form Handler add-on directly.
+- Promoted to Beta status.
 
 ## [13] - 2022-02-01
 ### Changed
@@ -108,6 +114,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - First version
 
+[14]: https://github.com/zaproxy/zap-extensions/releases/soap-v14
 [13]: https://github.com/zaproxy/zap-extensions/releases/soap-v13
 [12]: https://github.com/zaproxy/zap-extensions/releases/soap-v12
 [11]: https://github.com/zaproxy/zap-extensions/releases/soap-v11

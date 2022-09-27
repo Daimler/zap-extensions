@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## Unreleased
 
 
+## [0.15.0] - 2022-09-22
+### Changed
+- Updated with upstream retire.js pattern changes.
+
+
+
+## [0.14.0] - 2022-08-15
+### Changed
+- Updated with upstream retire.js pattern changes.
+
+
+
+## [0.13.0] - 2022-08-02
+### Changed
+- Updated with upstream retire.js pattern changes.
+- Performance improvements (Issue 6959).
+- Add Retire.js reference to the Rule name to make it more obvious in the options panel.
+
 ## [0.12.0] - 2022-05-26
 ### Changed
 - Updated with upstream retire.js pattern changes.
@@ -76,6 +94,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 - First release.
 
+[0.15.0]: https://github.com/zaproxy/zap-extensions/releases/retire-v0.15.0
+[0.14.0]: https://github.com/zaproxy/zap-extensions/releases/retire-v0.14.0
+[0.13.0]: https://github.com/zaproxy/zap-extensions/releases/retire-v0.13.0
 [0.12.0]: https://github.com/zaproxy/zap-extensions/releases/retire-v0.12.0
 [0.11.0]: https://github.com/zaproxy/zap-extensions/releases/retire-v0.11.0
 [0.10.0]: https://github.com/zaproxy/zap-extensions/releases/retire-v0.10.0

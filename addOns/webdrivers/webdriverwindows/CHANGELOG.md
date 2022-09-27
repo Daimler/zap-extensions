@@ -6,17 +6,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## Unreleased
 
 
+## [43] - 2022-09-01
+### Changed
+- Update ChromeDriver to 105.0.5195.52.
+
+
+
+## [42] - 2022-08-04
+### Changed
+- Update ChromeDriver to 104.0.5112.79.
+
+## [41] - 2022-07-21
+### Changed
+- Update ChromeDriver to 103.0.5060.134.
+
+## [40] - 2022-06-23
+### Changed
+- Update ChromeDriver to 103.0.5060.53.
+
 ## [39] - 2022-05-26
 ### Changed
 - Update ChromeDriver to 102.0.5005.61.
 
-
-
 ## [38] - 2022-04-28
 ### Changed
 - Update ChromeDriver to 101.0.4951.41.
-
-
 
 ## [37] - 2022-04-17
 ### Changed
@@ -188,6 +202,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - First release: Firefox v0.13.0 Chrome v2.27 IE 3.0.0
 
+[43]: https://github.com/zaproxy/zap-extensions/releases/webdriverwindows-v43
+[42]: https://github.com/zaproxy/zap-extensions/releases/webdriverwindows-v42
+[41]: https://github.com/zaproxy/zap-extensions/releases/webdriverwindows-v41
+[40]: https://github.com/zaproxy/zap-extensions/releases/webdriverwindows-v40
 [39]: https://github.com/zaproxy/zap-extensions/releases/webdriverwindows-v39
 [38]: https://github.com/zaproxy/zap-extensions/releases/webdriverwindows-v38
 [37]: https://github.com/zaproxy/zap-extensions/releases/webdriverwindows-v37

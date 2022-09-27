@@ -28,6 +28,7 @@
     "cats": [
       19
     ],
+    "cpe": "cpe:2.3:a:zabbix:zabbix:*:*:*:*:*:*:*:*",
     "html": "<body[^>]+zbxCallPostScripts",
     "icon": "Zabbix.png",
     "implies": "PHP",
@@ -170,6 +171,7 @@
     "cookies": {
       "ZENDSERVERSESSID": ""
     },
+    "cpe": "cpe:2.3:a:zend:zend_server:*:*:*:*:*:*:*:*",
     "headers": {
       "X-Powered-By": "Zend(?:Server)?(?:[\\s/]?([0-9.]+))?\\;version:\\1"
     },
@@ -317,6 +319,7 @@
     "cookies": {
       "ZM_TEST": "true"
     },
+    "cpe": "cpe:2.3:a:zimbra:zimbra:*:*:*:*:*:*:*:*",
     "icon": "Zimbra.png",
     "implies": "Java",
     "website": "https://www.zimbra.com/"
@@ -387,6 +390,38 @@
       "zip\\.co"
     ],
     "website": "https://www.zip.co/"
+  },
+  "Zipify OCU": {
+    "cats": [
+      100
+    ],
+    "description": "Zipify OCU allows you to add upsells and cross-sells to your checkout sequence.",
+    "icon": "Zipify OCU.svg",
+    "pricing": [
+      "mid",
+      "recurring"
+    ],
+    "saas": true,
+    "scriptSrc": "/zipify-oneclickupsell-vendor\\.js",
+    "website": "https://zipify.com/apps/ocu/"
+  },
+  "Zipify Pages": {
+    "cats": [
+      100,
+      51
+    ],
+    "description": "Zipify Pages the first landing page builder uniquely designed for ecommerce.",
+    "icon": "Zipify Pages.svg",
+    "implies": "Shopify",
+    "js": {
+      "ZipifyPages": ""
+    },
+    "pricing": [
+      "low",
+      "recurring"
+    ],
+    "saas": true,
+    "website": "https://zipify.com/apps/pages/"
   },
   "Zipkin": {
     "cats": [
@@ -615,10 +650,7 @@
     "meta": {
       "generator": "Zozo Ecommerce"
     },
-    "scriptSrc": [
-      "catalog/view/theme/[^\"]+/javascript/common\\.js",
-      "zozo-main\\.min\\.js"
-    ],
+    "scriptSrc": "zozo-main\\.min\\.js",
     "website": "https://zozo.vn"
   },
   "Zuppler": {

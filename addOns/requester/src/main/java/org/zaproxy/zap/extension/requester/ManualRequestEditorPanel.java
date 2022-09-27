@@ -24,22 +24,27 @@ import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.GridLayout;
 import java.awt.HeadlessException;
+import java.awt.event.KeyEvent;
+import java.io.IOException;
+import javax.net.ssl.SSLException;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.parosproxy.paros.Constant;
 import org.parosproxy.paros.control.Control;
 import org.parosproxy.paros.control.Control.Mode;
 import org.parosproxy.paros.extension.option.OptionsParamView;
+import org.parosproxy.paros.network.HttpMessage;
 import org.parosproxy.paros.view.View;
 import org.zaproxy.zap.extension.httppanel.HttpPanelRequest;
+import org.zaproxy.zap.extension.httppanel.InvalidMessageDataException;
 import org.zaproxy.zap.extension.httppanel.Message;
-import org.zaproxy.zap.extension.tab.Tab;
-import org.zaproxy.zap.view.ZapMenuItem;
+import org.zaproxy.zap.view.HttpPanelManager;
 
 /** Send custom crafted messages via HTTP or other TCP based protocols. */
-public abstract class ManualRequestEditorPanel extends JPanel implements Tab {
+public abstract class ManualRequestEditorPanel extends JPanel {
     private static final long serialVersionUID = 1L;
 
     private static final Logger logger = LogManager.getLogger(ManualRequestEditorPanel.class);
@@ -52,6 +57,8 @@ public abstract class ManualRequestEditorPanel extends JPanel implements Tab {
 
     private JButton btnSend = null;
 
+    private boolean sending = false;
+
     /**
      * Non-abstract classes should call {@link #initialize()} in their constructor.
      *
@@ -59,7 +66,7 @@ public abstract class ManualRequestEditorPanel extends JPanel implements Tab {
      * @param configurationKey
      * @throws HeadlessException
      */
-    public ManualRequestEditorPanel(boolean isSendEnabled, String configurationKey)
+    protected ManualRequestEditorPanel(boolean isSendEnabled, String configurationKey)
             throws HeadlessException {
         super();
 
@@ -74,27 +81,6 @@ public abstract class ManualRequestEditorPanel extends JPanel implements Tab {
         add(getWindowPanel());
     }
 
-    /**
-     * Returns type of message it handles.
-     *
-     * @return
-     */
-    public abstract Class<? extends Message> getMessageType();
-
-    /**
-     * Message sender for the given {@link #getMessageType()}.
-     *
-     * @return
-     */
-    protected abstract MessageSender getMessageSender();
-
-    /**
-     * Menu item that calls this editor.
-     *
-     * @return
-     */
-    public abstract ZapMenuItem getMenuItem();
-
     protected JPanel getWindowPanel() {
         if (panelWindow == null) {
             panelWindow = new JPanel();
@@ -108,86 +94,145 @@ public abstract class ManualRequestEditorPanel extends JPanel implements Tab {
 
     protected abstract Component getManualSendPanel();
 
-    @Override
-    public void setVisible(boolean show) {
-        if (!show && getMessageSender() != null) {
-            getMessageSender().cleanup();
-        }
-
-        super.setVisible(show);
-    }
-
     public abstract void setDefaultMessage();
 
     public abstract void setMessage(Message aMessage);
 
     public abstract Message getMessage();
 
-    public void clear() {
-        getRequestPanel().clearView();
+    /**
+     * Unloads the panel by {@link #reset() reseting} it and removing the message panel from the
+     * {@link HttpPanelManager}.
+     */
+    public void unload() {
+        reset();
+
+        HttpPanelManager.getInstance().removeRequestPanel(getMessagePanel());
+    }
+
+    /**
+     * Resets the panel.
+     *
+     * <p>Clears the view of the message panel and {@link #setDefaultMessage() sets the default
+     * message}.
+     */
+    public void reset() {
+        getMessagePanel().clearView();
+        setDefaultMessage();
+    }
+
+    protected void sendButtonTriggered() {
+        if (sending) {
+            // Can also be triggered by other buttons, eg in the Http Response tab
+            return;
+        }
+        sending = true;
+        try {
+            btnSend.setEnabled(false);
+
+            try {
+                getMessagePanel().saveData();
+            } catch (InvalidMessageDataException e1) {
+                StringBuilder warnMessage = new StringBuilder(150);
+                warnMessage.append(Constant.messages.getString("requester.warn.datainvalid"));
+                String exceptionMessage = e1.getLocalizedMessage();
+                if (exceptionMessage != null && !exceptionMessage.isEmpty()) {
+                    warnMessage.append('\n').append(exceptionMessage);
+                }
+                View.getSingleton().showWarningDialog(this, warnMessage.toString());
+                btnSend.setEnabled(true);
+                return;
+            }
+
+            Mode mode = Control.getSingleton().getMode();
+            if (mode.equals(Mode.safe)) {
+                // Can happen if the user turns on safe mode with the dialog open
+                View.getSingleton()
+                        .showWarningDialog(
+                                this, Constant.messages.getString("requester.warn.safemode"));
+                btnSend.setEnabled(true);
+                return;
+            } else if (mode.equals(Mode.protect) && !getMessage().isInScope()) {
+                // In protected mode and not in scope, so fail
+                View.getSingleton()
+                        .showWarningDialog(
+                                this, Constant.messages.getString("requester.warn.outofscope"));
+                btnSend.setEnabled(true);
+                return;
+            }
+
+            btnSendAction();
+
+        } finally {
+            sending = false;
+        }
     }
 
     protected JButton getBtnSend() {
         if (btnSend == null) {
             btnSend = new JButton();
-            btnSend.setText(Constant.messages.getString("manReq.button.send"));
+            btnSend.setText(Constant.messages.getString("requester.button.send"));
             btnSend.setEnabled(isSendEnabled);
-            btnSend.addActionListener(
-                    e -> {
-                        btnSend.setEnabled(false);
-
-                        try {
-                            getRequestPanel().saveData();
-                        } catch (Exception e1) {
-                            StringBuilder warnMessage = new StringBuilder(150);
-                            warnMessage.append(
-                                    Constant.messages.getString("requester.warn.datainvalid"));
-                            String exceptionMessage = e1.getLocalizedMessage();
-                            if (exceptionMessage != null && !exceptionMessage.isEmpty()) {
-                                warnMessage.append('\n').append(exceptionMessage);
-                            }
-                            View.getSingleton().showWarningDialog(warnMessage.toString());
-                            btnSend.setEnabled(true);
-                            return;
-                        }
-
-                        Mode mode = Control.getSingleton().getMode();
-                        if (mode.equals(Mode.safe)) {
-                            // Can happen if the user turns on safe mode with the dialog open
-                            View.getSingleton()
-                                    .showWarningDialog(
-                                            Constant.messages.getString("manReq.safe.warning"));
-                            btnSend.setEnabled(true);
-                            return;
-                        } else if (mode.equals(Mode.protect) && !getMessage().isInScope()) {
-                            // In protected mode and not in scope, so fail
-                            View.getSingleton()
-                                    .showWarningDialog(
-                                            Constant.messages.getString(
-                                                    "manReq.outofscope.warning"));
-                            btnSend.setEnabled(true);
-                            return;
-                        }
-
-                        btnSendAction();
-                    });
+            btnSend.setMnemonic(KeyEvent.VK_ENTER);
+            btnSend.setToolTipText(getBtnSendTooltip());
+            btnSend.addActionListener(e -> sendButtonTriggered());
         }
         return btnSend;
     }
 
+    protected static String getBtnSendTooltip() {
+        return Constant.isMacOsX()
+                ? Constant.messages.getString("requester.button.send.tooltip.mac")
+                : Constant.messages.getString("requester.button.send.tooltip");
+    }
+
     /** Do not forget to enable the send button again i */
     protected abstract void btnSendAction();
+
+    protected abstract void sendMessage(Message message) throws IOException;
 
     protected void send(final Message aMessage) {
         final Thread t =
                 new Thread(
                         () -> {
                             try {
-                                getMessageSender().handleSendMessage(aMessage);
+                                sendMessage(aMessage);
                                 postSend();
+                            } catch (SSLException sslEx) {
+                                StringBuilder strBuilder = new StringBuilder();
+
+                                strBuilder.append(
+                                        Constant.messages.getString(
+                                                "network.httpsender.ssl.error.connect"));
+                                strBuilder
+                                        .append(
+                                                ((HttpMessage) aMessage)
+                                                        .getRequestHeader()
+                                                        .getURI()
+                                                        .toString())
+                                        .append('\n');
+                                strBuilder
+                                        .append(
+                                                Constant.messages.getString(
+                                                        "network.httpsender.ssl.error.exception"))
+                                        .append(sslEx.getMessage())
+                                        .append('\n');
+                                strBuilder
+                                        .append(
+                                                Constant.messages.getString(
+                                                        "network.httpsender.ssl.error.exception.rootcause"))
+                                        .append(ExceptionUtils.getRootCauseMessage(sslEx))
+                                        .append('\n');
+                                strBuilder.append(
+                                        Constant.messages.getString(
+                                                "network.httpsender.ssl.error.help",
+                                                Constant.messages.getString(
+                                                        "network.httpsender.ssl.error.help.url")));
+                                logger.debug(sslEx, sslEx);
+                                View.getSingleton().showWarningDialog(this, strBuilder.toString());
                             } catch (Exception e) {
-                                logger.warn(e.getMessage(), e);
-                                View.getSingleton().showWarningDialog(e.getMessage());
+                                logger.debug(e.getMessage(), e);
+                                View.getSingleton().showWarningDialog(this, e.getMessage());
                             } finally {
                                 btnSend.setEnabled(true);
                             }
@@ -197,13 +242,16 @@ public abstract class ManualRequestEditorPanel extends JPanel implements Tab {
     }
 
     protected void postSend() {
-        EventQueue.invokeLater(
-                () ->
-                        // redraw, as message may have changed after sending
-                        getRequestPanel().updateContent());
+        EventQueue.invokeLater(getMessagePanel()::updateContent);
     }
 
-    protected abstract void saveConfig();
+    /** Saves the configuration of the panel. */
+    public abstract void saveConfig();
 
-    protected abstract HttpPanelRequest getRequestPanel();
+    /**
+     * Gets the panel that shows the message.
+     *
+     * @return the message panel.
+     */
+    protected abstract HttpPanelRequest getMessagePanel();
 }

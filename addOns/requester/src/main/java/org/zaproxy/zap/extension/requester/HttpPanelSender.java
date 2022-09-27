@@ -27,7 +27,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.net.ssl.SSLException;
-import javax.swing.ImageIcon;
 import javax.swing.JToggleButton;
 import org.apache.commons.httpclient.URI;
 import org.apache.logging.log4j.LogManager;
@@ -45,6 +44,7 @@ import org.parosproxy.paros.network.HttpSender;
 import org.parosproxy.paros.view.View;
 import org.zaproxy.zap.PersistentConnectionListener;
 import org.zaproxy.zap.ZapGetMethod;
+import org.zaproxy.zap.extension.anticsrf.ExtensionAntiCSRF;
 import org.zaproxy.zap.extension.httppanel.HttpPanel;
 import org.zaproxy.zap.extension.httppanel.HttpPanelRequest;
 import org.zaproxy.zap.extension.httppanel.HttpPanelResponse;
@@ -55,12 +55,13 @@ import org.zaproxy.zap.network.HttpRedirectionValidator;
 import org.zaproxy.zap.network.HttpRequestConfig;
 
 /** Knows how to send {@link HttpMessage} objects. */
-public class HttpPanelSender implements MessageSender {
+public class HttpPanelSender {
 
     private static final Logger logger = LogManager.getLogger(HttpPanelSender.class);
 
     private final HttpPanelResponse responsePanel;
     private ExtensionHistory extension;
+    private ExtensionAntiCSRF extAntiCSRF;
 
     private HttpSender delegate;
 
@@ -68,11 +69,15 @@ public class HttpPanelSender implements MessageSender {
     private JToggleButton followRedirect = null;
     private JToggleButton useTrackingSessionState = null;
     private JToggleButton useCookies = null;
+    private JToggleButton useCsrf = null;
 
     private List<PersistentConnectionListener> persistentConnectionListener = new ArrayList<>();
 
     public HttpPanelSender(HttpPanelRequest requestPanel, HttpPanelResponse responsePanel) {
         this.responsePanel = responsePanel;
+
+        extAntiCSRF =
+                Control.getSingleton().getExtensionLoader().getExtension(ExtensionAntiCSRF.class);
 
         requestPanel.addOptions(
                 getButtonUseTrackingSessionState(), HttpPanel.OptionsLocation.AFTER_COMPONENTS);
@@ -81,14 +86,16 @@ public class HttpPanelSender implements MessageSender {
                 getButtonFollowRedirects(), HttpPanel.OptionsLocation.AFTER_COMPONENTS);
         requestPanel.addOptions(
                 getButtonFixContentLength(), HttpPanel.OptionsLocation.AFTER_COMPONENTS);
+        if (extAntiCSRF != null) {
+            requestPanel.addOptions(getButtonUseCsrf(), HttpPanel.OptionsLocation.AFTER_COMPONENTS);
+        }
 
         final boolean isSessionTrackingEnabled =
                 Model.getSingleton().getOptionsParam().getConnectionParam().isHttpStateEnabled();
         getButtonUseTrackingSessionState().setEnabled(isSessionTrackingEnabled);
     }
 
-    @Override
-    public void handleSendMessage(Message aMessage) throws IllegalArgumentException, IOException {
+    void sendMessage(Message aMessage) throws IOException {
         final HttpMessage httpMessage = (HttpMessage) aMessage;
         // Reset the user before sending (e.g. Forced User mode sets the user, if needed).
         httpMessage.setRequestingUser(null);
@@ -99,6 +106,10 @@ public class HttpPanelSender implements MessageSender {
         try {
             final ModeRedirectionValidator redirectionValidator = new ModeRedirectionValidator();
             boolean followRedirects = getButtonFollowRedirects().isSelected();
+
+            if (extAntiCSRF != null && getButtonUseCsrf().isSelected()) {
+                extAntiCSRF.regenerateAntiCsrfToken(httpMessage, getDelegate()::sendAndReceive);
+            }
 
             if (followRedirects) {
                 getDelegate()
@@ -122,15 +133,26 @@ public class HttpPanelSender implements MessageSender {
                             } else if (!redirectionValidator.isRequestValid()) {
                                 View.getSingleton()
                                         .showWarningDialog(
+                                                responsePanel,
                                                 Constant.messages.getString(
-                                                        "manReq.outofscope.redirection.warning",
+                                                        "requester.httpsender.outofscope.redirection.warning",
                                                         redirectionValidator
                                                                 .getInvalidRedirection()));
                             }
                         }
                     });
 
-            ZapGetMethod method = (ZapGetMethod) httpMessage.getUserObject();
+            Object userObject = httpMessage.getUserObject();
+            if (userObject instanceof Socket) {
+                closeSilently((Socket) userObject);
+                return;
+            }
+
+            if (!(userObject instanceof ZapGetMethod)) {
+                return;
+            }
+
+            ZapGetMethod method = (ZapGetMethod) userObject;
             notifyPersistentConnectionListener(httpMessage, null, method);
 
         } catch (final HttpMalformedHeaderException mhe) {
@@ -148,6 +170,14 @@ public class HttpPanelSender implements MessageSender {
 
         } catch (final Exception e) {
             logger.error(e.getMessage(), e);
+        }
+    }
+
+    private static void closeSilently(Socket socket) {
+        try {
+            socket.close();
+        } catch (IOException ignore) {
+            // Nothing to do.
         }
     }
 
@@ -212,8 +242,7 @@ public class HttpPanelSender implements MessageSender {
         return extension;
     }
 
-    @Override
-    public void cleanup() {
+    void cleanup() {
         if (delegate != null) {
             delegate.shutdown();
             delegate = null;
@@ -235,12 +264,9 @@ public class HttpPanelSender implements MessageSender {
     private JToggleButton getButtonFollowRedirects() {
         if (followRedirect == null) {
             followRedirect =
-                    new JToggleButton(
-                            new ImageIcon(
-                                    HttpPanelSender.class.getResource(
-                                            "/resource/icon/16/118.png"))); // Arrow
+                    new JToggleButton(ExtensionRequester.createIcon("follow-redirect.png"));
             followRedirect.setToolTipText(
-                    Constant.messages.getString("manReq.checkBox.followRedirect"));
+                    Constant.messages.getString("requester.httpsender.checkbox.followredirect"));
             followRedirect.setSelected(true);
         }
         return followRedirect;
@@ -249,12 +275,9 @@ public class HttpPanelSender implements MessageSender {
     private JToggleButton getButtonUseTrackingSessionState() {
         if (useTrackingSessionState == null) {
             useTrackingSessionState =
-                    new JToggleButton(
-                            new ImageIcon(
-                                    HttpPanelSender.class.getResource(
-                                            "/resource/icon/fugue/globe-green.png")));
+                    new JToggleButton(ExtensionRequester.createIcon("fugue/globe-green.png"));
             useTrackingSessionState.setToolTipText(
-                    Constant.messages.getString("manReq.checkBox.useSession"));
+                    Constant.messages.getString("requester.httpsender.checkbox.usesession"));
             useTrackingSessionState.addItemListener(
                     e -> setUseTrackingSessionState(e.getStateChange() == ItemEvent.SELECTED));
         }
@@ -263,29 +286,31 @@ public class HttpPanelSender implements MessageSender {
 
     private JToggleButton getButtonUseCookies() {
         if (useCookies == null) {
-            useCookies =
-                    new JToggleButton(
-                            new ImageIcon(
-                                    HttpPanelSender.class.getResource(
-                                            "/resource/icon/fugue/cookie.png")),
-                            true);
-            useCookies.setToolTipText(Constant.messages.getString("manReq.checkBox.useCookies"));
+            useCookies = new JToggleButton(ExtensionRequester.createIcon("fugue/cookie.png"), true);
+            useCookies.setToolTipText(
+                    Constant.messages.getString("requester.httpsender.checkbox.usecookies"));
             useCookies.addItemListener(
                     e -> setUseCookies(e.getStateChange() == ItemEvent.SELECTED));
         }
         return useCookies;
     }
 
+    private JToggleButton getButtonUseCsrf() {
+        if (useCsrf == null) {
+            useCsrf = new JToggleButton(ExtensionRequester.createIcon("csrf-button.png"));
+            useCsrf.setToolTipText(
+                    Constant.messages.getString("requester.httpsender.checkbox.usecsrf"));
+        }
+        return useCsrf;
+    }
+
     private JToggleButton getButtonFixContentLength() {
         if (fixContentLength == null) {
             fixContentLength =
                     new JToggleButton(
-                            new ImageIcon(
-                                    HttpPanelSender.class.getResource(
-                                            "/resource/icon/fugue/application-resize.png")),
-                            true);
+                            ExtensionRequester.createIcon("fugue/application-resize.png"), true);
             fixContentLength.setToolTipText(
-                    Constant.messages.getString("manReq.checkBox.fixLength"));
+                    Constant.messages.getString("requester.httpsender.checkbox.fixlength"));
         }
         return fixContentLength;
     }

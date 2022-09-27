@@ -19,81 +19,28 @@
  */
 package org.zaproxy.zap.extension.openapi;
 
-import java.util.Locale;
+import java.util.function.Supplier;
 import net.htmlparser.jericho.Source;
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.parosproxy.paros.control.Control;
-import org.parosproxy.paros.network.HttpHeader;
 import org.parosproxy.paros.network.HttpMessage;
-import org.parosproxy.paros.network.HttpSender;
-import org.zaproxy.zap.extension.openapi.converter.Converter;
-import org.zaproxy.zap.extension.openapi.converter.swagger.SwaggerConverter;
-import org.zaproxy.zap.extension.openapi.network.Requestor;
-import org.zaproxy.zap.extension.spider.ExtensionSpider;
+import org.zaproxy.zap.extension.openapi.spider.OpenApiSpiderFunctionality;
 import org.zaproxy.zap.model.ValueGenerator;
 import org.zaproxy.zap.spider.parser.SpiderParser;
 
 public class OpenApiSpider extends SpiderParser {
 
-    private static final Logger log = LogManager.getLogger(OpenApiSpider.class);
-    private Requestor requestor;
-    private ValueGenerator valGen = null;
+    private OpenApiSpiderFunctionality func = null;
 
-    public OpenApiSpider() {
-        requestor = new Requestor(HttpSender.SPIDER_INITIATOR);
-        requestor.addListener(new HistoryPersister());
+    public OpenApiSpider(Supplier<ValueGenerator> valueGeneratorSupplier) {
+        func = new OpenApiSpiderFunctionality(valueGeneratorSupplier);
     }
 
     @Override
     public boolean parseResource(HttpMessage message, Source source, int depth) {
-        try {
-            Converter converter =
-                    new SwaggerConverter(
-                            null,
-                            message.getRequestHeader().getURI().toString(),
-                            message.getResponseBody().toString(),
-                            this.getValueGenerator());
-            requestor.run(converter.getRequestModels());
-        } catch (Exception e) {
-            log.debug(e.getMessage(), e);
-            return false;
-        }
-
-        return true;
+        return func.parseResource(message);
     }
 
     @Override
     public boolean canParseResource(HttpMessage message, String path, boolean wasAlreadyConsumed) {
-        try {
-            String contentType =
-                    message.getResponseHeader()
-                            .getHeader(HttpHeader.CONTENT_TYPE)
-                            .toLowerCase(Locale.ROOT);
-            String responseBodyStart =
-                    StringUtils.left(message.getResponseBody().toString(), 250)
-                            .toLowerCase(Locale.ROOT);
-            if (contentType.startsWith("application/vnd.oai.openapi")
-                    || (contentType.contains("json")
-                            || contentType.contains("yaml")
-                                    && (responseBodyStart.contains("swagger")
-                                            || responseBodyStart.contains("openapi")))) {
-                return true;
-            }
-        } catch (Exception e) {
-            return false;
-        }
-        log.debug("Can't parse {}", message.getRequestHeader().getURI());
-        return false;
-    }
-
-    private ValueGenerator getValueGenerator() {
-        if (this.valGen == null) {
-            ExtensionSpider spider =
-                    Control.getSingleton().getExtensionLoader().getExtension(ExtensionSpider.class);
-            valGen = spider.getValueGenerator();
-        }
-        return valGen;
+        return func.canParseResource(message);
     }
 }

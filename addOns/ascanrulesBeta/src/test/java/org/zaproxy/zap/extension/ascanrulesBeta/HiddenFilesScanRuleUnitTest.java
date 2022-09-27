@@ -21,6 +21,8 @@ package org.zaproxy.zap.extension.ascanrulesBeta;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -125,7 +127,7 @@ class HiddenFilesScanRuleUnitTest extends ActiveScannerTest<HiddenFilesScanRule>
         // When
         rule.scan();
         // Then
-        assertEquals(1, httpMessagesSent.size());
+        assertThat(httpMessagesSent, hasSize(greaterThanOrEqualTo(1)));
         assertEquals(HttpRequestHeader.GET, httpMessagesSent.get(0).getRequestHeader().getMethod());
         assertNull(httpMessagesSent.get(0).getRequestHeader().getHeader(HttpHeader.CONTENT_TYPE));
         assertEquals(0, httpMessagesSent.get(0).getRequestBody().length());
@@ -160,7 +162,7 @@ class HiddenFilesScanRuleUnitTest extends ActiveScannerTest<HiddenFilesScanRule>
         // Then
         assertThat(alertsRaised, hasSize(1));
         Alert alert = alertsRaised.get(0);
-        assertEquals(1, httpMessagesSent.size());
+        assertThat(httpMessagesSent, hasSize(greaterThanOrEqualTo(1)));
         assertEquals(Alert.RISK_MEDIUM, alertsRaised.get(0).getRisk());
         assertEquals(Alert.CONFIDENCE_HIGH, alertsRaised.get(0).getConfidence());
         assertEquals(hiddenFile.getType(), alert.getOtherInfo());
@@ -256,7 +258,7 @@ class HiddenFilesScanRuleUnitTest extends ActiveScannerTest<HiddenFilesScanRule>
         // Then
         assertThat(alertsRaised, hasSize(1));
         Alert alert = alertsRaised.get(0);
-        assertEquals(1, httpMessagesSent.size());
+        assertThat(httpMessagesSent, hasSize(greaterThanOrEqualTo(1)));
         assertEquals(Alert.RISK_INFO, alertsRaised.get(0).getRisk());
         assertEquals(Alert.CONFIDENCE_LOW, alertsRaised.get(0).getConfidence());
         assertEquals(hiddenFile.getType(), alert.getOtherInfo());
@@ -286,7 +288,7 @@ class HiddenFilesScanRuleUnitTest extends ActiveScannerTest<HiddenFilesScanRule>
         rule.scan();
         // Then
         assertThat(alertsRaised, hasSize(0));
-        assertEquals(1, httpMessagesSent.size());
+        assertThat(httpMessagesSent, hasSize(greaterThanOrEqualTo(1)));
     }
 
     @Test
@@ -316,7 +318,7 @@ class HiddenFilesScanRuleUnitTest extends ActiveScannerTest<HiddenFilesScanRule>
         // Then
         assertThat(alertsRaised, hasSize(1));
         Alert alert = alertsRaised.get(0);
-        assertEquals(1, httpMessagesSent.size());
+        assertThat(httpMessagesSent, hasSize(greaterThanOrEqualTo(1)));
         assertEquals(Alert.RISK_MEDIUM, alertsRaised.get(0).getRisk());
         assertEquals(Alert.CONFIDENCE_LOW, alertsRaised.get(0).getConfidence());
         assertEquals(hiddenFile.getType(), alert.getOtherInfo());
@@ -378,7 +380,7 @@ class HiddenFilesScanRuleUnitTest extends ActiveScannerTest<HiddenFilesScanRule>
         // Then
         assertThat(alertsRaised, hasSize(1));
         Alert alert = alertsRaised.get(0);
-        assertEquals(1, httpMessagesSent.size());
+        assertThat(httpMessagesSent, hasSize(greaterThanOrEqualTo(1)));
         assertEquals(Alert.RISK_MEDIUM, alertsRaised.get(0).getRisk());
         assertEquals(Alert.CONFIDENCE_HIGH, alertsRaised.get(0).getConfidence());
         assertEquals(hiddenFile.getType(), alert.getOtherInfo());
@@ -441,7 +443,7 @@ class HiddenFilesScanRuleUnitTest extends ActiveScannerTest<HiddenFilesScanRule>
         rule.scan();
         // Then
         assertThat(alertsRaised, hasSize(0));
-        assertEquals(1, httpMessagesSent.size());
+        assertThat(httpMessagesSent, hasSize(greaterThanOrEqualTo(1)));
     }
 
     @Test
@@ -473,7 +475,7 @@ class HiddenFilesScanRuleUnitTest extends ActiveScannerTest<HiddenFilesScanRule>
         // Then
         assertThat(alertsRaised, hasSize(1));
         Alert alert = alertsRaised.get(0);
-        assertEquals(1, httpMessagesSent.size());
+        assertThat(httpMessagesSent, hasSize(greaterThanOrEqualTo(1)));
         assertEquals(Alert.RISK_MEDIUM, alertsRaised.get(0).getRisk());
         assertEquals(Alert.CONFIDENCE_HIGH, alertsRaised.get(0).getConfidence());
         assertEquals(rule.getReference(), alert.getReference());
@@ -510,7 +512,7 @@ class HiddenFilesScanRuleUnitTest extends ActiveScannerTest<HiddenFilesScanRule>
         // Then
         assertThat(alertsRaised, hasSize(1));
         Alert alert = alertsRaised.get(0);
-        assertEquals(1, httpMessagesSent.size());
+        assertThat(httpMessagesSent, hasSize(greaterThanOrEqualTo(1)));
         assertEquals(Alert.RISK_MEDIUM, alertsRaised.get(0).getRisk());
         assertEquals(Alert.CONFIDENCE_LOW, alertsRaised.get(0).getConfidence());
         assertEquals(rule.getReference(), alert.getReference());
@@ -581,7 +583,7 @@ class HiddenFilesScanRuleUnitTest extends ActiveScannerTest<HiddenFilesScanRule>
         // Then
         assertThat(alertsRaised, hasSize(1));
         Alert alert = alertsRaised.get(0);
-        assertEquals(1, httpMessagesSent.size());
+        assertThat(httpMessagesSent, hasSize(greaterThanOrEqualTo(1)));
         assertEquals(Alert.RISK_MEDIUM, alertsRaised.get(0).getRisk());
         assertEquals(Alert.CONFIDENCE_HIGH, alertsRaised.get(0).getConfidence());
         assertEquals(rule.getReference(), alert.getReference());
@@ -623,7 +625,7 @@ class HiddenFilesScanRuleUnitTest extends ActiveScannerTest<HiddenFilesScanRule>
         // Then
         assertThat(alertsRaised, hasSize(1));
         Alert alert = alertsRaised.get(0);
-        assertEquals(1, httpMessagesSent.size());
+        assertThat(httpMessagesSent, hasSize(greaterThanOrEqualTo(1)));
         assertEquals(Alert.RISK_MEDIUM, alertsRaised.get(0).getRisk());
         assertEquals(Alert.CONFIDENCE_LOW, alertsRaised.get(0).getConfidence());
         assertEquals(rule.getReference(), alert.getReference());
@@ -694,6 +696,23 @@ class HiddenFilesScanRuleUnitTest extends ActiveScannerTest<HiddenFilesScanRule>
         assertThat(
                 tags.get(CommonAlertTag.WSTG_V42_CONF_05_ENUMERATE_INFRASTRUCTURE.getTag()),
                 is(equalTo(CommonAlertTag.WSTG_V42_CONF_05_ENUMERATE_INFRASTRUCTURE.getValue())));
+    }
+
+    @Test
+    void shouldReturnExpectedExampleAlert() {
+        // Given / When
+        List<Alert> alerts = rule.getExampleAlerts();
+        Alert alert = alerts.get(0);
+        Map<String, String> tags = alert.getTags();
+        // Then
+        assertThat(alerts.size(), is(equalTo(1)));
+        assertThat(tags.size(), is(equalTo(4)));
+        assertThat(tags, hasKey(CommonAlertTag.OWASP_2021_A05_SEC_MISCONFIG.getTag()));
+        assertThat(tags, hasKey(CommonAlertTag.OWASP_2017_A06_SEC_MISCONFIG.getTag()));
+        assertThat(tags, hasKey(CommonAlertTag.WSTG_V42_CONF_05_ENUMERATE_INFRASTRUCTURE.getTag()));
+        assertThat(tags, hasKey(CommonAlertTag.CUSTOM_PAYLOADS.getTag()));
+        assertThat(alert.getRisk(), is(equalTo(Alert.RISK_MEDIUM)));
+        assertThat(alert.getConfidence(), is(equalTo(Alert.CONFIDENCE_LOW)));
     }
 
     private static class ForbiddenResponseWithReqPath extends NanoServerHandler {
