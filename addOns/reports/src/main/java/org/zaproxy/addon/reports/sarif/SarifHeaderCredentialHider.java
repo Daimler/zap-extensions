@@ -40,7 +40,7 @@ public class SarifHeaderCredentialHider {
             return originHeaderValue;
         }
 
-        if (originHeaderValue == null || originHeaderValue.isBlank()) {
+        if (originHeaderValue == null || originHeaderValue.isEmpty()) {
             return originHeaderValue;
         }
 
