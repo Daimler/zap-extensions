@@ -60,15 +60,16 @@ public class SarifResult implements Comparable<SarifResult> {
         private static final int MAX_ALLOWED_EVICENCE_SNIPPET_SIZE = 1 * 1024; // 1 kbyte
 
         private SarifBigContentShrinker bigContentShrinker;
+        private SarifHeaderCredentialHider headerCredentialHider;
+        private SarifBinaryContentDetector binaryContentDetector;
+        private SarifBase64Encoder base64Encoder;
+        private Alert alert;
 
         private SarifResultBuilder() {
             // force static method call
             this.bigContentShrinker = new SarifBigContentShrinker();
+            this.headerCredentialHider = new SarifHeaderCredentialHider();
         }
-
-        private SarifBinaryContentDetector binaryContentDetector;
-        private SarifBase64Encoder base64Encoder;
-        private Alert alert;
 
         public SarifResultBuilder setAlert(Alert alert) {
             this.alert = alert;
@@ -136,7 +137,14 @@ public class SarifResult implements Comparable<SarifResult> {
 
             List<HttpHeaderField> requestHeaders = requestHeader.getHeaders();
             for (HttpHeaderField headerField : requestHeaders) {
-                webRequest.headers.put(headerField.getName(), headerField.getValue());
+
+                String headerName = headerField.getName();
+                String headerValue = headerField.getValue();
+
+                String safeHeaderValue =
+                        headerCredentialHider.createSafeHeaderValue(headerName, headerValue);
+
+                webRequest.headers.put(headerName, safeHeaderValue);
             }
             SarifProtocolData requestProtocolData =
                     SarifProtocolData.parseProtocolAndVersion(requestHeader.getVersion());
