@@ -162,7 +162,7 @@ class SarifReportIntegrationTest {
         assertTrue(rules.isArray());
         ArrayNode rulesArray = (ArrayNode) rules;
         for (JsonNode rule : rulesArray) {
-            assertRuleHasCweEntrAndGuidsNotDuplicated(inspectionContext, cwe, rule);
+            assertRuleHasCweEntryAndGuidsNotDuplicated(inspectionContext, cwe, rule);
         }
         assertEquals(2, rulesArray.size());
         Iterator<JsonNode> ruleIt = rulesArray.iterator();
@@ -205,15 +205,16 @@ class SarifReportIntegrationTest {
         assertEquals(expectedReferences, list);
     }
 
-    private void assertRuleHasCweEntrAndGuidsNotDuplicated(
+    private void assertRuleHasCweEntryAndGuidsNotDuplicated(
             InspectionContext inspectionContext, SarifToolDataProvider cwe, JsonNode rule) {
 
         // relationships
-        JsonNode relationShips = rule.get("relationships");
-        assertTrue(relationShips.isArray());
-        ArrayNode relationShipsArray = (ArrayNode) relationShips;
-        for (JsonNode relationShip : relationShipsArray) {
-            JsonNode target = relationShip.get("target");
+        JsonNode relationships = rule.get("relationships");
+        assertTrue(relationships.isArray());
+        ArrayNode relationshipsArray = (ArrayNode) relationships;
+
+        for (JsonNode relationship : relationshipsArray) {
+            JsonNode target = relationship.get("target");
             String targetId = target.get("id").asText();
             String targetGuid = target.get("guid").asText();
 

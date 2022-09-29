@@ -57,7 +57,7 @@ public class SarifResult implements Comparable<SarifResult> {
         private static final int MAX_ALLOWED_REQUEST_BODY = 32 * 1024; // 32 kbyte
         private static final int MAX_ALLOWED_RESPONSE_BODY = 8 * 1024; // 8 kbyte
         private static final int MAX_ALLOWED_BINARY_CONTENT_SIZE = 1 * 1024; // 1 kbyte
-        private static final int MAX_ALLOWED_EVICENCE_SNIPPET_SIZE = 1 * 1024; // 1 kbyte
+        private static final int MAX_ALLOWED_EVIDENCE_SNIPPET_SIZE = 1 * 1024; // 1 kbyte
 
         private SarifBigContentShrinker bigContentShrinker;
         private SarifHeaderCredentialHider headerCredentialHider;
@@ -158,7 +158,7 @@ public class SarifResult implements Comparable<SarifResult> {
             /* ------------ */
             String shortEvidenceSnippet =
                     bigContentShrinker.shrinkTextWithoutMarkers(
-                            alert.getEvidence(), MAX_ALLOWED_EVICENCE_SNIPPET_SIZE);
+                            alert.getEvidence(), MAX_ALLOWED_EVIDENCE_SNIPPET_SIZE);
             SarifWebResponse webResponse = result.webResponse;
             HttpResponseHeader responseHeader = httpMessage.getResponseHeader();
 

@@ -39,22 +39,34 @@ public class SarifBinaryContentDetector {
     public boolean isBinaryContent(HttpHeader header) {
         requireNonNull(header, "Header parameter may not be null!");
 
-        String contentTypeLowerCased = header.getNormalisedContentTypeValue();
-        if (contentTypeLowerCased == null) {
+        String contentType = header.getNormalisedContentTypeValue();
+        if (contentType == null) {
             // if not set, we assume it is binary
             return true;
         }
-        return !(contentTypeLowerCased.startsWith("text")
-                || contentTypeLowerCased.contains("/json")
-                || contentTypeLowerCased.contains("/xml")
-                || isJavaScriptApplication(contentTypeLowerCased));
+        return !isTextBasedContentType(contentType);
     }
 
-    private boolean isJavaScriptApplication(String contentTypeLowerCased) {
-        if (!contentTypeLowerCased.startsWith("application/")) {
-            return false;
-        }
-        return contentTypeLowerCased.contains("javascript")
-                || contentTypeLowerCased.contains("ecmascript");
+    private boolean isTextBasedContentType(String contentType) {
+        return isPlainText(contentType)
+                || isJSON(contentType)
+                || isXML(contentType)
+                || isJavaScript(contentType);
+    }
+
+    private boolean isXML(String contentType) {
+        return contentType.contains("/xml");
+    }
+
+    private boolean isJSON(String contentType) {
+        return contentType.contains("/json");
+    }
+
+    private boolean isPlainText(String contentType) {
+        return contentType.startsWith("text");
+    }
+
+    private boolean isJavaScript(String contentType) {
+        return contentType.contains("javascript") || contentType.contains("ecmascript");
     }
 }

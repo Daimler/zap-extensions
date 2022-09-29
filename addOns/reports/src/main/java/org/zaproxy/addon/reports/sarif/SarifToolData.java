@@ -35,14 +35,14 @@ public class SarifToolData {
                     .setTaxonomyInformationUri("https://www.zaproxy.org/")
                     .build();
 
-    private static final SarifToolDataProvider CWE_WITH_4_4_TAXONOMY =
+    private static final SarifToolDataProvider CWE_WITH_4_8_TAXONOMY =
             builder()
                     .setName("CWE")
-                    .setTaxonomyVersion("4.4")
+                    .setTaxonomyVersion("4.8")
                     .setTaxonomyComprehensive(true)
-                    .setTaxonomyReleaseDateUtc("2021-03-15")
-                    .setTaxonomyDownloadUri("https://cwe.mitre.org/data/xml/cwec_v4.4.xml.zip")
-                    .setTaxonomyInformationUri("https://cwe.mitre.org/data/published/cwe_v4.4.pdf/")
+                    .setTaxonomyReleaseDateUtc("2022-06-28")
+                    .setTaxonomyDownloadUri("https://cwe.mitre.org/data/xml/cwec_v4.8.xml.zip")
+                    .setTaxonomyInformationUri("https://cwe.mitre.org/data/published/cwe_v4.8.pdf/")
                     .setShortDescription("The MITRE Common Weakness Enumeration")
                     .setOrganization("MITRE")
                     .build();
@@ -57,7 +57,7 @@ public class SarifToolData {
     }
 
     public SarifToolDataProvider getCwe() {
-        return CWE_WITH_4_4_TAXONOMY;
+        return CWE_WITH_4_8_TAXONOMY;
     }
 
     static SarifToolDataProviderBuilder builder() {

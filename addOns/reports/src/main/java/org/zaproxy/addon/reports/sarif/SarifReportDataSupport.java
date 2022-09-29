@@ -22,6 +22,7 @@ package org.zaproxy.addon.reports.sarif;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
@@ -64,9 +65,9 @@ public class SarifReportDataSupport {
     }
 
     private List<SarifResult> createResults() {
-        List<SarifResult> results = new ArrayList<>();
 
-        List<Alert> allAlerts = collectAllAlerts(reportData.getAlertTreeRootNode());
+        Collection<Alert> allAlerts = collectAllAlerts(reportData.getAlertTreeRootNode());
+        List<SarifResult> results = new ArrayList<>(allAlerts.size());
 
         for (Alert alert : allAlerts) {
             SarifResult sarifResult = SarifResult.builder().setAlert(alert).build();
@@ -95,8 +96,8 @@ public class SarifReportDataSupport {
         return list;
     }
 
-    private List<Alert> collectAllAlerts(AlertNode rootNode) {
-        List<Alert> list = new ArrayList<>();
+    private Collection<Alert> collectAllAlerts(AlertNode rootNode) {
+        List<Alert> list = new LinkedList<>();
 
         for (int alertIndex = 0; alertIndex < rootNode.getChildCount(); alertIndex++) {
             AlertNode alertNode = rootNode.getChildAt(alertIndex);
@@ -113,7 +114,7 @@ public class SarifReportDataSupport {
         list.add(taxonomy);
 
         Set<Integer> foundCWEIds = new TreeSet<>();
-        List<Alert> allAlerts = collectAllAlerts(reportData.getAlertTreeRootNode());
+        Collection<Alert> allAlerts = collectAllAlerts(reportData.getAlertTreeRootNode());
 
         for (Alert alert : allAlerts) {
             foundCWEIds.add(alert.getCweId());
@@ -136,7 +137,7 @@ public class SarifReportDataSupport {
     private SortedMap<Integer, SarifRule> createRules() {
         SortedMap<Integer, SarifRule> registeredRules = new TreeMap<>();
 
-        List<Alert> alerts = collectAllAlerts(reportData.getAlertTreeRootNode());
+        Collection<Alert> alerts = collectAllAlerts(reportData.getAlertTreeRootNode());
         for (Alert alert : alerts) {
 
             int pluginId = alert.getPluginId();

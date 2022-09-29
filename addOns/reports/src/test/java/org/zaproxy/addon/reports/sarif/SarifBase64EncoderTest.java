@@ -35,7 +35,7 @@ class SarifBase64EncoderTest {
     }
 
     @Test
-    void testdataResultsInCorrectBase64Value() {
+    void testdataCanBeEncodedToBase64() {
         /* prepare */
         String content = "testdata";
 
@@ -46,6 +46,20 @@ class SarifBase64EncoderTest {
         assertEquals("dGVzdGRhdGE=", encoded);
         byte[] backwardCheck = Base64.getDecoder().decode(encoded);
         assertEquals(content, new String(backwardCheck));
+    }
+
+    @Test
+    void emojThinkingFaceCanBeEncodedToBase64() {
+        /* prepare */
+        String content = "🤔 Thinking Face";
+
+        /* execute */
+        String encoded = toTest.encodeBytesToBase64(content.getBytes());
+
+        /* test */
+        byte[] backwardCheck = Base64.getDecoder().decode(encoded);
+        assertEquals(content, new String(backwardCheck));
+        assertEquals("8J+klCBUaGlua2luZyBGYWNl", encoded);
     }
 
     @Test

@@ -103,10 +103,10 @@ public class SarifBigContentShrinker {
         int charsAfter = charsBefore;
 
         /* calculate beginning */
-        boolean shrinkMarketAtBeginning = true;
+        boolean shrinkMarkerAtBeginning = true;
         int calculatedIndexBefore = snippetIndex - charsBefore;
         if (calculatedIndexBefore == 0) {
-            shrinkMarketAtBeginning = false;
+            shrinkMarkerAtBeginning = false;
         } else if (calculatedIndexBefore < 0) {
             charsAfter =
                     charsAfter - calculatedIndexBefore; // e.g. calcIndexBefore=-4 and charsAfter=5
@@ -129,7 +129,7 @@ public class SarifBigContentShrinker {
         String buildContent = content.substring(calculatedIndexBefore, calculatedIndexAfter);
 
         StringBuilder sb = new StringBuilder();
-        if (shrinkMarketAtBeginning) {
+        if (shrinkMarkerAtBeginning) {
             sb.append(SHRINK_MARKER);
         }
 
